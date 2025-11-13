@@ -1,0 +1,127 @@
+/*
+ * TOSCA-Lite Product Definition: OpenTelemetry Instrumentation
+ *
+ * This product provides OpenTelemetry SDK instrumentation for MDSO scriptplan containers.
+ * It is NOT a standalone resource - it's a library/module imported by other products.
+ *
+ * Usage in other products:
+ *   from otel_instrumentation.common_otel import OTelPlan
+ *
+ *   class MyProduct(OTelPlan):
+ *       def process(self):
+ *           self.start_workflow_span()
+ *           self.enter_exit_log("Starting processing")
+ *           # ... your logic ...
+ *           self.enter_exit_log("Completed processing", "COMPLETED")
+ *           self.end_workflow_span()
+ */
+
+tosca_definitions_version: tosca_simple_profile_for_bp_1_0
+
+metadata:
+  template_name: charter.resourceTypes.OTelInstrumentation
+  template_author: Derrick Golden
+  template_version: 1.0.0
+
+description: OpenTelemetry instrumentation library for MDSO scriptplan
+
+resource_types:
+  charter.resourceTypes.OTelInstrumentation:
+    derived_from: tosca.resourceTypes.Abstract
+    description: >
+      OpenTelemetry instrumentation library that provides:
+      - Drop-in replacement for splunk_logger_setup()
+      - OTel SDK span emission via enter_exit_log()
+      - Structured logging with correlation keys
+      - W3C Trace Context propagation
+
+    properties:
+      otel_exporter_endpoint:
+        type: string
+        description: OTel Collector endpoint URL
+        default: http://159.56.4.94:55681
+        required: false
+
+      otel_service_name:
+        type: string
+        description: Service name for OTel resource attributes
+        default: mdso-scriptplan
+        required: false
+
+      otel_deployment_env:
+        type: string
+        description: Deployment environment (dev/staging/prod)
+        default: dev
+        required: false
+
+      otel_enabled:
+        type: boolean
+        description: Enable/disable OTel instrumentation
+        default: true
+        required: false
+
+      log_level:
+        type: string
+        description: Log level (DEBUG/INFO/WARN/ERROR)
+        default: INFO
+        required: false
+
+    capabilities:
+      instrumentation:
+        type: tosca.capabilities.Node
+        description: Provides OTel instrumentation to other products
+
+    artifacts:
+      implementation:
+        type: tosca.artifacts.Implementation.Python
+        file: scripts/otel_instrumentation/common_otel.py
+
+      utility:
+        type: tosca.artifacts.Implementation.Python
+        file: scripts/otel_instrumentation/instrumentation.py
+
+topology_template:
+  description: OTel Instrumentation Library Product
+
+  node_templates:
+    otel_instrumentation:
+      type: charter.resourceTypes.OTelInstrumentation
+      description: OTel instrumentation library instance
+
+      properties:
+        otel_exporter_endpoint: { get_input: otel_exporter_endpoint }
+        otel_service_name: { get_input: otel_service_name }
+        otel_deployment_env: { get_input: otel_deployment_env }
+        otel_enabled: { get_input: otel_enabled }
+        log_level: { get_input: log_level }
+
+  inputs:
+    otel_exporter_endpoint:
+      type: string
+      description: OTel Collector endpoint
+      default: http://159.56.4.94:55681
+
+    otel_service_name:
+      type: string
+      description: Service name
+      default: mdso-scriptplan
+
+    otel_deployment_env:
+      type: string
+      description: Environment (dev/staging/prod)
+      default: dev
+
+    otel_enabled:
+      type: boolean
+      description: Enable OTel
+      default: true
+
+    log_level:
+      type: string
+      description: Log level
+      default: INFO
+
+  outputs:
+    instrumentation_version:
+      description: OTel instrumentation version
+      value: 1.0.0
