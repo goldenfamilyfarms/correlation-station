@@ -1,0 +1,184 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "ENE Data"
+package     = charter
+version     = "1.0"
+description = """Template for holding data that is important / sensitive / subject to change"""
+authors     = [ "George Strauch (george.strauch@charter.com)" ]
+
+imports {
+    root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+    ENEData {
+        derivedFrom = [ root ]
+        title = ENE Product Data
+        description = """ENE data"""
+        properties {
+            FORTICARE_API_ID {
+                title = "Forticare API ID"
+                description = "Forticare API ID"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICARE_API_PASSWORD {
+                title = "Forticare API password"
+                description = "Forticare API password"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICARE_CLIENT_ID {
+                title = "Forticare Client ID"
+                description = "Forticare Client ID"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_API_ID {
+                title = "Forticloud API ID"
+                description = "Forticloud API ID"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_API_PASSWORD {
+                title = "Forticloud API Password"
+                description = "Forticloud API Password"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_CLIENT_ID {
+                title = "Forticloud Client ID"
+                description = "Forticloud Client ID"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_ACCOUNT {
+                title = "Forticloud Account"
+                description = "Forticloud Account"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_USERNAME {
+                title = "Forticloud Username"
+                description = "Forticloud Username"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTICLOUD_PASSWORD {
+                title = "Forticloud Password"
+                description = "Forticloud Password"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_ADMIN_PW_FIELD {
+                title = "Fortigate Field Password"
+                description = "Fortigate admin password for field installs"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_ADMIN_PW_STAGING {
+                title = "Fortigate Staging Password"
+                description = "Fortigate admin password for staging installs"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_PW {
+                title = "Fortigate password"
+                description = "Final password the user will use to log in"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_USERNAME {
+                title = "Fortigate Username"
+                description = "Username the user will login with"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_PASSWORD_HASH {
+                title = "Fortigate password hash"
+                description = "Hash of the production password"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+            FORTIGATE_FIRMWARE {
+                title = "target firmware version"
+                description = "approved firmware version"
+                type = string
+                optional = false
+                obfuscate = false
+                updatable = true
+                default = "7.2.7"
+            }
+            MDSO_PUBLIC {
+                title = "MDSO source IP addresses"
+                description = "MDSO source IP addresses"
+                type = array
+                optional = false
+                obfuscate = true
+                updatable = true
+                default = [
+                    "50.84.225.0 255.255.255.0",
+                    "24.142.178.0 255.255.255.0",
+                    "67.53.231.0 255.255.255.0",
+                    "47.43.111.0 255.255.255.0"
+                ]
+            }
+            configurations {
+                title = "Configuration"
+                description = "Common and dynamic information that is not sensitive and does not need to be obfuscated"
+                type = object
+                optional = false
+                updatable = true
+
+            }
+        }
+    }
+}
+
+serviceTemplates {
+  ENEData {
+    title = "ENEData Data Template"
+    description = "Default implementation"
+    implements = charter.resourceTypes.ENEData
+        plans {
+            activate {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+                }
+
+            update {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+                }
+        }
+    }
+}

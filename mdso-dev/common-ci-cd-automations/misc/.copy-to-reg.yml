@@ -1,0 +1,54 @@
+# Copy to reg
+
+# Copy any solution to registry.blueplanet.com
+.copy-any-to-reg:
+  variables:
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
+  stage: .post
+  tags:
+    - ciena
+  except:
+    - schedules
+  image: registry.blueplanet.com/blueplanet/devtools/common-ci-cd-automations/misc-python-image:latest
+  dependencies: []
+  script:
+    - >
+      if [[ -z "$SOL_NAME" || -z "$DESTINATION" ]]; then
+      echo "Please set the SOL_NAME & DESTINATION variables for this job" &&  false;
+      else echo "Copying $SOL_NAME to $DESTINATION"; fi
+    - sshpass -e ssh -o StrictHostKeyChecking=no bpadmin@$PUSHER_HOST \
+      "sudo solman \"solution_download artifactory.ciena.com.blueplanet.$SOL_NAME\""
+    - sshpass -e ssh -o StrictHostKeyChecking=no bpadmin@$PUSHER_HOST \
+      "sudo copy_to_registry -r $DESTINATION -s artifactory.ciena.com/blueplanet/solution-$SOL_NAME --push"
+  when: manual
+
+# Copy the solution of this project
+.copy-sol-to-reg:
+  extends: .copy-any-to-reg
+  before_script:
+    - source auto_build_set_env
+    - source get_image_tag
+    - export SOL_NAME=${PROJECT_NAME//-/_}:$IMAGE_TAG
+  only:
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+    changes:
+      - version.json
+  needs:
+    - build-solution
+  when: delayed
+  start_in: 2 min
+
+# Copy the solution built in MRs to registry of choice
+.copy-mr-sol-to-reg:
+  extends: .copy-any-to-reg
+  before_script:
+    - source auto_build_set_env
+    - source get_image_tag
+    - export SOL_NAME=${PROJECT_NAME//-/_}:$IMAGE_TAG
+  only:
+    - merge_requests
+  needs:
+    - mr-build-solution
+  when: manual

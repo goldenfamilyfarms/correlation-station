@@ -1,0 +1,82 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "FIA Provisioner"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Fia Provisioner that gets called to
+provision FIA service on PE devices.
+"""
+authors     = [ "Sahil Sidhar (ssidhar@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    ServiceProvisioner_FIA {
+        derivedFrom = charter.resourceTypes.ServiceProvisioner
+        title = FIA Service Provisioner
+        description = """
+        - Extended from charter.resourceTypes.PeProvisioner 
+        - This resource will translate the circuit details object information into the 
+        FIA service and call the FIA service module in MEF layer
+        """
+
+        properties {
+            operation {
+                description = "Operation"
+                type = string
+                optional = true
+                default = "ACTIVATE"
+                enum = ["ACTIVATE",
+                        "UPDATE",
+                        "TERMINATE",
+                        "MAP"]
+            }
+            bandwidthValue {
+                title = optional bandwidth value
+                description = """optional parameter to update bandwidth
+                              """
+                type = string
+                optional = true
+            }
+        }
+    }
+    
+    FiaProvisioner {
+        derivedFrom = charter.resourceTypes.ServiceProvisioner
+        title = FIA Provisioner
+        description = """
+        - DEPRECATED.  This is only there for backwards compatibility
+        """
+
+        properties {
+        }
+    }
+}
+
+serviceTemplates {
+
+    ServiceProvisioner_FIA {
+        title = FIA Service Provisioner
+        description = "Fia Service Provisioner"
+        implements = charter.resourceTypes.ServiceProvisioner_FIA
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.servicefiaprovisioner.Activate"
+            }
+            
+        }
+    }
+    
+    FiaProvisioner {
+        title = Fia Provisioner
+        description = "DEPRICATED"
+        implements = charter.resourceTypes.FiaProvisioner
+        
+    }
+}

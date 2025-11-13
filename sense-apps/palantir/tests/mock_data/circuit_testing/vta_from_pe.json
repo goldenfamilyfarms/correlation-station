@@ -1,0 +1,27 @@
+[
+    {
+        "test_circ_inst":2175025,
+        "test_circ_id":"31001.GE10.AUSDTXIR6CW.CHCGILDTS6W",
+        "test_circ_status":"Live",
+        "test_equip_inst":1558393,
+        "pe_tid":"AUSDTXIR6CW",
+        "test_tid":"CHCGILDTS6W",
+        "test_fqdn":"CHCGILDTS6W.CHTRSE.COM",
+        "test_ip":"10.10.148.3/24",
+        "test_equip_status":"Live",
+        "test_equip_vendor":"JUNIPER",
+        "test_equip_model":"NFX250-S1"},
+    {
+        "test_circ_inst":2175027,
+        "test_circ_id":"31001.GE1.AUSDTXIR6CW.CHCGILDTS6W",
+        "test_circ_status":"Live",
+        "test_equip_inst":1558393,
+        "pe_tid":"AUSDTXIR6CW",
+        "test_tid":"CHCGILDTS6W",
+        "test_fqdn":"CHCGILDTS6W.CHTRSE.COM",
+        "test_ip":"10.10.148.3/24",
+        "test_equip_status":"Live",
+        "test_equip_vendor":"JUNIPER",
+        "test_equip_model":"NFX250-S1"
+    }
+]

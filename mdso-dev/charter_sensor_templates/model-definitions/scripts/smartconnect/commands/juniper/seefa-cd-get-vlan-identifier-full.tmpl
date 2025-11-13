@@ -1,0 +1,16 @@
+<rpc>
+<get-config>
+<source><running/></source>
+<filter type="subtree">
+<configuration>
+    <vlans>
+        <vlan>
+            {% if vlan %}
+            <name>{{ vlan }}</name>
+            {% endif %}
+        </vlan>
+    </vlans>
+</configuration>
+</filter>
+</get-config>
+</rpc>

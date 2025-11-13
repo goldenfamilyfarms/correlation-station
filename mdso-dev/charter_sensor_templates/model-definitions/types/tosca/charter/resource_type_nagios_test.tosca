@@ -1,0 +1,158 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Nagios Test"
+package     = nagios
+version     = "1.0"
+description = """
+
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    NagiosTest {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Nagios Test
+        description = """
+         - This document defines a resource for Nagios Tests
+         """
+
+        properties {
+
+             test_name {
+                 title = "Test Name"
+                 description = "Test Name"
+                 type = string
+                 optional = false
+                 updatable = true
+             }
+             
+             test_file {
+                title = "Test File"
+                 description = "File to be executed within the host file system"
+                 type = string
+                 optional = true
+                 updatable = true
+             }
+             
+             retained_history {
+                 title = "Retained History"
+                 description = "Retained History"
+                 type = integer
+                 optional = true
+                 default = 5
+             }
+             
+             test_results {
+                 title = "Test Results"
+                 description = "Test Results"
+                 propertyType = nagios.propertyTypes.CheckResults
+                 config = false
+             }
+             
+             test_result_history {
+                title = "Test Result History"
+                description = "Test Result History"
+                type = array
+                config = false
+                items.propertyType = nagios.propertyTypes.CheckResults
+             }
+        }
+
+        interfaces {
+
+            run_test {
+                title = "Run Test"
+                description = "Run Test"
+                inputs {}
+                outputs {}
+            }
+
+            update_results {
+                title = "Update Results"
+                description = "Update Results"
+                inputs {
+                    results {
+                        title = "Status"
+                        description = "Status"
+                        propertyType = nagios.propertyTypes.CheckResults
+                    } 
+                }
+                outputs {}
+            }
+        }
+    }
+}
+
+propertyTypes {
+    CheckResults {
+        title = Check Results
+        description = """
+         - This document defines a resource for Nagios Checks
+         """
+        type = object
+
+        properties {
+   
+            status {
+                title = "Status"
+                description = "Status"
+                type = string
+                enum = [
+                    "OK",
+                    "WARNING",
+                    "CRITICAL",
+                    "UNKNOWN"
+                ]
+            } 
+            
+            results_message {
+                title = "Results Message"
+                description = "Results Message"
+                type = string
+                optional = true
+            }
+            
+            results {
+                title = "Results"
+                description = "Results"
+                type = object
+            }
+            
+            timestamp {
+                title = "Time Stamp"
+                description = "Time Stamp"
+                type = string
+                optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    NagiosTest {
+        title = Nagios Test
+        description = "Nagios Test"
+        implements = nagios.resourceTypes.NagiosTest
+
+        plans {
+
+            run_test {
+                type = remote
+                language = python
+                path = "scripts.nagiostests.nagiostests.RunTest"
+            }
+            
+            update_results {
+                type = remote
+                language = python
+                path = "scripts.nagiostests.nagiostests.UpdateResults"
+            }
+
+        }
+
+    }
+}

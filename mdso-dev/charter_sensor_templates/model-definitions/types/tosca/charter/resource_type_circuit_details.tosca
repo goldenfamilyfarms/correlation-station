@@ -1,0 +1,997 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Circuit Details"
+package     = charter
+version     = "2.0"
+description = """
+This document defines the the Circuit Details retrieved from Granite.  
+This resource contains info retrieved from Granite about the network service.
+"""
+authors     = [ "Sahil Sidhar (ssidhar@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    CircuitDetails {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Circuit Details
+        description = """
+        - Extended from charter.resourceTypes.BaseResource 
+        - Contains information retrieved from Granite via a microservice.
+        - Created/Updated/Deleted internally, should not be required by any NBI system. 
+        """
+        
+        
+        properties {
+            
+            network_service_resource_id {
+                title = "Network Service Resource ID"
+                description = "Network Service Resource ID"
+                type = string
+                updatable = false
+                optional = true
+            }
+
+            stage {
+                title = "Stage"
+                description = """
+                This provides an indication to the resources what stage of activity the resource is in:
+                PRODUCTION: Resources are being deployed to production.
+                TEST: The orchestration is being done in a test mode
+                DISCOVERY: The orchestration steps are being done based on the discovery
+                """
+                type = string
+                optional = true
+                updatable = false
+                default = "PRODUCTION"
+                enum = [
+                    "PRODUCTION",
+                    "TEST",
+                    "DISCOVERY"
+                ]
+            }
+            customerName {
+                title = "Customer Name"
+                description = "customer name"
+                type = string
+            }
+
+            customerType {
+                title = "Customer Type"
+                description = "customer type"
+                type = string
+            }
+                
+            serviceName {
+                title = "Service Name"
+                description = """
+                This should be same as circuit ID passed     by user
+                """
+                type = string
+            }
+            modelVersion {
+                title = "Model Version"
+                description = "Model Version"
+                type = number
+            }
+
+            serviceType {
+                title = "Service Type"
+                description = """
+                represents the type of service
+                """
+                type = string
+                enum = [
+                     "ELINE",
+                     "ELAN",
+                     "FIA",
+                     "VOICE",
+                     "VIDEO",
+                     "NNI",
+                     "CTBH 4G"
+                ]
+            }
+
+
+            topology {
+                title = "Topology"
+                description = """
+                Topology representation of the Service
+                """
+                type = array
+                updatable = true
+                items {
+                    type = object
+                    updatable = true
+                    properties {
+                        model {
+                            type = string
+                            title = "Topology Model"
+                            description = "Model name for topology details"
+                            enum = [
+                                "ONF_TAPI"
+                            ]
+                        }
+                        version {
+                            type = string
+                            title = "Topology Model Version"
+                            description = "Toplogy Model Version"
+                        }
+                        data {
+                            type = object
+                            updatable = true
+                            properties {
+                                node {
+                                    title = "Nodes"
+                                    type = array
+                                    updatable = true
+                                    description = "All the nodes present in topology"
+                                    items {
+                                        type = object
+                                        updatable = true
+                                        properties {
+                                            uuid {
+                                                type = string
+                                                description = "Node UUID"
+                                                title = "Node Unique Identifier"
+                                            }
+                                            name {
+                                                type = array
+                                                title = "Node Details"
+                                                updatable = true
+                                                items {
+                                                    type = object
+                                                    updatable = true
+                                                    properties {
+                                                        name {
+                                                            type = string
+                                                            title = "Key Name"
+                                                            description = "Key name"
+                                                        }
+                                                        value {
+                                                            type = string
+                                                            title = "Key Value"
+                                                            description = "Key Value"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            ownedNodeEdgePoint {
+                                                title = "List of Termination Points"
+                                                description = """
+                                                              ownedNodeEdgePoint is a port or termination point on the device.
+                                                              It is intended to model the physical connectivity of the device to other devices
+                                                              """
+                                                type = array
+                                                updatable = true
+                                                items {
+                                                    title = "Termination Point"
+                                                    type = object
+                                                    updatable = true
+                                                    properties {
+                                                        layerProtocolName {
+                                                            type = string
+                                                            description = "Layer Protocol"
+                                                            title = "Layer Protocol"
+                                                            default = "ETH"
+                                                            optional = true
+                                                        }
+                                                        linkPortDirection {
+                                                            type = string
+                                                            description = "Port Direction"
+                                                            title = "Port Direction"
+                                                            optional = true
+                                                        }
+                                                        linkPortRole {
+                                                            type = string
+                                                            description = """
+                                                                          Role of the Port
+                                                                          Not used currently,
+                                                                          For future use
+                                                                          """
+                                                            title = "Port Role"
+                                                            optional = true
+                                                        }
+                                                        uuid {
+                                                            type = string
+                                                            description = "Port UUID"
+                                                            title = "Logical and unique name for the port in the network.  Use: NODE-PORT"
+                                                        }
+                                                        name {
+                                                            type = array
+                                                            title = "Termination Point Details"
+                                                            updatable = true
+                                                            items {
+                                                                type = object
+                                                                optional = true
+                                                                updatable = true
+                                                                properties {
+                                                                    name {
+                                                                        type = string
+                                                                        title = "Key Name"
+                                                                        description = "Key name"
+                                                                    }
+                                                                    value {
+                                                                        type = string
+                                                                        title = "Key Value"
+                                                                        description = "Key Value"
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        aggregatedNodeEdgePoint {
+                                                            title = "LAG Port Members"
+                                                            type = array
+                                                            optional = true
+                                                            updatable = true
+                                                            items.type = string
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            aggregatedNodeEdgePoint {
+                                                title = "LAG Port Members"
+                                                type = array
+                                                optional = true
+                                                updatable = true
+                                                items.type = string
+                                            }
+                                        }
+                                    }
+                                }
+                                link {
+                                    type = array
+                                    title = "Connectivity Links"
+                                       optional = true
+                                    updatable = true
+                                    description = "Connectivity Association between Termination Points"
+                                    items {
+                                        type = object
+                                        optional = true
+                                        updatable = true
+                                        properties {
+                                            nodeEdgePoint {
+                                                title = "Link Members"
+                                                description = """
+                                                              Provides the list of ownedNodeEdgePoints that are connected
+                                                              to each other to form a physical link
+                                                              """
+                                                type = array
+                                                items.type = string
+                                            }
+                                            layerProtocolName {
+                                                title = "Link Protocol Name"
+                                                description = "Provides the list of protocols on link"
+                                                type = array
+                                                items.type = string
+                                                optional = true
+                                            }
+                                            direction {
+                                                type = string
+                                                description = "Provides the functionality of link: Unidirectional or bidirectional"
+                                                title = "Link Direction"
+                                                optional = true
+                                            }
+                                            resilienceType {
+                                                type = object
+                                                title = "Resilience Type"
+                                                description = "Resilience type on link"
+                                                optional = true
+                                                properties {
+                                                    protectionType {
+                                                        type = string
+                                                        optional = true
+                                                        title = "Protection Type"
+                                                        description = "Protection Type"
+                                                    }
+                                                }
+                                            }
+                                            name {
+                                                type = array
+                                                title = "Link Details"
+                                                updatable = true
+                                                optional = true
+                                                items {
+                                                    type = object
+                                                    optional = true
+                                                    updatable = true
+                                                    properties {
+                                                        name {
+                                                            type = string
+                                                            title = "Key Name"
+                                                            description = "Key name"
+                                                            optional = true
+                                                        }
+                                                        value {
+                                                            type = string
+                                                            title = "Key Value"
+                                                            description = "Key Value"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            uuid {
+                                                type = string
+                                                title = "Link UUID"
+                                                description = "Link Unique identifier"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            service {
+                title = "Service Details"
+                description = """
+                Service Details
+                """
+                type = array
+                updatable = true
+                items {
+                    type = object
+                    updatable = true
+                    properties {
+                        model {
+                            title = "Service Model"
+                            type = string
+                            description = "Service Model Used for this topology"
+                        }
+                        version {
+                            title = "Service model version"
+                            type = string
+                            description = "Service Model Version"
+                        }
+                        data {
+                            title = "Service Data"
+                            description = "Service Data"
+                            type = object
+                            properties {
+                                evc {
+                                    title = "EVCs"
+                                    type = array
+                                    description = "List of EVCs to be used for this service"
+                                    optional = true
+                                    items {
+                                        type = object
+                                        properties {
+                                            evcId {
+                                                title = "EVC Identifier"
+                                                description = """
+                                                              EVC identifier unique accross CEN
+                                                              mandatory for ELINE and ELAN, optional
+                                                              for FIA
+                                                              """
+                                                type = string
+                                                optional = true
+                                            }
+                                            vplsNetworkId {
+                                                title = "VPLS Network Identifier"
+                                                description = """
+                                                              vplsNetworkId will be configured as the name of the routing-instance
+                                                              itself when adding the first instance to a router. If we are adding
+                                                              to a router where there is already a routing-instance utilizing the evc-id,
+                                                              we will simply add to that routing instance
+                                                              It is mandatory for VPLS-based EP-LAN, EVP-LAN, EP-TREE, and EVP-TREE services.
+                                                              """
+                                                type = string
+                                                optional = true
+                                            }
+                                            vplsVlanId {
+                                                title = "VPLS VLAN Id"
+                                                description = """
+                                                              VLAN-ID to be configured on the routing-instance itself. This is separate and
+                                                              independent from evc.sVlan & evc.endPoints.sVlan.
+                                                              It is mandatory for VPLS-based EP-LAN, EVP-LAN, EP-TREE, and EVP-TREE services.
+                                                              """
+                                                type = string
+                                                optional = true
+                                            }
+                                            cosNames {
+                                                title = "Cos Names"
+                                                description = "CoS Name from the global list, that is used in thisEVC"
+                                                optional = true
+                                                type = array
+                                                items {
+                                                    type = object
+                                                    properties {
+                                                        name {
+                                                            title = "Cos Name"
+                                                            type = string
+                                                            description = "Cos Name"
+                                                        }
+
+                                                    }
+                                                }
+                                            }
+                                            perfTier {
+                                                title = "Performance Tier"
+                                                description = "Performance tier for SLM purposes"
+                                                optional = true
+                                                type = array
+                                                items {
+                                                    type = object
+                                                    properties {
+                                                        name {
+                                                            title = "Performance Tier"
+                                                            type = string
+                                                            description = "SLM performance tier"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            evc-ingress-bwp {
+                                                title = "Ingress Policer"
+                                                description = "Ingress Policer"
+                                                optional = true
+                                                type = string
+                                            }
+                                            evc-egress-bwp {
+                                                title = "Egress Policer"
+                                                description = "egress Policer"
+                                                optional = true
+                                                type = string
+                                            }
+                                            sVlan {
+                                                title = "sVlan"
+                                                description = "sVlan"
+                                                optional = true
+                                                type = string
+                                            }
+                                            msVlan {
+                                                title = "MS VLAN"
+                                                description = "MS VLAN"
+                                                optional = true
+                                                updatable = true
+                                                type = string
+                                            }
+                                            endPoints {
+                                                title  = "EVC ENDPOINTS"
+                                                description = "list of endpoints where VLAN actions are taken"
+                                                type = array
+                                                items {
+                                                    type = object
+                                                    properties {
+                                                        uniId {
+                                                            title = "EVC UUID"
+                                                            description = "Node Port Pair that should match the topology section"
+                                                            type = string
+                                                        }
+                                                        role {
+                                                            title = "EVC EndPoint Role"
+                                                            description = """
+                                                                          The role of the EVC End Point in the EVC.
+                                                                          For point-to-point and multipoint-to-multipoint EVCs, the role is always root.
+                                                                          In a rooted-multipoint EVC, therole may be root or leaf,
+                                                                          to indicate which other EVC End Points this one may communicate with
+                                                                          reference [MEF10.3] Section 8.3. [MEF7.3] Section 7.5.
+                                                                          """
+                                                            type = string
+                                                            optional = true
+                                                            default = "root"
+                                                        }
+                                                        adminState {
+                                                            title = "EVC EndPoint Admin State"
+                                                            description = """
+                                                                          Indicates whether the EVC End Point is administratively locked (if the value is false)
+                                                                          or unlocked (if the value if true).
+                                                                          """
+                                                            type = boolean
+                                                        }
+                                                        colorIdentifier {
+                                                            title = "Service Frames Color Identifier"
+                                                            description = """
+                                                                          The Color Identifier for Service Frames
+                                                                          reference '[MEF10.3] Section 10.3.[MEF7.3] Section 7.4 and Section 7.13
+                                                                          """
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        cosIdentifier {
+                                                            title = "EVC Cos Profile"
+                                                            description = """
+                                                                          Reference to a global CoS Profile that specifies how to assign CoS Names
+                                                                          to ingress frames at this EVC End Point based on fields in the frame.
+                                                                          reference '[MEF10.3] Section 10.2. [MEF7.3] Section 7.11
+                                                                          """
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        eecIdentifier {
+                                                            title = "EVC EEC profile"
+                                                            description = """
+                                                                          Reference to a global EEC Profile that specifies howto assign EEC Names to egress frames
+                                                                          at this EVC EndPoint, based on fields in the frame.
+                                                                          reference '[MEF10.3] Section 10.4. [MEF7.3] Section 7.12
+                                                                          """
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        sourceMacAddressLimit {
+                                                            title = "Source Mac Address limit"
+                                                            description = """
+                                                                          Source MAC Address Limit.
+                                                                          reference '[MEF10.3] Section 10.9. [MEF7.3] Section 7.4
+                                                                          """
+                                                            type = integer
+                                                            optional = true
+                                                        }
+                                                        sourceMacAddressLimitTimeInterval {
+                                                            title = " Source Mac Address limit Time interval"
+                                                            description = """
+                                                                          Source MAC Address Limit Interval.
+                                                                          This value is used when the Source MAC Address Limit hasbeen configured
+                                                                          reference '[MEF10.3] Section 10.9. [MEF7.3] Section 8.1.13
+                                                                          """
+                                                            optional = true
+                                                            type = integer
+                                                        }
+                                                        testMegEnabled {
+                                                            title = "Test MEG Enabled"
+                                                            description = """
+                                                                          Test MEG Enabled / Disabled
+                                                                          reference '[MEF10.3] Section 10.10. [MEF7.3] Section 7.5
+                                                                          """
+                                                            optional = true
+                                                            default = false
+                                                            type = boolean
+                                                        }
+                                                        userLabel {
+                                                            title = "User Label"
+                                                            description = """
+                                                                          User Label
+                                                                          reference '[MEF7.3] Section 7.5
+                                                                          """
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        subscriberMegMipEnabled {
+                                                            title = " Subscriber MEG MIP Enabled"
+                                                            description = """
+                                                                          Subscriber MEG MIP Enabled / Disabled
+                                                                          reference '[MEF10.3] Section 10.11. [MEF7.3] Section 7.5
+                                                                          """
+                                                            type = boolean
+                                                            default = false
+                                                            optional = true
+                                                        }
+                                                        ceVlans {
+                                                            title = "List of CE-VLANS"
+                                                            description = """
+                                                                          The leaf-list of CE-VLAN IDs that map to this EVCEnd Point - that is,
+                                                                          that map to this EVC at theassociated UNI
+                                                                          """
+                                                            type = array
+                                                            optional = true
+                                                            items.type = integer
+                                                        }
+                                                        msVlan {
+                                                            title = "MS VLAN"
+                                                            description = "MS VLAN used through the network"
+                                                            type = string
+                                                            optional = true
+                                                            updatable = true
+                                                        }
+                                                        sVlan {
+                                                            title = "S VLAN"
+                                                            description = "S VLAN used through the network"
+                                                            type = string
+                                                        }
+                                                        sVlanOperation {
+                                                            title = "S VLAN Operation"
+                                                            description = "S VLAN Operation"
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        address {
+                                                            title = "address"
+                                                            description = " address"
+                                                            type = string
+                                                            optional = true
+                                                        }
+                                                        innerVlan {
+                                                            title = "innerVlan"
+                                                            description = "innerVlan"
+                                                            optional = true
+                                                            type = string
+                                                        }
+                                                        outerVlan {
+                                                            title = "outerVlan"
+                                                            description = "outerVlan"
+                                                            optional = true
+                                                            type = string
+                                                        }
+                                                        unit {
+                                                            title = "unit"
+                                                            description = "unit"
+                                                            optional = true
+                                                            type = string
+                                                        }
+                                                        type2 {
+                                                            title = "type2"
+                                                            description = "unit"
+                                                            optional = true
+                                                            type = boolean
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            elanSlm {
+                                                title = "ELAN SLM"
+                                                description = "SLM information for ELAN circuits"
+                                                type = array
+                                                optional = true
+                                                items = {
+                                                    type = object
+                                                    properties {
+                                                        sourceCid {
+                                                            title = "Source CID"
+                                                            description = "Source CID"
+                                                            type = string
+                                                        }
+                                                        sourceMepId {
+                                                            title = "Source MEP ID"
+                                                            description = "Source MEP ID"
+                                                            type = string
+                                                        }
+                                                        destinationMepId {
+                                                            title = "Destination MEP ID"
+                                                            description = "Destination MEP ID"
+                                                            type = string
+                                                        }
+                                                        destinationCid {
+                                                            title = "Destination CID"
+                                                            description = "Destination CID"
+                                                            type = string
+                                                        }
+                                                        sourceId {
+                                                            title = "Source ID"
+                                                            description = "Source ID"
+                                                            type = string
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            elan_slm {
+                                                title = "ELAN SLM"
+                                                description = "SLM information for ELAN circuits - Deprecated"
+                                                type = array
+                                                optional = true
+                                                items = {
+                                                    type = object
+                                                    properties {
+                                                        source_cid {
+                                                            title = "Source CID"
+                                                            description = "Source CID - Deprecated"
+                                                            type = string
+                                                        }
+                                                        source_mep_id {
+                                                            title = "Source MEP ID"
+                                                            description = "Source MEP ID - Deprecated"
+                                                            type = string
+                                                        }
+                                                        destination_mep_id {
+                                                            title = "Destination MEP ID"
+                                                            description = "Destination MEP ID - Deprecated"
+                                                            type = string
+                                                        }
+                                                        destination_cid {
+                                                            title = "Destination CID"
+                                                            description = "Destination CID - Deprecated"
+                                                            type = string
+                                                        }
+                                                        source_id {
+                                                            title = "Source ID"
+                                                            description = "Source ID - Deprecated"
+                                                            type = string
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            connectionType {
+                                                title = "EVC Connection type"
+                                                description = """
+                                                              This EVC attribute describes the EVC as either multipointToMultipoint, pointToPoint, or rootedMultipoint
+                                                              reference '[MEF10.3] Section 8.1, [MEF7.3] Section 7.1
+                                                              """
+                                                type = string
+                                            }
+                                            adminState {
+                                                title = "EVC admin state"
+                                                description = """
+                                                              Indicates whether the EVC is administratively locked (ifthe value is false) or unlocked (if the value is true)
+                                                              reference '[MEF7.3] Section 7.1
+                                                              """
+                                                type = boolean
+                                            }
+                                            userLabel {
+                                                title = "EVC user label"
+                                                description =  "Circuit ID"
+                                                type = string
+                                            }
+                                            maxFrameSize {
+                                                title = "Max Frame Size"
+                                                description = """
+                                                              EVC Maximum Frame Size in bytes
+                                                              reference '[MEF10.3] Section 8.9. [MEF7.3] Section 7.1
+                                                              """
+                                                type = integer
+                                                optional = true
+                                                default = 1522
+                                            }
+                                            maxNumOfEvcEndPoint {
+                                                title = "Max Evc EndPoints"
+                                                description = """
+                                                              The Maximum Number of UNIs this EVC can be configuredfor.
+                                                              If EVC Type is Multipoint-to-Multipoint orRooted-Multipoint, the max-num-of-evc-end-point valuemust be at least 3.
+                                                              This value must be 2 for point-to-point mode
+                                                              reference '[MEF10.3] Section 8.4, [MEF7.3] Section 7.2
+                                                              value must be 1 for FIA
+                                                              """
+                                                type = integer
+                                            }
+                                            ceVlanIdPreservation {
+                                                title = "Preserve CE VLAN"
+                                                description = """
+                                                              Preserve CE-VLAN ID
+                                                              reference '[MEF10.3] Section 8.6.1, [MEF7.3] Section 7.2
+                                                              """
+                                                type = boolean
+                                                optional = true
+                                            }
+                                            ceVlanPcpPreservation {
+                                                title = "Preserve CE VLAN PCP bits"
+                                                description = """
+                                                              Enables CE-VLAN PCP (CoS) preservation for the EVC
+                                                              reference '[MEF10.3] Section 8.6.2, [MEF7.3] Section 7.1
+                                                              """
+                                                type = boolean
+                                                optional = true
+                                            }
+                                            ceVlanDeiPreservation {
+                                                title = "Preserve CE VLAN DEI bits"
+                                                description = """
+                                                              Enables CE-VLAN DEI preservation for the EVC.When this is enabled,
+                                                              if a C-tagged ingress Service frameresults in a C-tagged egress Service frame,
+                                                              the DEI bitin the egress frame has the same value as the DEI bit inthe ingress frame
+                                                              reference '[MEF7.3] Section 7.1
+                                                              """
+                                                type = boolean
+                                                optional = true
+                                            }
+                                            unicastFrameDelivery {
+                                                title = "Unicast Frame Delivery"
+                                                description = """
+                                                              Unicast Data Service Frame Delivery Mode(unconditional[default], conditional, or discard)
+                                                              reference '[MEF10.3] Section 8.5.2, [MEF7.3] Section 7.1
+                                                              """
+                                                type = string
+                                                optional = true
+                                                default = "unconditional"
+                                            }
+                                            multicastFrameDelivery {
+                                                title = "Multicast Frame Delivery"
+                                                description = """
+                                                              Multicast Data Service Frame Delivery Mode (unconditional[default], conditional, or discard)
+                                                              reference '[MEF10.3] Section 8.5.2, [MEF7.3] Section 7.1
+                                                              """
+                                                type = string
+                                                optional = true
+                                                default = "unconditional"
+                                            }
+                                            broadcastFrameDelivery {
+                                                title = "Broadcast Frame Delivery"
+                                                description = """
+                                                              Broadcast Data Service Frame Delivery Mode(unconditional[default], conditional, or discard)
+                                                              reference '[MEF10.3] Section 8.5.2, [MEF7.3] Section 7.1
+                                                              """
+                                                type = string
+                                                optional = true
+                                                default = "unconditional"
+                                            }
+                                            serviceType {
+                                                title = "MEF service type"
+                                                description = """
+                                                              The MEF Service Type. This is one of the types of service defined in MEF 6.2,
+                                                              or the value 'other' to indicate that this service does not conform to any of the types definedin MEF 6.2.
+                                                              The six types defined in MEF 6.2 are EPL,EVPL, EP-LAN, EVP-LAN, EP-Tree and EVP-Tree.
+                                                              """
+                                                type = string
+                                                enum = [
+                                                     "EPL",
+                                                     "EVPL",
+                                                     "EP-LAN",
+                                                     "EVP-LAN",
+                                                     "EP-Tree",
+                                                     "EVP-Tree",
+                                                     "IP",
+                                                     "RPHY",
+                                                     "NNI"
+                                                       ]
+                                            }
+                                        }
+                                    }
+                                }
+                                fia {
+                                    title = "FIA"
+                                    type = array
+                                    description = "FIA INFORMATION"
+                                    optional = true
+                                    items {
+                                        type = object
+                                        properties {
+                                            type {
+                                                title = "FIA TYPE"
+                                                type = string
+                                                description = "FIA TYPE"
+                                                enum = [
+                                                     "DIRECT",
+                                                     "STATIC",
+                                                     "BGP"
+                                                       ]
+                                            }
+                                            endPoints {
+                                                title = "FIA ENDPOINTS"
+                                                type = array
+                                                description = "FIA END POINTS"
+                                                items {
+                                                    type = object
+                                                    properties {
+                                                        uniId {
+                                                            type = string
+                                                            title = "UNI ID"
+                                                            description = "UNI NODE-PORT"
+                                                        }
+                                                        lanIpv4Addresses {
+                                                            type = array
+                                                            optional = true
+                                                            title = "LAN IPV4 ADDRESSES"
+                                                            description = "LAN IPV4 ADDRESSES"
+                                                            items.type = string
+                                                        }
+                                                        lanIpv6Addresses {
+                                                            type = array
+                                                            optional = true
+                                                            title = "FIA IPV6 ADDRESSES"
+                                                            description = "FIA IPV6 ADDRESSES"
+                                                            items.type = string
+                                                        }
+                                                        wanIpv4Address {
+                                                            type = string
+                                                            optional = true
+                                                            title = "WAN IPv4 ADDRESS"
+                                                            description = "WAN IPv4 ADDRESS"
+                                                        }
+                                                        wanIpv6Address {
+                                                            type = string
+                                                            optional = true
+                                                            title = "WAN IPv6 ADDRESS"
+                                                            description = "WAN IPv6 ADDRESS"
+                                                        }
+                                                        nextIpv4Hop {
+                                                            type = string
+                                                            title = "Next Hop IPv4 ADDRESS"
+                                                            description = "Next Hop IPv4 ADDRESS"
+                                                            optional = true
+                                                        }
+                                                        nextIpv6Hop {
+                                                            type = string
+                                                            title = "Next Hop IPv6 ADDRESS"
+                                                            description = "Next Hop IPv6 ADDRESS"
+                                                            optional = true
+                                                        }
+                                                        ipv4ArpPolicer {
+                                                            type = string
+                                                            title = "IPV4 ARP Policer"
+                                                            description = "IPV4 ARP Policer"
+                                                            optional = true
+                                                        }
+                                                        firewallFilters {
+                                                            type = array
+                                                            title = "Firewall Filters"
+                                                            description = "FIA Firewall Filters"
+                                                            optional = true
+                                                            items {
+                                                                type = object
+                                                                properties {
+                                                                    name {
+                                                                        type = string
+                                                                        title = "Firewall Filter Name"
+                                                                        description = "Firewall Filter Name"
+                                                                        optional = true
+                                                                    }
+                                                                    direction {
+                                                                        type = string
+                                                                        title = "Firewall Filter Direction"
+                                                                        description = "Firewall Filter Direction"
+                                                                        optional = true
+                                                                    }
+                                                                    type {
+                                                                        type = string
+                                                                        title = "Firewall Filter Type"
+                                                                        description = "Firewall Filter Type"
+                                                                        optional = true
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                elan {
+                                    title = "ELAN"
+                                    description = "ELAN INFORMATION"
+                                    optional = true
+                                    type = array
+                                    items {
+                                        type = object
+                                        properties {
+                                            asNumber {
+                                                title = "ASN Number"
+                                                type = integer
+                                                description = "AS Number"
+                                            }
+                                            vrfId {
+                                                title = "VRF Id"
+                                                type = string
+                                                description = "VRF"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            devices_to_onboard {
+                title = "Devices to Onboard"
+                description = "List of devices to on-board"
+                type = array
+                optional = true
+                updatable = true
+                items.type = string
+            }
+        }
+
+        requirements {
+
+        }
+
+        capabilities {
+
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    CircuitDetails {
+        title = Circuit Details
+        description = "Circuit Details"
+        implements = charter.resourceTypes.CircuitDetails
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

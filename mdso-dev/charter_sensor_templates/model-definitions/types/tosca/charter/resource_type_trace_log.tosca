@@ -1,0 +1,187 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Trace Log"
+package     = tosca
+version     = "1.0"
+description = """
+This document defines a resource that can be used to log and track the orchestration activities
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    TraceLog {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Trace Log
+        description = """
+         - 
+         """
+
+        properties {
+            
+            trace_id {
+                title = "Trace ID"
+                description = "Trace ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            
+            origination_id {
+                title = "Origination ID"
+                description = "Resource ID that originated the start"
+                type = string
+                optional = true
+            }
+            
+            user_name {
+                title = "User Name"
+                description = "User Name"
+                type = string
+                optional = false
+                updatable = false
+            }
+            
+            operation {
+                title = "Operation"
+                description = "Operation"
+                type = string
+                optional = false
+                updatable = false
+            }
+            
+            circuit_name {
+                title = "Circuit Name"
+                description = "Circuit Name"
+                type = string
+                optional = false
+                updatable = false
+            }
+            
+            start_time_sec {
+                title = "Start Time (s)"
+                description = "Start Time"
+                type = integer
+                optional = false
+                updatable = false
+            }
+ 
+ 
+            orchestration_trace {
+                title = "Orchestration Traces"
+                description = "Orchestration Traces"
+                type = array
+                optional = false
+                updatable = true
+                items = {
+                    type = object
+                    properties {
+                    
+                        timestamp {
+                            title = "timestamp"
+                            description = "timestamp"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        resource_type {
+                            title = "Resource Type"
+                            description = "Resource Type"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        resource_id {
+                            title = "Resource Type"
+                            description = "Resource Type"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        process {
+                            title = "Process"
+                            description = "Process"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        state {
+                            title = "State"
+                            description = "State"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        log_file {
+                            title = "Log File"
+                            description = "Log File"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        message {
+                            title = "Message"
+                            description = "Message"
+                            type = string
+                            optional = false
+                            updatable = false
+                        }
+                        
+                        elapsed_time {
+                            title = "Elapsed Time"
+                            description = "Elapsed Time"
+                            type = integer
+                            default = 0
+                            optional = true
+                            updatable = false
+                        }
+
+                        categorized_error {
+                            title = "categorized_error"
+                            description = "categorized_error"
+                            type = string
+                            optional = true
+                            updatable = false
+                        }
+
+                        resource_name {
+                            title = "Resource Name"
+                            description = "Resource Name"
+                            type = string
+                            optional = true
+                            updatable = false
+                        }
+                    }
+                }
+            }
+    
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    TraceLog {
+        title = Trace Log
+        description = "Trace Log"
+        implements = tosca.resourceTypes.TraceLog
+        
+    }
+}

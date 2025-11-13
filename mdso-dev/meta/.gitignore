@@ -1,0 +1,14 @@
+venv
+.vscode
+setup.cfg
+files/~$*
+files/
+.DS_Store
+deleteme*
+__pycache__
+report*.csv
+.archive
+*.log
+*.csv
+ignore_folder/
+daily_service_mapper_logs/

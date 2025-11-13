@@ -1,0 +1,292 @@
+# To use Kickoff Test need to have an EnV variable set in the build SolutionGrep
+# as an example https://git.blueplanet.com/southern-cross/bp-sccn-solution/-/settings/ci_cd
+#SolutionGrep sccn
+# Also to run the kickoff Test you need to add this env variable in yoru avi_schedule
+#KickoffTest True
+# https://git.blueplanet.com/southern-cross/bp-sccn-solution/pipeline_schedules/34/edit
+
+variables:
+  #CI_DEBUG_TRACE: "true"
+
+stages:
+  - SanityTest
+  - ManualTest
+  - ScheduledTest
+  - KickoffTest
+  
+# ---------------------------------------------------------------------------
+.functional_test_functions: &functional_test_functions |
+  function check_bpocore(){
+    while [ $( bpocore ping ) != "up" ]; do
+      echo "Waiting for bpocore to come up"
+      sleep 20
+    done
+  }
+  function check_location(){
+    solman sps
+    pwd
+    ls
+  }
+
+  function wait_seconds {
+    secs=$1
+    echo "Waiting $secs seconds"
+    while [ $secs -gt 0 ]; do
+      echo -ne "$secs\033[0K\r"
+      sleep 5
+      secs="$(($secs-5))"
+    done
+  }
+
+  function get_image_tag {
+    if [[ $CI_COMMIT_REF_NAME == $MAIN_BRANCH ]]; then
+      echo "Not Setting Tag as is master Branch" 
+      export IMAGE_TAG=$PROJECT_VERSION_TAG
+    elif [[ $CI_COMMIT_REF_NAME == master ]]; then
+      echo "Not Setting Tag as is master"
+      export IMAGE_TAG=$PROJECT_VERSION_TAG
+    elif  [[ $CI_COMMIT_REF_NAME == release/* ]]; then
+      echo "Setting Tag as Release"
+      export IMAGE_TAG=${CI_COMMIT_REF_NAME#release/}.$PROJECT_VERSION_TAG
+    else
+      echo "Not in if Statements"
+      export IMAGE_TAG=$CI_COMMIT_REF_NAME.$PROJECT_VERSION_TAG
+    fi
+    echo Image tag= $IMAGE_TAG
+    #Remove dashes and replace with underscores
+    modPROJECT_NAME="${PROJECT_NAME//[-]/_}"
+    echo "Project Name Modification $modPROJECT_NAME"
+    export SOLUTION_NAME=$REGISTRY_NAME.$VENDOR_NAME.$modPROJECT_NAME:$IMAGE_TAG
+    printenv
+    echo $SOLUTION_NAME
+  }
+
+   function run_manual_docker_tests() {
+    PostmanEnviornment=$1
+    TestSuite=$2
+    echo "Postman ENV"
+    echo "testsuite $TestSuite Env $PostmanEnviornment"
+    cat $CI_PROJECT_DIR/postman/$PostmanEnviornment
+
+    echo "Posmant TestSuite"
+    cat $CI_PROJECT_DIR/postman/$TestSuite
+
+    echo "Running docker run -i -v $CI_PROJECT_DIR/postman:/test/postman \
+      -v $CI_PROJECT_DIR/postman/$PostmanEnviornment:/test/env \
+      -v $CI_PROJECT_DIR/postman/$TestSuite:/test/test-suite \
+      -v $CI_PROJECT_DIR/artifacts:/target \
+      --net=host artifactory.ciena.com/blueplanet/bp-tat-test-runner:2.13.1 \
+      -i 111"
+
+    docker run -i -v $CI_PROJECT_DIR/postman:/test/postman \
+      -v $CI_PROJECT_DIR/postman/$PostmanEnviornment:/test/env \
+      -v $CI_PROJECT_DIR/postman/$TestSuite:/test/test-suite \
+      -v $CI_PROJECT_DIR/artifacts:/target \
+      --net=host artifactory.ciena.com/blueplanet/bp-tat-test-runner:2.13.1 \
+      -i 111
+  }
+  function run_docker_tests() {
+    PostmanEnviornment=$1
+    TestSuite=$2
+    echo "Postman ENV"
+    cat ~/$CI_PROJECT_DIR/postman/$PostmanEnviornment
+
+    echo "Posmant TestSuite"
+    cat ~/$CI_PROJECT_DIR/postman/$TestSuite
+
+    echo "Running docker run -i -v ~/$CI_PROJECT_DIR/postman:/test/postman \
+      -v ~/$CI_PROJECT_DIR/postman/$PostmanEnviornment:/test/env \
+      -v ~/$CI_PROJECT_DIR/postman/$TestSuite:/test/test-suite \
+      -v ~/$CI_PROJECT_DIR/artifacts:/target \
+      --net=host artifactory.ciena.com/blueplanet/bp-tat-test-runner:2.13.1 \
+      -i 111"
+
+    docker run -i -v ~/$CI_PROJECT_DIR/postman:/test/postman \
+      -v ~/$CI_PROJECT_DIR/postman/$PostmanEnviornment:/test/env \
+      -v ~/$CI_PROJECT_DIR/postman/$TestSuite:/test/test-suite \
+      -v ~/$CI_PROJECT_DIR/artifacts:/target \
+      --net=host artifactory.ciena.com/blueplanet/bp-tat-test-runner:2.13.1 \
+      -i 111
+  }
+
+
+  function set_env_vars() {
+    export PROJECT_VERSION=$(cat version.json | jq -r .version)
+    export PROJECT_TAG=$(cat version.json | jq -r .tag)
+    [ -z "$PROJECT_TAG" ] && export PROJECT_VERSION_TAG=$PROJECT_VERSION || export PROJECT_VERSION_TAG=$PROJECT_VERSION-$PROJECT_TAG
+    export PROJECT_NAME=$(cat version.json | jq -r .name)
+    export REGISTRY_NAME=$(cat version.json | jq -r .registry)
+    export VENDOR_NAME=$(cat version.json | jq -r .vendor)
+    export PROJECT_PATH=$VENDOR_NAME/$PROJECT_NAME
+    export REGISTRY_IMAGE=$REGISTRY_NAME/$PROJECT_PATH
+    export PYPI_VERSION=$(cat version.json | jq -r .pypi.version)
+  }
+
+
+
+  function break_point() {
+    tail -f /dev/null
+  }
+  
+  function break_point1() {
+    if [ "$integration_debug" = "true" ];then tail -f /dev/null;else echo "no debug";fi
+  }
+
+  
+SanityTest:
+  stage: SanityTest
+  tags:
+    - eval
+  except:
+    refs:
+      - schedules
+    changes:
+      - README.md
+      - postman/*
+      - artifacts/
+  before_script:
+    - *functional_test_functions      
+  script:
+    - echo "Sanity Test"
+    - mkdir artifacts
+    - docker ps
+    - ls
+    - sudo apt-get -y install jq
+    - sudo apt-get -y install tree
+    - export PYTHONWARNINGS="ignore"
+    - check_bpocore
+    - check_location
+    - set_env_vars
+    - get_image_tag
+    - bpocore ping
+    - solman "solution_deploy $SOLUTION_NAME --timeout=80000"
+    - wait_seconds 120
+    - docker run -id --name=bp2TestService1 --net=host artifactory.ciena.com/blueplanet/bp-tat-test-service:2.3.2
+    - run_docker_tests gitLabSanity.postman_environment testSuiteSanity.json
+  after_script:
+    - echo "In AfterSCript"
+    - pwd
+    - mkdir logs
+    - ls
+    - cp /bp2/bpocore_*/log/bpocore.log ~/$CI_PROJECT_DIR/logs/bpocore.log
+    - cp -r /bp2/scriptplan*/log/plan-log/ ~/$CI_PROJECT_DIR/logs
+    - ls ~/$CI_PROJECT_DIR/artifacts
+    - tree ~/$CI_PROJECT_DIR  
+  artifacts:
+    paths:
+      - artifacts/
+      - logs/
+    when: always
+    expire_in: 1 week
+
+ManualTest:
+  stage: ManualTest
+  tags:
+    - ManualTest
+  except:
+    - schedules
+  before_script:
+    - *functional_test_functions     
+  script:
+    - echo "Manually Test"
+    - solman sps
+    - docker run -id --name=bp2TestService --net=host artifactory.ciena.com/blueplanet/bp-tat-test-service:2.3.2
+    - run_manual_docker_tests gitLabManual.postman_environment testSuiteManual.json
+  when: manual
+  artifacts:
+    paths:
+      - artifacts/
+    when: always
+    expire_in: 1 week
+  after_script:
+    - echo "In AfterSCript"
+    - docker stop bp2TestService
+    - docker rm bp2TestService
+
+
+  
+ScheduledTest:
+  stage: ScheduledTest
+  only:
+    - schedules
+  tags:
+    - eval
+  before_script:
+    - *functional_test_functions     
+  script:
+    - echo "Scheduled Test"
+    - docker ps
+    - mkdir artifacts
+    - ls
+    - sudo apt-get -y install jq
+    - sudo apt-get -y install tree
+    - export PYTHONWARNINGS="ignore"
+    - check_bpocore
+    - check_location
+    - set_env_vars
+    - get_image_tag
+    - bpocore ping
+    - solman "solution_deploy $SOLUTION_NAME --timeout=80000"
+    - wait_seconds 120
+    - docker run -id --name=bp2TestService --net=host artifactory.ciena.com/blueplanet/bp-tat-test-service:2.3.2
+    - run_docker_tests gitLabScheduled.postman_environment testSuiteScheduled.json
+  after_script:
+    - echo "In AfterSCript"
+    - pwd
+    - ls
+    - mkdir logs
+    - cp /bp2/bpocore_*/log/bpocore.log ~/$CI_PROJECT_DIR/logs/bpocore.log
+    - cp -r /bp2/scriptplan*/log/plan-log/ ~/$CI_PROJECT_DIR/logs
+    - ls ~/$CI_PROJECT_DIR/artifacts
+    - tree ~/$CI_PROJECT_DIR  
+  artifacts:
+    paths:
+      - artifacts/
+      - logs/
+    when: always
+    expire_in: 1 week
+
+
+.KickoffTest:
+  stage: KickoffTest
+  only:
+    variables:
+      - $KickoffTest
+  tags:
+    - ManualTest
+  before_script:
+    - *functional_test_functions
+  script:
+    - echo "Kickoff Test"
+    - docker ps
+    - mkdir artifacts
+    - ls
+    - check_location
+    - set_env_vars
+    - get_image_tag
+    - echo $SolutionGrep
+    - solutionUndeploy=$(solman sps | egrep "^[a-z]" | grep $SolutionGrep)
+    - echo $solutionUndeploy
+    - solman "solution_undeploy --hard -y $solutionUndeploy"
+    - echo $SOLUTION_NAME
+    - solman "solution_deploy $SOLUTION_NAME --timeout=80000"
+    - wait_seconds 120
+    - docker run -id --name=bp2TestService --net=host artifactory.ciena.com/blueplanet/bp-tat-test-service:2.3.2
+    - run_manual_docker_tests gitLabKickoff.postman_environment testSuiteKickoff.json
+  after_script:
+    - echo "In AfterSCript"
+    - pwd
+    - ls
+    - ls $CI_PROJECT_DIR/artifacts
+    - tree $CI_PROJECT_DIR  
+    - docker stop bp2TestService
+    - docker rm bp2TestService
+  artifacts:
+    paths:
+      - artifacts/
+      - logs/
+    when: always
+    expire_in: 1 week
+  
+    
+

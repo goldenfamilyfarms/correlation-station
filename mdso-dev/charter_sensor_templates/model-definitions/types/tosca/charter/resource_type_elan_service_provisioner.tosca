@@ -1,0 +1,63 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "ELAN Service Provisioner"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Service Provisioner that gets called to
+provision ELAN service on PE devices.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    ServiceProvisioner_ELAN {
+        derivedFrom = charter.resourceTypes.ServiceProvisioner
+        title = ELAN Provisioner
+        description = """
+        - Extended from charter.resourceTypes.ServiceProvisioner 
+        - This resource will translate the circuit details object information into the 
+        ELAN service
+        """
+
+        properties {
+            operation {
+                description = "Operation"
+                type = string
+                optional = true
+                default = "ACTIVATE"
+                enum = ["ACTIVATE",
+                        "UPDATE",
+                        "TERMINATE"]
+            }
+            bandwidthValue {
+                title = optional bandwidth value
+                description = """optional parameter to update bandwidth
+                              """
+                type = string
+                optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    ServiceProvisioner_ELAN {
+        title = ELAN Provisioner
+        description = "ELAN Provisioner"
+        implements = charter.resourceTypes.ServiceProvisioner_ELAN
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.serviceelanprovisioner.Activate"
+            }
+            
+        }
+    }
+}

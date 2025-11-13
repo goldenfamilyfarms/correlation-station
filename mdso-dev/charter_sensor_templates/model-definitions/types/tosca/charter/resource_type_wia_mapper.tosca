@@ -1,0 +1,78 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "WIA Mapper"
+package     = charter
+version     = "1.0"
+description = """
+This document outlines the WIA Mapper resource type for Charter's systems.
+"""
+authors     = [ "Robert Saunders (robert.j.saunders@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    WIAMapper {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = WIA Mapper
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a ELAN Mapper resource.
+        """
+
+        properties {
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            device_properties {
+                title = "WIA Properties"
+                description = "Device Specific Properties (Product Name, Service Code, etc.)"
+                type = object
+                config = false
+                optional = true
+                updatable = true
+                items.type = object
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string 
+                optional = true
+                updatable = true
+            }
+            service_differences {
+                title = "Service Differences"
+                description = "Differences of Network/Design"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    WIAMapper {
+        title = WIA Mapper
+        description = "WIA Mapper"
+        implements = charter.resourceTypes.WIAMapper
+
+        plans {
+            activate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.wiaMapper.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.wiaMapper.Terminate"
+            }
+        }
+    }
+}

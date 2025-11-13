@@ -1,0 +1,69 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Meraki Template Creator"
+package     = charter
+version     = "2.0"
+description = """Creates an organization and a network template"""
+
+imports {
+}
+
+resourceTypes {
+    merakiTemplate {
+        title = MerakiTemplate
+        description = """Creates an organization and a network template"""
+        derivedFrom = tosca.resourceTypes.Root
+        properties {
+            orgName{
+                title = "Org name"
+                description = "org name"
+                type = string
+                optional = false
+            }
+            orgID{
+                title = "Org id"
+                description = "org id"
+                type = string
+                optional = true
+            },
+            template_name{
+                title = "Template Name"
+                description = "Name of the template to be created"
+                type = string
+                optional = false
+            },
+            template_id{
+                title = "Template ID"
+                description = "ID of the template that will be created or found. This will be added by mdso"
+                type = string
+                optional = true
+            },
+            configurations {
+                title = "Configuration"
+                description = "Other configurations"
+                type = object
+                optional = true
+            }
+        }
+    }
+}
+
+
+serviceTemplates {
+    merakiTemplate {
+        title = Meraki Template Creator
+        description = "Creates organization and templates in meraki portal"
+        implements = charter.resourceTypes.merakiTemplate
+        plans {
+            activate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.template_creator.Activate"
+            }
+            terminate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.template_creator.Terminate"
+            }
+        }
+    }
+}

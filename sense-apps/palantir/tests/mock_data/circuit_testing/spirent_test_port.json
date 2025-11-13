@@ -1,0 +1,14 @@
+[
+    {
+        "test_circ_inst": 2102002,
+        "test_circ_id": "51001.GE1.AUSDTXIR6CW.AUSDTXIR3FX",
+        "test_circ_status": "Live",
+        "test_circ_bandwidth": "1 Gbps",
+        "pe_port_inst": 106458160,
+        "pe_port_access_id": "GE-1/0/0",
+        "pe_equip_inst": 966383,
+        "pe_tid": "AUSDTXIR6CW",
+        "pe_equip_vendor": "JUNIPER",
+        "pe_equip_model": "MX240"
+    }
+]

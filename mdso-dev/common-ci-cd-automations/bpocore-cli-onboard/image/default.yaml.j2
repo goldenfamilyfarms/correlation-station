@@ -1,0 +1,14 @@
+# specifies the base URL for all APIs on the Blue Planet site
+base_url: {{ env("BPOCORE_BASE_URL") }}
+
+# additional parameters to supply for token-based authentication
+auth_params:
+  username: {{ env("BPOCORE_USERNAME", default='admin') }}
+  password: {{ env("BPOCORE_PASSWORD", default='adminpw') }}
+  tenant: master
+
+# authentication scheme to use: [no-auth, hmac, token]
+auth_scheme: token
+
+# verify ssl certificate if https is used
+verify_certificate: False

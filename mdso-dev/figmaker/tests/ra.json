@@ -1,0 +1,16 @@
+{
+  "name": "test",
+  "version": "1.1.1",
+  "mdso_version": "1902",
+  "apps": [
+    {
+      "app_solution": true,
+      "name": "test",
+      "max_instances": 1,
+      "volumes": [
+        "/dev/log:/dev/log",
+        "/etc/hostname:/etc/physical_hostname:ro"
+      ]
+    }
+  ]
+}

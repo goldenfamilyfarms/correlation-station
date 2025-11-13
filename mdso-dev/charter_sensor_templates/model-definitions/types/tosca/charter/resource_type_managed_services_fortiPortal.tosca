@@ -1,0 +1,92 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed Services FortiPortal"
+package     = charter
+version     = "1.0"
+description = """
+This document defines customer creation in FortiPortal.
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    managedServicesFortiPortal {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Managed Services FortiPortal
+        description = """
+        - This document defines customer creation in FortiPortal.
+        """
+
+        properties {
+            isManagedSecurityServices{
+                title = isManagedSecurityServices
+                description = flag variable
+                type = string
+                default = "Yes"
+                enum = [
+                    "Yes"
+                ]
+            }
+            customer {
+                title       = Customer
+                description = "Customer data for enrolling the VFW in ForitTools"
+                propertyType = chartervfw.propertyTypes.Customer
+            }
+            siteName {
+                title = Customer Site Name
+                description = "FortiPortal Site Name"
+                type = string
+                optional = false
+            }
+            tid {
+                title = Tid
+                description = "Device TID"
+                type = string
+                optional = false
+            }
+            version {
+                title = Version
+                description = Fortigate Version
+                type = string
+                optional = false
+            }
+            customerId {
+                title = Customer ID
+                description = "FortiPortal Customer ID"
+                type = integer
+                updatable = true
+                optional = true
+            }
+            siteId {
+                title = Site ID
+                description = "FortiPortal Site ID"
+                type = integer
+                updatable = true
+                optional = true
+            }
+        }
+    }
+},
+serviceTemplates {
+    managedServicesFortiPortal {
+        title = Managed Services FortiPortal
+        description = "Managed Services FortiPortal"
+        implements = charter.resourceTypes.managedServicesFortiPortal
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiPortal.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiPortal.Terminate"
+            }
+        }
+    }
+}

@@ -1,0 +1,395 @@
+{
+  "id": "5b4488bc-a621-45ae-8dbb-974047414f37",
+  "label": "51.L1XX.008488..TWCC.cd",
+  "resourceTypeId": "charter.resourceTypes.CircuitDetails",
+  "productId": "5b3a08d8-694e-4fcc-9063-60c68277fc58",
+  "tenantId": "30a1a77c-1a61-4865-a664-f8b7c2dc13b9",
+  "shared": false,
+  "properties": {
+    "serviceType": "FIA",
+    "stage": "PRODUCTION",
+    "customerName": "ANDROMEDA PROJECT TEST",
+    "serviceName": "51.L1XX.008488..TWCC",
+    "customerType": "CUST",
+    "service": [
+      {
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "BRONZE"
+                }
+              ],
+              "serviceType": "IP",
+              "evc-egress-bwp": "20m",
+              "endPoints": [
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "AUSDTXIR2QW-AE0",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "CNI2TXR37ZW-ETHERNET-1",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "AUSDTXIR3AW-GE-0/0/3",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "AUSDTXIR2CW-AE0",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "AUSDTXIR3AW-GE-0/0/47",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "sVlanOperation": "PUSH",
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "CNI2TXR37ZW-ETHERNET-3",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                },
+                {
+                  "role": "root",
+                  "adminState": true,
+                  "sVlan": "1102",
+                  "subscriberMegMipEnabled": false,
+                  "testMegEnabled": false,
+                  "address": "11921 N MOPAC EXPY",
+                  "uniId": "AUSDTXIR2QW-GE-1/0/95",
+                  "userLabel": "CUST:FIA:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.008488..TWCC:"
+                }
+              ],
+              "multicastFrameDelivery": "unconditional",
+              "adminState": true,
+              "sVlan": "1102",
+              "unicastFrameDelivery": "unconditional",
+              "evc-ingress-bwp": "20m",
+              "maxNumOfEvcEndPoint": 1,
+              "broadcastFrameDelivery": "unconditional",
+              "maxFrameSize": 1522,
+              "connectionType": "Point to Point",
+              "userLabel": "51.L1XX.008488..TWCC"
+            }
+          ],
+          "fia": [
+            {
+              "endPoints": [
+                {
+                  "nextIpv6Hop": "2605:6000:0:8::f:5db5/127",
+                  "lanIpv4Addresses": [
+                    "192.168.14.1/30"
+                  ],
+                  "firewallFilters": [
+                    {
+                      "direction": "ingress",
+                      "name": "FIA-Filter",
+                      "type": "ipv4"
+                    },
+                    {
+                      "direction": "ingress",
+                      "name": "FIA-Filter-v6",
+                      "type": "ipv6"
+                    }
+                  ],
+                  "wanIpv6Address": "2605:6000:0:8::F:5DB4/127",
+                  "uniId": "AUSDTXIR2CW-AE0",
+                  "lanIpv6Addresses": [
+                    "2605:ED00:394C::/48"
+                  ]
+                }
+              ],
+              "type": "DIRECT"
+            }
+          ]
+        },
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27"
+      }
+    ],
+    "topology": [
+      {
+        "data": {
+          "link": [
+            {
+              "uuid": "AUSDTXIR2CW-ET-2/2/0_AUSDTXIR2QW-ET-0/0/99",
+              "nodeEdgePoint": [
+                "AUSDTXIR2CW-ET-2/2/0",
+                "AUSDTXIR2QW-ET-0/0/99"
+              ]
+            },
+            {
+              "uuid": "AUSDTXIR2CW-ET-2/2/1_AUSDTXIR2QW-ET-1/0/99",
+              "nodeEdgePoint": [
+                "AUSDTXIR2CW-ET-2/2/1",
+                "AUSDTXIR2QW-ET-1/0/99"
+              ]
+            }
+          ],
+          "node": [
+            {
+              "name": [
+                {
+                  "name": "Host Name",
+                  "value": "AUSDTXIR2CW"
+                },
+                {
+                  "name": "Role",
+                  "value": "PE"
+                },
+                {
+                  "name": "Vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "Model",
+                  "value": "MX480 ETHERNET ROUTER-AC BASE"
+                },
+                {
+                  "name": "Management IP",
+                  "value": "71.42.150.66"
+                },
+                {
+                  "name": "Address",
+                  "value": "11921 N MOPAC EXPY"
+                },
+                {
+                  "name": "Network Neighbor",
+                  "value": "None"
+                },
+                {
+                  "name": "Client Neighbor",
+                  "value": "AUSDTXIR2QW"
+                },
+                {
+                  "name": "Network Interface",
+                  "value": "None"
+                },
+                {
+                  "name": "Network Neighbor Interface",
+                  "value": "None"
+                },
+                {
+                  "name": "Client Interface",
+                  "value": "AE0"
+                },
+                {
+                  "name": "Client Neighbor Interface",
+                  "value": "AE0"
+                },
+                {
+                  "name": "Client Interface Description",
+                  "value": "AGG:ANDROMEDA PROJECT TEST:11921 N MOPAC EXPY:AUSDTXIR2QW:"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "name": [
+                    {
+                      "name": "Name",
+                      "value": "ET-2/2/0"
+                    },
+                    {
+                      "name": "Role",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "LAG Member",
+                      "value": "AE0"
+                    }
+                  ],
+                  "uuid": "AUSDTXIR2CW-ET-2/2/0",
+                  "layerProtocolName": "ETH"
+                },
+                {
+                  "name": [
+                    {
+                      "name": "Name",
+                      "value": "ET-2/2/1"
+                    },
+                    {
+                      "name": "Role",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "LAG Member",
+                      "value": "AE0"
+                    }
+                  ],
+                  "uuid": "AUSDTXIR2CW-ET-2/2/1",
+                  "layerProtocolName": "ETH"
+                }
+              ],
+              "uuid": "AUSDTXIR2CW"
+            },
+            {
+              "name": [
+                {
+                  "name": "Host Name",
+                  "value": "AUSDTXIR2QW"
+                },
+                {
+                  "name": "Role",
+                  "value": "AGG"
+                },
+                {
+                  "name": "Vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "Model",
+                  "value": "QFX5100-96S"
+                },
+                {
+                  "name": "Management IP",
+                  "value": "71.42.150.235"
+                },
+                {
+                  "name": "Address",
+                  "value": "11921 N MOPAC EXPY"
+                },
+                {
+                  "name": "Network Neighbor",
+                  "value": "AUSDTXIR2CW"
+                },
+                {
+                  "name": "Client Neighbor",
+                  "value": "AUSDTXIR3AW"
+                },
+                {
+                  "name": "Network Interface",
+                  "value": "AE0"
+                },
+                {
+                  "name": "Network Neighbor Interface",
+                  "value": "AE0"
+                },
+                {
+                  "name": "Client Interface",
+                  "value": "GE-1/0/95"
+                },
+                {
+                  "name": "Client Neighbor Interface",
+                  "value": "GE-0/0/47"
+                },
+                {
+                  "name": "Network Interface Description",
+                  "value": "UPLINK:AUSDTXIR2CW:AE0:71.42.150.235:"
+                },
+                {
+                  "name": "Client Interface Description",
+                  "value": "MTU:ANDROMEDA PROJECT TEST:11921 N MOPAC EXPY:AUSDTXIR3AW:"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "name": [
+                    {
+                      "name": "Name",
+                      "value": "ET-0/0/99"
+                    },
+                    {
+                      "name": "Role",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "LAG Member",
+                      "value": "AE0"
+                    }
+                  ],
+                  "uuid": "AUSDTXIR2QW-ET-0/0/99",
+                  "layerProtocolName": "ETH"
+                },
+                {
+                  "name": [
+                    {
+                      "name": "Name",
+                      "value": "ET-1/0/99"
+                    },
+                    {
+                      "name": "Role",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "LAG Member",
+                      "value": "AE0"
+                    }
+                  ],
+                  "uuid": "AUSDTXIR2QW-ET-1/0/99",
+                  "layerProtocolName": "ETH"
+                },
+                {
+                  "name": [
+                    {
+                      "name": "Name",
+                      "value": "GE-1/0/95"
+                    },
+                    {
+                      "name": "Role",
+                      "value": "INNI"
+                    }
+                  ],
+                  "uuid": "AUSDTXIR2QW-GE-1/0/95",
+                  "layerProtocolName": "ETH"
+                }
+              ],
+              "uuid": "AUSDTXIR2QW"
+            }
+          ]
+        },
+        "model": "ONF_TAPI",
+        "version": "2.0.0"
+      }
+    ],
+    "circuit_id": "51.L1XX.008488..TWCC",
+    "modelVersion": 2
+  },
+  "discovered": false,
+  "differences": [],
+  "desiredOrchState": "active",
+  "orchState": "active",
+  "reason": "",
+  "tags": {},
+  "providerData": {
+    "templateResources": {}
+  },
+  "updatedAt": "2018-07-10T10:21:48.736Z",
+  "createdAt": "2018-07-10T10:21:48.208Z",
+  "autoClean": false
+}

@@ -1,0 +1,20 @@
+image: $ARTIFACTORY_REGISTRY/docker/python:3.9.11
+
+stages:
+  - quality
+  - test
+  - test_with_coverage
+  - scan
+  - build
+  - deploy
+
+include:
+  - /cicd/test.yml
+  - /cicd/deploy.yml
+  - /cicd/scan.yml
+  - /cicd/qc.yml
+
+  - project: service-engineering-automation/sense/common_sense
+    ref: master
+    file:
+      - /cicd/build_image.yml

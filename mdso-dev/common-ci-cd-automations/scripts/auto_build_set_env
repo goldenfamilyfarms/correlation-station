@@ -1,0 +1,24 @@
+#!/bin/sh
+
+export PROJECT_VERSION=$(cat version.json | jq -r .version)
+export PROJECT_TAG=$(cat version.json | jq -r '.tag // empty')
+[ -z "$PROJECT_TAG" ] && export PROJECT_VERSION_TAG=$PROJECT_VERSION || export PROJECT_VERSION_TAG=$PROJECT_VERSION-$PROJECT_TAG
+export PROJECT_NAME=$(cat version.json | jq -r .name)
+export REGISTRY_NAME=$(cat version.json | jq -r .registry)
+export VENDOR_NAME=$(cat version.json | jq -r .vendor)
+export PROJECT_PATH=$VENDOR_NAME/$PROJECT_NAME
+export REGISTRY_IMAGE=$REGISTRY_NAME/$PROJECT_PATH
+export PYPI_VERSION=$(cat version.json | jq -r .pypi.version)
+[ -z "$SOLUTION_PROJECT" ]  && export PROJECT_PATH=$CI_PROJECT_NAMESPACE || export PROJECT_PATH=$SOLUTION_PROJECT
+
+echo PROJECT_NAME = $PROJECT_NAME
+echo PROJECT_VERSION = $PROJECT_VERSION
+echo PROJECT_VERSION_TAG = $PROJECT_VERSION_TAG
+echo PROJECT_TAG = $PROJECT_TAG
+echo REGISTRY_IMAGE = $REGISTRY_IMAGE
+echo REGISTRY_NAME = $REGISTRY_NAME
+echo VENDOR_NAME = $VENDOR_NAME
+echo PROJECT_PATH = $PROJECT_PATH
+echo PROJECT_NAME = $PROJECT_NAME
+echo PYPI_VERSION = $PYPI_VERSION
+echo MAIN_BRANCH = $MAIN_BRANCH

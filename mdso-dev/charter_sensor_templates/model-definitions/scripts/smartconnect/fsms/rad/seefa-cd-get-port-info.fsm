@@ -1,0 +1,11 @@
+Value mac_egressMtu (\d+)
+Value mac_l2cp (\S+)
+Value name ([^\"\n\r]+)
+
+Start   
+  #    name "UNI:ELINE:PrismNet @ 3520 Executive Dr Ste 325, Austin, TX 78731:51.L1XX.008441..TWCC:"
+  #    egress-mtu 12000
+  #    l2cp profile "EP-UNI"
+  ^\s+egress-mtu ${mac_egressMtu}
+  ^\s+l2cp profile [\"]+${mac_l2cp}[\"]+
+  ^\s+name ["]*${name}

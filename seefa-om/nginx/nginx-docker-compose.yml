@@ -1,0 +1,20 @@
+services:
+  sbnoe-nginx:
+    image: docker-artifactory.spectrumflow.net/docker/nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
+      - ./ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
+    networks:
+      - nginx-ingress
+
+networks:
+  nginx-ingress:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.16.100.0/23"
+          gateway: "172.16.100.1"
