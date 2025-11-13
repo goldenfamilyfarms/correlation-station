@@ -1,0 +1,285 @@
+// Grafana Alloy Configuration for MDSO Server
+// Collects logs/metrics from Blue Planet containers and forwards to Meta server
+//
+// Deploy to: /etc/alloy/config.alloy on MDSO server (47.43.111.107)
+// Documentation: https://grafana.com/docs/alloy/latest/
+
+// ============================================
+// Global Configuration
+// ============================================
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+// ============================================
+// Priority 1: Scriptplan Logs (Critical Path)
+// ============================================
+
+loki.source.file "scriptplan" {
+  targets = [
+    {
+      __path__ = "/opt/ciena/bp2/scriptplan/logs/*.log",
+      container = "scriptplan",
+      priority = "1",
+    },
+  ]
+
+  forward_to = [loki.process.parse_mdso_logs.receiver]
+}
+
+// ============================================
+// Priority 1: Bpocore Logs
+// ============================================
+
+loki.source.file "bpocore" {
+  targets = [
+    {
+      __path__ = "/opt/ciena/bp2/bpocore/logs/*.log",
+      container = "bpocore",
+      priority = "1",
+    },
+  ]
+
+  forward_to = [loki.process.parse_mdso_logs.receiver]
+}
+
+// ============================================
+// Priority 2: Resource Adapter (RA) Logs
+// ============================================
+
+loki.source.file "ra_containers" {
+  targets = [
+    {
+      __path__ = "/opt/ciena/bp2/bpracisco/logs/*.log",
+      container = "bpracisco",
+      vendor = "CISCO",
+      priority = "2",
+    },
+    {
+      __path__ = "/opt/ciena/bp2/bprajuniper/logs/*.log",
+      container = "bprajuniper",
+      vendor = "JUNIPER",
+      priority = "2",
+    },
+    {
+      __path__ = "/opt/ciena/bp2/bpraadva/logs/*.log",
+      container = "bpraadva",
+      vendor = "ADVA",
+      priority = "2",
+    },
+    {
+      __path__ = "/opt/ciena/bp2/bprarad/logs/*.log",
+      container = "bprarad",
+      vendor = "RAD",
+      priority = "2",
+    },
+  ]
+
+  forward_to = [loki.process.parse_mdso_logs.receiver]
+}
+
+// ============================================
+// Priority 3: Supporting Services
+// ============================================
+
+loki.source.file "supporting_services" {
+  targets = [
+    {
+      __path__ = "/opt/ciena/bp2/tron/logs/*.log",
+      container = "tron",
+      priority = "3",
+    },
+    {
+      __path__ = "/opt/ciena/bp2/camunda/logs/*.log",
+      container = "camunda",
+      priority = "3",
+    },
+    {
+      __path__ = "/opt/ciena/bp2/api-gw/logs/*.log",
+      container = "api-gw",
+      priority = "1",  // API gateway is critical
+    },
+  ]
+
+  forward_to = [loki.process.parse_mdso_logs.receiver]
+}
+
+// ============================================
+// Log Processing Pipeline
+// ============================================
+
+loki.process "parse_mdso_logs" {
+  // Stage 1: Parse syslog format
+  stage.regex {
+    expression = "^(?P<timestamp>\\S+ \\S+)\\s+(?P<hostname>\\S+)\\s+(?P<process>\\S+)\\[(?P<pid>\\d+)\\]:\\s+(?P<severity>\\w+)\\s+-\\s+(?P<message>.+)$"
+  }
+
+  // Stage 2: Extract correlation keys from message
+  stage.regex {
+    source = "message"
+    expression = ".*resource_id[=:]\\s*(?P<resource_id>[a-f0-9\\-]{36})"
+  }
+
+  stage.regex {
+    source = "message"
+    expression = ".*circuit_id[=:]\\s*(?P<circuit_id>[a-f0-9\\-]{36})"
+  }
+
+  stage.regex {
+    source = "message"
+    expression = ".*product_id[=:]\\s*(?P<product_id>[a-f0-9\\-]{36})"
+  }
+
+  stage.regex {
+    source = "message"
+    expression = ".*resourceTypeId[=:]\\s*(?P<resource_type_id>[\\w\\.]+)"
+  }
+
+  stage.regex {
+    source = "message"
+    expression = ".*trace_id[=:]\\s*(?P<trace_id>[\\w\\-]+)"
+  }
+
+  // Stage 3: Set structured labels (LOW cardinality only!)
+  stage.labels {
+    values = {
+      container = "",
+      severity  = "",
+      priority  = "",
+    }
+  }
+
+  // Stage 4: Timestamp parsing
+  stage.timestamp {
+    source = "timestamp"
+    format = "Jan 02 15:04:05"
+  }
+
+  // Stage 5: Drop DEBUG logs for high-volume containers (sampling)
+  stage.match {
+    selector = "{severity=\"DEBUG\", priority=\"2\"}"
+
+    // Sample 25% of DEBUG logs from RA containers
+    stage.sampling {
+      rate = 0.25
+    }
+  }
+
+  // Stage 6: Always keep ERROR logs
+  stage.match {
+    selector = "{severity=\"ERROR\"}"
+
+    stage.labels {
+      values = {
+        alert_severity = "error",
+      }
+    }
+  }
+
+  forward_to = [loki.write.meta_server.receiver]
+}
+
+// ============================================
+// Loki Write (to Meta Server)
+// ============================================
+
+loki.write "meta_server" {
+  endpoint {
+    url = "http://159.56.4.94:55681/loki/api/v1/push"
+
+    // Optional: Basic auth
+    // basic_auth {
+    //   username = "alloy"
+    //   password = env("LOKI_PASSWORD")
+    // }
+
+    // Batching configuration
+    batch_size = 1048576  // 1MB
+    batch_wait = 5s
+
+    // Retry configuration
+    max_backoff_period = 1m
+    max_retries        = 10
+    timeout            = 30s
+  }
+
+  external_labels = {
+    cluster = "mdso",
+    environment = "dev",
+    source = "alloy",
+  }
+}
+
+// ============================================
+// Prometheus Metrics Scraping
+// ============================================
+
+prometheus.scrape "mdso_bpocore" {
+  targets = [
+    {
+      __address__ = "localhost:8181",
+      job = "bpocore",
+      container = "bpocore",
+    },
+  ]
+
+  forward_to = [prometheus.remote_write.meta_server.receiver]
+}
+
+prometheus.scrape "mdso_prometheus" {
+  targets = [
+    {
+      __address__ = "localhost:9090",
+      job = "prometheus",
+      container = "prometheus",
+    },
+  ]
+
+  forward_to = [prometheus.remote_write.meta_server.receiver]
+}
+
+// ============================================
+// Prometheus Remote Write (to Meta Server)
+// ============================================
+
+prometheus.remote_write "meta_server" {
+  endpoint {
+    url = "http://159.56.4.94:9090/api/v1/write"
+
+    // Queue configuration
+    queue_config {
+      capacity             = 10000
+      max_shards           = 10
+      min_shards           = 1
+      max_samples_per_send = 5000
+      batch_send_deadline  = 5s
+    }
+
+    // Retry configuration
+    max_backoff = 1m
+    min_backoff = 100ms
+    max_retries = 10
+  }
+
+  external_labels = {
+    cluster = "mdso",
+    environment = "dev",
+  }
+}
+
+// ============================================
+// Health Check Endpoint
+// ============================================
+
+otelcol.receiver.otlp "health_check" {
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    logs   = [loki.write.meta_server.receiver]
+    metrics = [prometheus.remote_write.meta_server.receiver]
+  }
+}
