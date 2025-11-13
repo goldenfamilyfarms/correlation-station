@@ -1,5 +1,6 @@
 # Flake8: noqa: E402
 import os
+import sys
 import traceback
 
 import structlog
@@ -9,7 +10,17 @@ from flask_restx import Api
 from flask_restx.apidoc import apidoc
 
 from beorn_app.config import AppConfig, AuthConfig, UrlConfig
-from beorn_app.middleware import LoggingWSGIMiddleware
+
+# Add common directory to path for shared utilities
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+
+# Import lightweight OTEL instrumentation (replaces resource-intensive middleware)
+try:
+    from otel_sense import setup_otel_sense, instrument_flask_lightweight
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
 # quick and dirty check for empty str vs encrypted str of first env var
 env_vars_set = os.environ.get("ARIN_API_KEY")
@@ -51,10 +62,27 @@ __version__ = version
 setup_logging(json_logs=True)
 logger = structlog.get_logger()
 
+# Initialize Flask app
 app = Flask(__name__)
-app.wsgi_app = LoggingWSGIMiddleware(app.wsgi_app)
+
+# REMOVED: Resource-intensive LoggingWSGIMiddleware (causes machine crashes)
+# REPLACED WITH: Lightweight OTEL instrumentation below
+
 app.config["ERROR_404_HELP"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
+
+# Initialize lightweight OTEL instrumentation
+if OTEL_AVAILABLE:
+    try:
+        setup_otel_sense(
+            service_name="beorn",
+            service_version=version.strip(),
+            environment=os.getenv("DEPLOYMENT_ENV", "prod")
+        )
+        instrument_flask_lightweight(app, "beorn")
+        logger.info("Beorn OTEL instrumentation initialized (lightweight mode)")
+    except Exception as e:
+        logger.warning(f"Failed to initialize OTEL: {e}")
 
 
 @app.errorhandler(Exception)

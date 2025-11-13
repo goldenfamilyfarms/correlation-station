@@ -1,5 +1,6 @@
 # Flake8: noqa: E402
 import os
+import sys
 import traceback
 
 import structlog
@@ -10,7 +11,17 @@ from flask_restx import Api
 from flask_restx.apidoc import apidoc
 
 from palantir_app.config import AppConfig, AuthConfig, UrlConfig
-from palantir_app.middleware import LoggingWSGIMiddleware
+
+# Add common directory to path for shared utilities
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+
+# Import lightweight OTEL instrumentation (replaces resource-intensive middleware)
+try:
+    from otel_sense import setup_otel_sense, instrument_flask_lightweight
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
 # quick and dirty check for empty str vs encrypted str of first env var
 env_vars_set = os.environ.get("ARIN_API_KEY")
@@ -60,10 +71,24 @@ logger = structlog.get_logger()
 
 
 app = Flask(__name__)
-app.wsgi_app = LoggingWSGIMiddleware(app.wsgi_app)
 app.config["ERROR_INCLUDE_MESSAGE"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["ERROR_404_HELP"] = False
+
+# Initialize lightweight OTEL instrumentation (replaces resource-intensive middleware)
+if OTEL_AVAILABLE:
+    try:
+        setup_otel_sense(
+            service_name="palantir",
+            service_version=version.strip(),
+            environment=os.getenv("DEPLOYMENT_ENV", "prod")
+        )
+        instrument_flask_lightweight(app, "palantir")
+        logger.info("Palantir OTEL instrumentation initialized (lightweight mode)")
+    except Exception as e:
+        logger.warning(f"Failed to initialize OTEL: {e}")
+else:
+    logger.warning("OTEL not available - running without instrumentation")
 
 
 @app.errorhandler(Exception)

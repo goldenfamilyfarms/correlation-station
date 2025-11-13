@@ -1,5 +1,7 @@
 import logging
+import os
 import re
+import sys
 
 from common_sense.common.errors import (
     abort,
@@ -22,29 +24,90 @@ from palantir_app.dll.sense import sense_get
 from palantir_app.dll.granite import get_circuit_devices, get_fqdn_ip_vendor_from_tid
 from palantir_app.dll.tacacs import get_tacacs_status
 
+# Import OTEL utilities for network function instrumentation
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'common'))
+try:
+    from opentelemetry import trace, baggage
+    OTEL_AVAILABLE = True
+    tracer = trace.get_tracer(__name__)
+except ImportError:
+    OTEL_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
 
 def validation_process(cid: str = "", tid: str = "", acceptance: bool = False):
-    l2circuit_error = None
-    service_type, devices = _get_validation_data(cid=cid, tid=tid)
-    devices_to_validate = [Device(device, cid) for device in devices]
-    if any(device.is_err_state for device in devices_to_validate):
-        msg = get_combined_message(devices_to_validate)
-        abort(
-            501, msg, summary="NETWORK | CONNECTIVITY ERROR - PREREQUISITE DEVICE VALIDATION FAILED", pretty_format=True
-        )
-    for device in devices_to_validate:
-        validate_device(device)
-        if acceptance and _is_l2circuit_service_eligible(service_type):
-            l2circuit_error = validate_l2_connection(device)
-            if l2circuit_error:
-                device.msg["additional"] = {"l2circuit": l2circuit_error}
-    if any(device.is_err_state for device in devices_to_validate) or l2circuit_error:
-        msg = get_combined_message(devices_to_validate)
-        abort(501, msg, summary="NETWORK | CONNECTIVITY ERROR - TACACS DEVICE VALIDATION FAILED", pretty_format=True)
-    return {"message": get_combined_message(devices_to_validate)}
+    if OTEL_AVAILABLE:
+        with tracer.start_as_current_span("palantir.device.validation") as span:
+            span.set_attribute("mdso.operation", "device_validation")
+            if cid:
+                span.set_attribute("mdso.circuit_id", cid)
+                baggage.set_baggage("circuit_id", cid)
+            if tid:
+                span.set_attribute("mdso.tid", tid)
+                baggage.set_baggage("tid", tid)
+            span.set_attribute("mdso.acceptance_mode", acceptance)
+
+            l2circuit_error = None
+            service_type, devices = _get_validation_data(cid=cid, tid=tid)
+
+            # Track device count and details
+            span.set_attribute("mdso.device_count", len(devices))
+            if devices:
+                device_tids = [d.get("tid") for d in devices if d.get("tid")]
+                device_fqdns = [d.get("fqdn") for d in devices if d.get("fqdn")]
+                if device_tids:
+                    span.set_attribute("mdso.device_tids", ",".join(device_tids))
+                if device_fqdns:
+                    span.set_attribute("mdso.device_fqdns", ",".join(device_fqdns))
+
+            devices_to_validate = [Device(device, cid) for device in devices]
+            if any(device.is_err_state for device in devices_to_validate):
+                msg = get_combined_message(devices_to_validate)
+                span.set_attribute("mdso.validation_status", "prerequisite_failed")
+                span.set_attribute("mdso.validation_error", msg[:500])  # Truncate long messages
+                abort(
+                    501, msg, summary="NETWORK | CONNECTIVITY ERROR - PREREQUISITE DEVICE VALIDATION FAILED", pretty_format=True
+                )
+
+            for device in devices_to_validate:
+                validate_device(device)
+                if acceptance and _is_l2circuit_service_eligible(service_type):
+                    l2circuit_error = validate_l2_connection(device)
+                    if l2circuit_error:
+                        device.msg["additional"] = {"l2circuit": l2circuit_error}
+
+            # Track validation results
+            failed_devices = sum(1 for device in devices_to_validate if device.is_err_state)
+            span.set_attribute("mdso.failed_devices", failed_devices)
+            span.set_attribute("mdso.validation_status", "failed" if (failed_devices > 0 or l2circuit_error) else "success")
+
+            if any(device.is_err_state for device in devices_to_validate) or l2circuit_error:
+                msg = get_combined_message(devices_to_validate)
+                span.set_attribute("mdso.validation_error", msg[:500])
+                abort(501, msg, summary="NETWORK | CONNECTIVITY ERROR - TACACS DEVICE VALIDATION FAILED", pretty_format=True)
+
+            return {"message": get_combined_message(devices_to_validate)}
+    else:
+        # Non-instrumented path
+        l2circuit_error = None
+        service_type, devices = _get_validation_data(cid=cid, tid=tid)
+        devices_to_validate = [Device(device, cid) for device in devices]
+        if any(device.is_err_state for device in devices_to_validate):
+            msg = get_combined_message(devices_to_validate)
+            abort(
+                501, msg, summary="NETWORK | CONNECTIVITY ERROR - PREREQUISITE DEVICE VALIDATION FAILED", pretty_format=True
+            )
+        for device in devices_to_validate:
+            validate_device(device)
+            if acceptance and _is_l2circuit_service_eligible(service_type):
+                l2circuit_error = validate_l2_connection(device)
+                if l2circuit_error:
+                    device.msg["additional"] = {"l2circuit": l2circuit_error}
+        if any(device.is_err_state for device in devices_to_validate) or l2circuit_error:
+            msg = get_combined_message(devices_to_validate)
+            abort(501, msg, summary="NETWORK | CONNECTIVITY ERROR - TACACS DEVICE VALIDATION FAILED", pretty_format=True)
+        return {"message": get_combined_message(devices_to_validate)}
 
 
 def _get_validation_data(cid: str = "", tid: str = "") -> tuple[str, list]:
@@ -171,18 +234,68 @@ def _get_tid_data(tid):
 
 def validate_device(device: Device):
     logger.info("---------------STARTING VALIDATIONS---------------")
-    device.determine_vendor_and_model()
-    device.determine_tacacs()
-    if device.tacacs_remediation_required:
-        device.remediate_tacacs()
-        device.ise_check()
-        if device.ise_success:
+
+    if OTEL_AVAILABLE:
+        with tracer.start_as_current_span("palantir.device.validate_single") as span:
+            span.set_attribute("mdso.tid", device.tid)
+            span.set_attribute("mdso.fqdn", device.fqdn)
+            span.set_attribute("mdso.vendor", device.vendor)
+            if device.cid:
+                span.set_attribute("mdso.circuit_id", device.cid)
+
+            # Track communication state
+            span.set_attribute("mdso.device.is_cpe", device.is_cpe)
+            span.set_attribute("mdso.device.ip_granite", device.ips_by_source.get("granite", ""))
+            span.set_attribute("mdso.device.ip_ipc", device.ips_by_source.get("ipc", ""))
+            span.set_attribute("mdso.device.ip_dns", device.ips_by_source.get("dns", ""))
+
+            device.determine_vendor_and_model()
+            span.set_attribute("mdso.device.model", device.model if device.model else "unknown")
+
             device.determine_tacacs()
-    if device.granite_remediation_required:
-        # align databases with usable IP value
-        device.update_granite_ip()
-    # set device error state based on validation process results
-    device.set_is_err_state()
+            span.set_attribute("mdso.device.tacacs_validated", device.validated.get("tacacs", False))
+
+            if device.tacacs_remediation_required:
+                span.set_attribute("mdso.device.tacacs_remediation", True)
+                device.remediate_tacacs()
+                device.ise_check()
+                if device.ise_success:
+                    span.set_attribute("mdso.device.ise_onboarded", True)
+                    device.determine_tacacs()
+
+            if device.granite_remediation_required:
+                span.set_attribute("mdso.device.granite_remediation", True)
+                device.update_granite_ip()
+
+            # set device error state based on validation process results
+            device.set_is_err_state()
+
+            # Track final communication state
+            span.set_attribute("mdso.device.usable_ip", device.usable_ip if device.usable_ip else "none")
+            span.set_attribute("mdso.device.reachable", device.msg.get("reachable", "unknown"))
+            span.set_attribute("mdso.device.prerequisite.ping", device.prerequisite_validated.get("ping", False))
+            span.set_attribute("mdso.device.prerequisite.hostname", device.prerequisite_validated.get("hostname", False))
+            span.set_attribute("mdso.device.prerequisite.snmp", device.prerequisite_validated.get("snmp", False))
+            span.set_attribute("mdso.device.error_state", device.is_err_state)
+
+            # Set baggage for downstream correlation
+            if device.fqdn:
+                baggage.set_baggage("fqdn", device.fqdn)
+            if device.usable_ip:
+                baggage.set_baggage("device_ip", device.usable_ip)
+    else:
+        device.determine_vendor_and_model()
+        device.determine_tacacs()
+        if device.tacacs_remediation_required:
+            device.remediate_tacacs()
+            device.ise_check()
+            if device.ise_success:
+                device.determine_tacacs()
+        if device.granite_remediation_required:
+            # align databases with usable IP value
+            device.update_granite_ip()
+        # set device error state based on validation process results
+        device.set_is_err_state()
 
 
 def _is_l2circuit_service_eligible(service_type):

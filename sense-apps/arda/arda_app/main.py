@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import Any, Callable
 
 from fastapi import APIRouter as FastAPIRouter, FastAPI, Request, status
@@ -7,6 +9,17 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 from pydantic_core import ValidationError
+
+# Add common directory to path for shared utilities
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+
+# Import lightweight OTEL instrumentation
+try:
+    from otel_sense import setup_otel_sense, instrument_fastapi_lightweight
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
 from arda_app.api import (
     v1_cid_router,
@@ -49,6 +62,21 @@ async def read_index():
 
 # Set logger
 logger = setup_logging()
+
+# Initialize lightweight OTEL instrumentation for FastAPI
+if OTEL_AVAILABLE:
+    try:
+        setup_otel_sense(
+            service_name="arda",
+            service_version=__VERSION__,
+            environment=os.getenv("DEPLOYMENT_ENV", "prod")
+        )
+        instrument_fastapi_lightweight(app, "arda")
+        logger.info("Arda OTEL instrumentation initialized (lightweight mode)")
+    except Exception as e:
+        logger.warning(f"Failed to initialize OTEL: {e}")
+else:
+    logger.warning("OTEL not available - running without instrumentation")
 
 
 # APIRouter: Prevent the 307 Temporary Redirect When There's a Missing Trailing Slash

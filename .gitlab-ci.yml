@@ -2,7 +2,17 @@
 # Author: Derrick Golden
 # Version: 1.0.0
 
+# Include common CI/CD templates
+include:
+  - project: 'mdso-dev/common-ci-cd-automations'
+    ref: master
+    file: '/lint/.lint-gitlab-ci-template.yml'
+  - project: 'mdso-dev/common-ci-cd-automations'
+    ref: master
+    file: '/code-quality/.code-climate.yml'
+
 stages:
+  - lint
   - test
   - build
   - deploy
@@ -15,11 +25,33 @@ variables:
   META_SERVER: "159.56.4.94"
 
 # ============================================
+# Lint Stage - Using Common CI/CD Templates
+# ============================================
+
+# Enable common lint jobs from templates
+code-quality:
+  extends: .code-quality
+  stage: lint
+  only:
+    refs:
+      - merge_requests
+      - main
+      - develop
+
+flake8:
+  extends: .flake8
+
+json-lint:
+  extends: .json-lint
+
+# ============================================
 # Test Stage
 # ============================================
 
 test:correlation-engine:
   stage: test
+  tags:
+    - docker
   image: python:3.11-slim
   before_script:
     - cd seefa-om/correlation-engine
@@ -40,6 +72,8 @@ test:correlation-engine:
 
 test:sense-apps:beorn:
   stage: test
+  tags:
+    - docker
   image: python:3.11-slim
   before_script:
     - cd sense-apps/beorn
@@ -53,6 +87,8 @@ test:sense-apps:beorn:
 
 test:sense-apps:palantir:
   stage: test
+  tags:
+    - docker
   image: python:3.11-slim
   before_script:
     - cd sense-apps/palantir
@@ -66,6 +102,8 @@ test:sense-apps:palantir:
 
 test:sense-apps:arda:
   stage: test
+  tags:
+    - docker
   image: python:3.11-slim
   before_script:
     - cd sense-apps/arda
@@ -77,18 +115,24 @@ test:sense-apps:arda:
     - branches
     - merge_requests
 
-lint:python:
-  stage: test
-  image: python:3.11-slim
+# Enhanced Python linting with Ruff (modern formatter) and flake8
+lint:python:ruff:
+  stage: lint
+  tags:
+    - docker
+  image: python:3.11
   before_script:
-    - pip install flake8 black isort
+    - pip install ruff flake8 flake8-bugbear flake8-comprehensions flake8-bandit
   script:
-    - echo "Running flake8..."
-    - flake8 seefa-om/correlation-engine/app --max-line-length=100 --ignore=E501,W503
-    - flake8 sense-apps/*/app --max-line-length=100 --ignore=E501,W503
-    - echo "Checking black formatting..."
-    - black --check seefa-om/correlation-engine/app
-    - black --check sense-apps/*/app
+    - echo "Running Ruff formatter check..."
+    - ruff format --check seefa-om/correlation-engine/app sense-apps/*/app
+    - echo "Running Ruff linter..."
+    - ruff check seefa-om/correlation-engine/app sense-apps/*/app
+    - echo "Running flake8 with security checks..."
+    - flake8 seefa-om/correlation-engine/app --max-line-length=100
+    - flake8 sense-apps/beorn/beorn_app --max-line-length=100
+    - flake8 sense-apps/arda/arda_app --max-line-length=100
+    - flake8 sense-apps/palantir/palantir_app --max-line-length=100
   allow_failure: true
   only:
     - branches
@@ -100,6 +144,8 @@ lint:python:
 
 build:correlation-engine:
   stage: build
+  tags:
+    - dind
   image: docker:24-git
   services:
     - docker:24-dind
@@ -124,6 +170,8 @@ build:correlation-engine:
 
 build:sense-apps:
   stage: build
+  tags:
+    - dind
   image: docker:24-git
   services:
     - docker:24-dind
@@ -157,6 +205,8 @@ build:sense-apps:
 
 deploy:meta-server:staging:
   stage: deploy
+  tags:
+    - docker
   image: docker/compose:latest
   before_script:
     - apk add --no-cache openssh-client
@@ -183,6 +233,8 @@ deploy:meta-server:staging:
 
 deploy:meta-server:production:
   stage: deploy
+  tags:
+    - docker
   image: docker/compose:latest
   before_script:
     - apk add --no-cache openssh-client
@@ -213,6 +265,8 @@ deploy:meta-server:production:
 
 validate:health-checks:
   stage: validate
+  tags:
+    - docker
   image: curlimages/curl:latest
   script:
     - echo "Checking Correlation Engine health..."
@@ -233,6 +287,8 @@ validate:health-checks:
 
 validate:metrics:
   stage: validate
+  tags:
+    - docker
   image: curlimages/curl:latest
   script:
     - echo "Checking Correlation Engine metrics..."
@@ -252,6 +308,8 @@ validate:metrics:
 
 notify:slack:
   stage: .post
+  tags:
+    - docker
   image: curlimages/curl:latest
   script:
     - |

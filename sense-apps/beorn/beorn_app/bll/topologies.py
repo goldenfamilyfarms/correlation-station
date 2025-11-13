@@ -1,5 +1,7 @@
 import logging
+import os
 import re
+import sys
 
 from common_sense.common.errors import (
     abort,
@@ -20,6 +22,16 @@ from beorn_app.common.granite_operations import call_denodo_for_circuit_devices
 from beorn_app.common.utils import clean_data
 from beorn_app.bll.granite import get_vpls_vlan_id, get_elan_slm_data, get_vc_class_type
 from common_sense.common.network_devices import VOICE_GATEWAY_MODELS
+
+# Import OTEL utilities for topology instrumentation
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'common'))
+try:
+    from opentelemetry import trace, baggage
+    from mdso_patterns import MDSOPatterns, extract_vendor_from_beorn_node
+    OTEL_AVAILABLE = True
+    tracer = trace.get_tracer(__name__)
+except ImportError:
+    OTEL_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +93,30 @@ class Topologies:
         self.is_type_2 = True if vc_class == "TYPE 2" else False
 
     def create_topology(self):
-        if self._is_multi_leg():
-            topology = self._create_multi_leg_topology()
+        if OTEL_AVAILABLE:
+            with tracer.start_as_current_span("beorn.topology.create") as span:
+                span.set_attribute("mdso.circuit_id", self.cid)
+                span.set_attribute("mdso.operation", "topology_extraction")
+
+                # Set baggage for correlation
+                ctx = baggage.set_baggage("circuit_id", self.cid)
+
+                if self._is_multi_leg():
+                    topology = self._create_multi_leg_topology()
+                else:
+                    topology = self._create_topology()
+
+                # Extract and record device information from topology
+                self._add_topology_device_spans(topology, span)
+                self.topology = topology
+                return topology
         else:
-            topology = self._create_topology()
-        self.topology = topology
-        return topology
+            if self._is_multi_leg():
+                topology = self._create_multi_leg_topology()
+            else:
+                topology = self._create_topology()
+            self.topology = topology
+            return topology
 
     def _is_multi_leg(self):
         if self.circuit_elements[0]["service_type"] not in MULTI_LEG_SERVICE_TYPES:
@@ -991,3 +1021,66 @@ class TopologyUtils:
 
                     device_data.append(data.copy())
         return device_data
+
+    def _add_topology_device_spans(self, topology, parent_span):
+        """Extract device FQDNs and vendors from topology and add to span attributes"""
+        if not OTEL_AVAILABLE:
+            return
+
+        try:
+            device_count = 0
+            fqdns = []
+            vendors = []
+
+            # Handle both single and multi-leg topologies
+            topologies_to_process = []
+            if isinstance(topology, dict) and "PRIMARY" in topology:
+                # Multi-leg topology
+                topologies_to_process = [topology["PRIMARY"], topology["SECONDARY"]]
+            elif isinstance(topology, dict) and "topology" in topology:
+                # Single topology
+                topologies_to_process = [topology]
+
+            for topo in topologies_to_process:
+                if "topology" not in topo:
+                    continue
+
+                for topo_data in topo["topology"]:
+                    if "data" not in topo_data or "node" not in topo_data["data"]:
+                        continue
+
+                    for device in topo_data["data"]["node"]:
+                        if "name" not in device:
+                            continue
+
+                        # Extract FQDN (at index 6) and vendor (at index 2) from name array
+                        fqdn = None
+                        vendor = None
+
+                        for item in device["name"]:
+                            if item.get("name") == "fqdn":
+                                fqdn = item.get("value")
+                            elif item.get("name") == "vendor":
+                                vendor = item.get("value", "").lower()
+
+                        if fqdn:
+                            fqdns.append(fqdn)
+                            device_count += 1
+
+                            # Set baggage for this FQDN for downstream correlation
+                            baggage.set_baggage(f"fqdn.{device_count}", fqdn)
+
+                        if vendor:
+                            vendors.append(vendor)
+
+            # Set span attributes with device information
+            parent_span.set_attribute("mdso.topology.device_count", device_count)
+            if fqdns:
+                parent_span.set_attribute("mdso.topology.fqdns", ",".join(fqdns))
+            if vendors:
+                parent_span.set_attribute("mdso.topology.vendors", ",".join(set(vendors)))
+
+            logger.debug(f"Topology instrumentation: circuit_id={self.cid}, devices={device_count}, fqdns={fqdns}")
+
+        except Exception as e:
+            logger.warning(f"Failed to add topology device spans: {e}")
