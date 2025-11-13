@@ -1,14 +1,15 @@
 # Flake8: noqa: E402
-import logging
 import os
 import traceback
 
+import structlog
 from dotenv import load_dotenv
 from flask import Blueprint, Flask, has_request_context, request
 from flask_restx import Api
 from flask_restx.apidoc import apidoc
 
 from beorn_app.config import AppConfig, AuthConfig, UrlConfig
+from beorn_app.middleware import LoggingWSGIMiddleware
 
 # quick and dirty check for empty str vs encrypted str of first env var
 env_vars_set = os.environ.get("ARIN_API_KEY")
@@ -47,14 +48,13 @@ with open("VERSION", "r") as f:
 
 __version__ = version
 
+setup_logging(json_logs=True)
+logger = structlog.get_logger()
 
 app = Flask(__name__)
-
+app.wsgi_app = LoggingWSGIMiddleware(app.wsgi_app)
 app.config["ERROR_404_HELP"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
-setup_logging()
-logger = logging.getLogger(__name__)
-
 
 
 @app.errorhandler(Exception)
