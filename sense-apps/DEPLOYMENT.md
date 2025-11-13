@@ -398,11 +398,23 @@ docker-compose up -d
 
 After deployment, services are available at:
 
+**SENSE Apps (via Nginx - Recommended):**
+- **Arda**: http://159.56.4.94/arda/
+- **Arda API Docs**: http://159.56.4.94/arda/docs
+- **Beorn**: http://159.56.4.94/beorn/
+- **Palantir**: http://159.56.4.94/palantir/
+
+**SENSE Apps (Direct Ports):**
 - **Arda API**: http://159.56.4.94:5001/docs (FastAPI auto-docs)
 - **Beorn API**: http://159.56.4.94:5002/health
 - **Palantir API**: http://159.56.4.94:5003/health
+
+**Observability Stack:**
 - **Grafana**: http://159.56.4.94:8443 (view traces/logs)
 - **Correlation Engine**: http://159.56.4.94:8080/docs
+- **Prometheus**: http://159.56.4.94:9090
+- **Loki**: http://159.56.4.94:3100
+- **Tempo**: http://159.56.4.94:9000
 
 ---
 
