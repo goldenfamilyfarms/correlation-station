@@ -1,0 +1,125 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Connectivity Check"
+package     = tosca
+version     = "1.0"
+description = "This document defines a Connectivity check object that will verify the connection to a device"
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+  
+}
+
+resourceTypes {
+
+    ConnectivityCheck {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Connectivity Check
+        description = """
+            Connectivity check object that will verify the connection to a device.
+        """
+
+        properties {
+    
+            device_ip {
+                title = "Device IP"
+                description = "Device IP"
+                type = string
+            }
+    
+            device_port {
+                title = "Device Port"
+                description = "Port to check on the device.  If none is provided, the system will scroll through defaults"
+                type = integer
+                optional = true
+            }
+    
+            timeout {
+                title = "Timeout"
+                description = "Timeout (sec) before declaring a failure"
+                type = integer
+                default = 300
+            }
+            
+            try_timeout {
+                title = "Try Timeout"
+                description = "Timeout (sec) when connecting to device"
+                type = integer
+                default = 10
+            }
+            
+            retry_time {
+                title = "Retry Timer"
+                description = "Time (sec) between checks"
+                type = integer
+                default = 10
+            }
+            
+            min_retry_count {
+                title = "Minimum Retry Count"
+                description = "Minimal number of times it will check"
+                type = integer
+                default = 2
+            }
+            
+            method {
+                title = "Method"
+                description =  "Method to use to check (ping, http, telnet, etc)"
+                type = string
+                default = "PING"
+                enum = [
+                    PING,
+                    TELNET,
+                    SSH,
+                    HTTP,
+                    HTTPS
+                ]
+            }
+            
+            command {
+                title = "Command"
+                description =  "Command to run after connecting to verify operations"
+                type = object
+                optional = true
+            }
+            
+            return_delay {
+                title = "Return Delay"
+                description = "Time (sec) to delay a successful response before returning"
+                type = integer
+                default = 5
+            }
+            
+    
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    ConnectivityCheck {
+
+        title = "Connectivity Check"
+        description = "Implementation template for the service"
+        implements = tosca.resourceTypes.ConnectivityCheck
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.deviceconfiguration.deviceconnectivitycheck.Activate"
+            }
+
+        }
+    }
+}
+

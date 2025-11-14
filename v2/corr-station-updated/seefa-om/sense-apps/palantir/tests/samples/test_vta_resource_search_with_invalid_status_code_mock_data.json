@@ -1,0 +1,28 @@
+{
+  "errors": [
+    {
+      "app": "api-gw",
+      "app_instance": "0",
+      "container": "eb5336287ee2",
+      "dst_ip": "97.105.228.219",
+      "dst_port": "443",
+      "hop_id": "09b5e404-6beb-4437-84b3-0661295cd77c",
+      "host": "austx-lab-dev-mdso-09",
+      "http_method": "GET",
+      "http_path": "/bpocore/market/api/v1/resources",
+      "http_query": "resourceTypeId=charter.resourceTypes.InstantiateVta\u0026q=properties.nfx_hostname:CHRLNCRLS4W.CHTRSE.COM,properties.test_finput:vw-vta-y1564-l/input.json\u0026offset=0\u0026limit=1000",
+      "msg": "Cannot authorize access to resource: Cannot authorize access to restricted path 'GET /bpocore/market/api/v1/resources?resourceTypeId=charter.resourceTypes.InstantiateVta\u0026q=properties.nfx_hostname:CHRLNCRLS4W.CHTRSE.COM,properties.test_finput:vw-vta-y1564-l/input.json\u0026offset=0\u0026limit=1000' for user unknown: The path is RESTRICTED and the user UNKNOWN",
+      "msg_code": "bpapigw-300",
+      "msg_id": "bpapigw-300",
+      "namespace": "BPAPIGW",
+      "pid": "1",
+      "priority": "4",
+      "src_ip": "172.16.0.4",
+      "src_port": "57974",
+      "timestamp": "2020-09-18T00:29:24.806340387Z",
+      "trace_id": "13fd60ad-2621-4ef7-a4a0-7fdfbd8abfa8",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+    }
+  ],
+  "failureInfo": { "reason": "vta not found" }
+}

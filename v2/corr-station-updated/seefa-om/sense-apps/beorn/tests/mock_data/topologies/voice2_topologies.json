@@ -1,0 +1,210 @@
+{
+    "customerName": "TWC",
+    "serviceName": "51.IPXN.002284..TWCC",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "VOICE",
+    "serviceMedia": "FIBER",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "AUSDTXIR6CW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSDTXIR6CW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "MX240"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "71.42.150.82"          
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSDTXIR6CW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSDTXIR6CW-XE-1/3/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "XE-1/3/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR6CW.AUSDTXIRBZW"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "AUSDTXIRBZW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSDTXIRBZW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "ADVA"
+                },
+                {
+                  "name": "model",
+                  "value": "FSP 150-XG116PRO"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "97.77.67.99"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSDTXIRBZW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSDTXIRBZW-ETH_PORT-1-1-1-8",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH_PORT-1-1-1-8"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR6CW.AUSDTXIRBZW"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSDTXIRBZW-ETH_PORT-1-1-1-5",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH_PORT-1-1-1-5"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "UNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51.IPXN.002284..TWCC"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "AUSDTXIR6CW-XE-1/3/0",
+                "AUSDTXIRBZW-ETH_PORT-1-1-1-8"
+              ],
+              "uuid": "AUSDTXIR6CW-XE-1/3/0_AUSDTXIRBZW-ETH_PORT-1-1-1-8"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "BRONZE"
+                }
+              ],
+              "evc-ingress-bwp": "10m",
+              "evc-egress-bwp": "10m",
+              "adminState": true,
+              "userLabel": "51.IPXN.002284..TWCC",
+              "maxNumOfEvcEndPoint": 1,
+              "serviceType": "IP",
+              "connectionType": "Point to Point",
+              "sVlan": "1300",
+              "endPoints": [
+                {
+                  "uniId": "AUSDTXIRBZW-ETH_PORT-1-1-1-5",
+                  "adminState": true,
+                  "address": "11921 N MOPAC EXPY 78759",
+                  "sVlan": "1300",
+                  "sVlanOperation": "PUSH"
+                }
+              ]
+            }
+          ],
+          "fia": [
+            {
+              "type": "VOICE",
+              "endPoints": [
+                {
+                  "uniId": "AUSDTXIR6CW-XE-1/3/0",
+                  "lanIpv4Addresses": "192.168.1.1/30",
+                  "lanIpv6Addresses": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }

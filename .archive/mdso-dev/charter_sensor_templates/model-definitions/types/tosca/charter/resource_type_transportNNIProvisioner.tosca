@@ -1,0 +1,95 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Transport NNI Provisioner"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the provisioning of Transport paths, New Carrier NNI/ENNI.
+"""
+authors     = ["Derrick Golden (Derrick.Richison-Golden@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    TransportNNIProvisioner {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Transport NNI Provisioner
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        """
+
+        properties {
+
+            circuit_id {
+                title = "circuit id"
+                description = "circuit id"
+                type = string
+                optional = true
+            }
+            circuit_details {
+                title = "Circuit Details"
+                description = "circuit details"
+                type = object
+                config = false
+                optional = true
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string
+                optional = true
+                updatable = true
+            }
+            operationType {
+                title = "Service Option"
+                description = "New or Update Configuration"
+                type = string
+                optional = true
+                default = "New"
+            }
+            eligible {
+                title = "Eligible"
+                description = "Device Eligibility"
+                optional = true
+                config = false
+                type = boolean
+            }
+            additionalAttributes {
+                title = "Additional Attributes"
+                description = "Additional Attributes"
+                propertyType = tosca.propertyTypes.AdditionalAttributes
+                optional = true
+            }
+            ignore_errors {
+                title = "ignore errors"
+                description = "run through all commands even if one errors in the middle."
+                type = boolean
+                default = false
+                optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    TransportNNIProvisioner {
+        title = Transport NNI Provisioner
+        description = "Transport NNI Provisioner"
+        implements = charter.resourceTypes.TransportNNIProvisioner
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.transportProvisioner.transportNNIprovisioner.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.transportProvisioner.transportNNIprovisioner.Terminate"
+            }
+        }
+    }
+}

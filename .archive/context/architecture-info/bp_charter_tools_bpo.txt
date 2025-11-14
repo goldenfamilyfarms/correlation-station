@@ -1,0 +1,1299 @@
+Blue Planet Orchestration
+Administrator Guide
+Release 24.04
+Issue 1.3 | September 2024 | 450-3702-400-2404
+Table of Contents
+Publication history . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+Blue Planet architecture . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+BP software layers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+Base infrastructure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+Common platform . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+Blue Planet platform . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+Blue Planet products . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+Intelligent automation solutions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+Customer integrations. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+Hardware and software requirements. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Blue Planet server requirements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Blue Planet required and custom software. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Blue Planet software . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Accessing BPO . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+Definition documents . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+Third-party software . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+Resource adapters (RA) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+Post-installation procedures. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+System preferences. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Creating a new role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+Assigning new role to the required user . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+Report Grid . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+Characters. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+Operands. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+Keywords. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+Global Search . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+Miscellaneous . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+User and system setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+Managing tenants or sub-tenants . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+About tenant and sub-tenant creation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+Tenant example use cases . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+Tenant guidelines. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+Naming best practice . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+Tenant and domain relationships. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+Adding and editing tenants . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+Deactivating tenants . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+Managing roles. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32
+Role-based access control (RBAC) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+Procedures for managing roles . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+Viewing permissions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+Creating a role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 35
+Editing a role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 37
+Cloning a role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 39
+Deleting a role. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+Viewing role details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+Managing user accounts. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+User configuration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+Procedures to manage user accounts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44
+Creating a user account . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44
+Viewing user accounts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 47
+Resetting a user account password. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 47
+Editing a user account . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
+Activating, inactivating, and unlocking multiple users. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 50
+Activating bulk users . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51
+Inactivating bulk users. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 51
+Unlocking bulk users . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 52
+Resetting a forgotten user password . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 53
+Managing user groups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+Adding a user group. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+Copying a user group. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 56
+Editing a user group. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 59
+Sorting fields. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+Creating bulk users and user groups. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 63
+Creating bulk users using the API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 63
+Creating bulk users using curl . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+Creating bulk user groups using the API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+Creating bulk user groups using curl . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 70
+Managing user sessions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+Viewing or terminating active user sessions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+Viewing or changing the system and user session inactivity timeout. . . . . . . . . . . . . . . . . . . . . . . . . 73
+Setting the system session inactivity timeout . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 73
+Setting the session inactivity timeout for an existing user . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 74
+Setting active sessions (maximum and reserved). . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 75
+Setting the maximum number of active sessions in the system . . . . . . . . . . . . . . . . . . . . . . . . . . 76
+Setting the maximum number of active sessions for an existing user . . . . . . . . . . . . . . . . . . . . . 76
+Setting the reserved number of active sessions per role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 77
+Disabling inactive accounts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 78
+Token management. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 79
+Generating and Deleting API Keys . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 80
+Managing Passwords . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 81
+Managing Lockout period . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 81
+Creating and updating custom uacadmin or sysadmin role. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 83
+Creating uacsysadmin or uacadmin role using alias field . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 83
+Updating existing role to uacadmin or uacsysadmin role . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 85
+System health. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 88
+Logging . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 89
+About logging . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 89
+Service creation, change, or deletion syslog events . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 89
+Server application syslog events . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 90
+Logging workflow. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 92
+Exporting Logs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+Troubleshooting using the logging UI . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 94
+Troubleshooting operational issues of a resource or service activation. . . . . . . . . . . . . . . . . . . . 94
+Troubleshooting using the Blue Planet UI . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 95
+Viewing transactions page . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 95
+Troubleshooting using the Blue Planet logging tool . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 105
+Troubleshooting using the REST API. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 107
+Troubleshooting and helpful logging information . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+Reviewing application metrics using Grafana . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 110
+Viewing application dashboards . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 111
+Common troubleshooting dashboard . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 113
+System Alarms . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 113
+Rest Failures . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 114
+System Resource Healthcheck. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 115
+Prometheus Web UI. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 117
+Querying Prometheus . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 118
+Prometheus Alertmanager . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 119
+Monitoring system performance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 121
+Monitoring system faults . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 121
+Configuring monitoring options in Blue Planet. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 123
+About Nagios and Grafana tools . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 123
+Changing the default nagiosadmin and admin passwords . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 124
+Configuring SNMP notifications in Nagios . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 125
+Sending URL NBI checks to Nagios . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 128
+URL NBI Nagios checks example. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 129
+Configuring NFV MANO retry settings. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 130
+Configuring email alerts on Nagios . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 131
+Configuring the email reply. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 131
+Configuring the user email address. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 133
+Disabling Nagios alerts . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 134
+Viewing transactions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 136
+Viewing a transaction audit log . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 136
+Managing fields . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 138
+Maintaining your system. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 140
+Backing up and restoring software . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 141
+About backups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 141
+Performing scheduled backup tasks in the UI . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 142
+Creating scheduled backups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 144
+Changing backup Settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 145
+Setting up an archive directory for off-site storage . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 145
+Creating a site backup using the Solution Manager . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 146
+Restoring a site backup using the bpi utility . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 146
+Restoring a site backup using the bpi utility on geo-redundancy setup . . . . . . . . . . . . . . . . . . . . . . 147
+Deploying haproxy custom TLS cipher suites . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 151
+Adding HAProxy with SSL certificates (recommended) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 152
+Deploying HAProxy SSL certificates (optional) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 152
+HAProxy behavior . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 154
+Updating DNS nameservers for Docker containers (optional) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 155
+On Red Hat servers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 155
+On Ubuntu servers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 155
+Ubuntu caveats . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 156
+Configuring encryption support for domain and resource property storage . . . . . . . . . . . . . . . . . . . . . 157
+Configuring user restrictions to display sensitive information in domain properties . . . . . . . . . . . . . . 159
+Requirements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 159
+About obfuscate API changes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 159
+Setting user restrictive policies and conditions for obfuscation . . . . . . . . . . . . . . . . . . . . . . . . . . . . 160
+Preventing PUT/PATCH changes to credentials . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 161
+Obfuscating sensitive data in log entries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 162
+Performing high-level maintenance. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 164
+Updating registry information for software downloads . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 164
+Downloading Blue Planet software updates. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 165
+Verifying Blue Planet applications and resource adapter software. . . . . . . . . . . . . . . . . . . . . . . . . . 166
+Process to upgrade RAM or Disk . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 166
+Process for OS patching . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 167
+Customizing bpocore configuration settings for clusters . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 167
+Customizing asset-manager configuration settings for clusters. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 168
+Customizing bpmn configuration settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 169
+Using a global configuration service . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 170
+Viewing a configuration setting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 170
+Creating a new configuration setting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 171
+Editing or deleting a configuration setting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 171
+Restarting an application . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 172
+Shutting down a Blue Planet cluster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 172
+Performing maintenance activities using bpmaint . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 177
+Collecting statistics from a host machine . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 177
+Collecting application backup files . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 178
+Collecting application logs from a host machine . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 179
+Collecting system logs from a host machine . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 180
+Configuring Remote Access for Support . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 181
+GCS Settings. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 181
+Enabling Teleport . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 182
+Disabling Teleport . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 183
+Updating the other GCS values. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 183
+Setting up logical replication with PostgreSQL . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 184
+Understanding logical replication . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 184
+Supporting logical replication. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 184
+Enabling logical replication. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 185
+Setting up logical replication on the provider . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 186
+Enabling or disabling streaming. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 188
+Setting up logical replication on the subscriber . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 189
+Modifying the Schema . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 190
+Loss of connection between a provider and a subscriber . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 190
+Reconnecting a subscriber to a provider . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 190
+Reconnecting a subscriber . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 191
+Reviewing the Usage Audit Report. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 193
+Audit Report List . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 194
+Generating an Audit Report. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 194
+Viewing an Audit Report . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 195
+Downloading an Audit Report. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 195
+Sending an Email of an Audit Report . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 195
+Deleting an Audit Report . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 197
+Scheduling an Audit Report . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 198
+Creating a Schedule. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 198
+Editing a Schedule . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 199
+Deleting a Schedule . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 200
+Enabling an email notification for an Audit Report . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 201
+Enabling the email notification. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 201
+Configuring an Audit Report through set-policy API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 203
+Troubleshooting. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 206
+Troubleshooting your system. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 206
+Troubleshooting forgotten password or email notification issues . . . . . . . . . . . . . . . . . . . . . . . . . . 206
+Troubleshooting Network Time Protocol (NTP) timing issues . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 207
+Avoiding memory issues by increasing JVM . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 208
+Using the GCS UI to increase the JVM heap size. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 209
+Configuring the bpocore.conf file to increase the JVM heap size . . . . . . . . . . . . . . . . . . . . . . . . . . . 209
+Default JVM heap settings for bpocore . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 211
+Avoiding and troubleshooting disk usage issues . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 211
+Managing Elasticsearch log indices . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 212
+Using the GCS UI to increase the JVM parameters for Elasticsearch . . . . . . . . . . . . . . . . . . . . . 214
+Troubleshooting service issues . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 214
+Collecting logs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+Blue Planet core or platform solution logs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+Other Blue Planet solution logs . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+Changing log file rotation settings. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+Troubleshooting service issues for MDSO solutions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Using auto clean on MDSO solutions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Troubleshooting service issues for MCO solutions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Checking MCO service status. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Understanding service error messages. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 218
+Disaster recovery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 219
+About high availability (HA) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 219
+HA requirements and guidelines . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 221
+About warm standby geographic disaster recovery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 222
+Cluster support overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 223
+Warm standby georedundancy replication . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 224
+Before you begin with georedundancy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 224
+Multihost cluster warm georedundancy requirements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 224
+Single host cluster warm georedundancy requirements. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 225
+Understanding the geored installation process . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 226
+Managing HA . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 227
+Checking the integrity of your HA cluster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 227
+Finding your leader node in a cluster. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 228
+Listing all apps in a cluster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+Backing up a failing HA cluster node. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 238
+Restoring an existing snapshot to a new HA cluster. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 239
+Leaving or rejoining the HA cluster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 240
+Managing warm standby disaster recovery . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 242
+Verifying replication is active . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 242
+Verifying Asset Manager. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 242
+Verifying postgres . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 243
+Viewing Blue Planet active and backup server status . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 244
+Failing over for geographical redundancy. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+Activating a Standby site for a geographical redundancy failover. . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+Method 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 246
+Method 2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 247
+Creating a new Standby site for geographical redundancy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 248
+Cleaning up old georedundancy settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 248
+Updating hosts file. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 249
+Modifying the volume group name . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 251
+Configuring a time source. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 252
+Configuring geographical redundancy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 256
+Configuring the Blue Planet email service . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 257
+SMTP email service configuration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 257
+AWS SES email service configuration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 261
+Modifying the ILAN NET interface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 263
+Modifying the default SOO/MDSO/MCO interface. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 264
+Specifying the external license server . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 265
+Setting up users . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 266
+Validating the hosts. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 267
+Configuring SOO/MDSO/MCO hosts on active and standby sites. . . . . . . . . . . . . . . . . . . . . . . . 268
+Setup overrides configuration for postgres . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 269
+Downloading the SOO/MDSO/MCO software installation files . . . . . . . . . . . . . . . . . . . . . . . . . . 270
+Transferring software installation files . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 272
+Installing Core Platform and Extended Platform Solution on active and standby sites . . . . . . 274
+Installing SOO/MDSO/MCO and configuring georedundancy on active and standby sites
+(automatic procedure). . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 274
+Revert Override configuration in postgres . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 280
+Restoring a former Active site as a new Standby site . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 281
+Automatic restoration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 281
+Manual restoration. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 289
+Geo-redundancy behaviors and troubleshooting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 292
+Geo-redundancy behaviors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 292
+Geo-redundancy event details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 293
+Verifying geored node status after bootstrap (optional). . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 293
+Contacting Blue Planet . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 296
+LEGAL NOTICES. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+Publication history
+The following table lists the 24.04BPO Administrator Guidepublication history.
+Table 1. Publication history
+DATE (MM/DD/YYYY) VERSION NOTES
+05/03/2024 1.0 Initial 24.04 release
+07/12/2024 1.1 • Added a note for enablement of SAML External
+Authentication in "Disaster Recovery" section.
+• Updated note in Disabling inactive accounts
+section.
+08/28/2024 1.2 Added a note regarding impact of restarting
+solutionmanager on RA sessions in Updating
+registry information for software downloads
+section.
+09/18/2024 1.3 Added a caution related to Grafana UI
+configuration in About Grafana section.
+BPO Admin Guide, Release 24.04 Publication history
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 9
+Overview
+Use Blue Planet network orchestration software to expand and accelerate the delivery of new services
+across both virtual and physical domains.
+Blue Planet models managed entities as resources. These entities include physical ports, VLAN IDs, host
+IP addresses, E-Line services, virtual machines, physical servers, OpenStack Neutron subnets, logical disk
+volumes, VNFs, and many more.
+Blue Planet uses TOSCA-based service templates to help program your resources regardless of whether
+they are physical, virtual, or cross-domain.
+Admin guide contains information about configuring and maintaining the Blue Planet (BP) platform and
+applications, specifically Blue Planet Orchestration (BPO).
+Blue Planet architecture
+The section describes the structure and architecture of the Blue Planet software portfolio.
+The Blue Planet portfolio provides the key software components that network operators need to
+streamline and digitize their service delivery lifecycle, from design, to activation and assurance. The open
+and modular Blue Planet product family includes dynamic inventory, service order management, multi-
+domain service orchestration, unified assurance and analytics, and more.
+This section covers:
+• BP software layers
+• Base infrastructure
+• Common platform
+• Blue Planet platform
+• Blue Planet products
+• Intelligent automation solutions
+• Customer integrations
+BP software layers
+The following diagram is an overview of the Blue Planet cloud native architecture. Each part of the
+diagram is discussed in more detail in this section.
+BPO Admin Guide, Release 24.04 Overview
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 10
+Base infrastructure
+Blue Planet can be deployed on Linux servers within your IT infrastructure (on-premises deployment), or it
+can be deployed on supported public cloud platforms. The Blue Planet infrastructure requirements are
+described in the Blue Planet Engineering Guide available on the Ciena Portal .
+Common platform
+The common platform includes container orchestration and the Blue Planet platform. The Blue Planet
+platform and applications are based on a microservice architecture.
+The microservices architecture comprises independent services that communicate with each other using
+language-agnostic REST APIs. Each microservice runs in a separate container and performs a specific
+task, thus facilitating a modular approach to system building. These loosely coupled services do not
+require changes to other services when one of them is updated. Applications are run as distributed
+microservices through container virtualization. These containers allow you to scale and deploy them
+easily across a compute cluster, as well as manage them using the standard orchestration tools.
+Blue Planet can be deployed using either the BP2 platform based on Docker container orchestration or the
+BP K8s platform based on Kubernetes (K8s) container orchestration. Kubernetes (K8s) is an open source
+container orchestration system that can be used to automate the deployment and management of Blue
+Planet solutions. The following K8s cluster orchestration platforms are supported:
+• Amazon AWS Elastic Kubernetes Service (EKS)
+• Microsoft Azure Kubernetes Service (AKS)
+• Google Kubernetes Engine (GKE)
+• RedHat OpenShift K8s (Used for on-prem deployments)
+BPO Admin Guide, Release 24.04 Overview
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 11
+
+Kubernetes support varies by product. For more information on the exact deployment
+options, see the specific engineering guide for your product lineup.
+Blue Planet platform
+The Blue Planet Platform is intended to support and facilitate the following:
+• Managing the lifecycle of Blue Planet solutions and applications as containerized services
+• Facilitating Highly Available (HA) and Horizontally Scalable (HS) deployments and applications
+The Blue Planet platform includes the core platform and the extended platform solution. The core
+platform contains the solution manager. The extended platform and the rest of the Blue Planet software
+are deployed as solutions that are managed by the solution manager. A solution is a set of applications
+that are deployed and managed together. The extended platform solution includes common services
+such as User Access Control (UAC), API gateway, platform health monitoring, system metrics and
+logging. These common services support all Blue Planet deployments.
+Blue Planet products
+Blue Planet includes following products:
+• Blue Planet Orchestration (BPO) including:
+◦ MDSO (Multi Domain Service Orchestration) to automate end-to-end, zero-touch service lifecycle
+management across multi-vendor physical and virtual networks.
+◦ MCO (Multi Cloud Orchestrator) to automate lifecycle management of Virtual Network Function
+(VNF) and Cloud Native Function (CNF) based network services.
+◦ SOO (Service Order Orchestration) to automate the entire service order lifecycle from creation to
+completion.
+• Blue Planet Inventory (BPI) collects operational data from offline OSS and multi-vendor networks. This
+creates an up-to-date, comprehensive view of all physical network resources and logical multi-layer
+services, which helps network operators streamline business processes and achieve greater levels of
+operational efficiency.
+• Route Optimization and Analysis (ROA) provides visibility into IP/MPLS network and overlay services,
+including 5G network slices from any tower to the data center. The ROA path computation and
+provisioning capabilities support service automation.
+• Unified Assurance and Analytics (UAA) provides comprehensive performance and fault management
+making use of advanced AI/ML processing. This is to assure network infrastructure and service
+performance including the enablement of closed loop workflows for automated root cause analysis
+BPO Admin Guide, Release 24.04 Overview
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 12
+and closed loop automation.
+A lineup is a set of solutions that are deployed together to provide all the applications needed for a
+product or multi-product deployment. Each of the previously listed products has a corresponding lineup
+file.
+Intelligent automation solutions
+Blue Planet’s intelligent automation solutions are combinations of products with standardized integration
+and consulting services. Because these solutions are built on cloud-native architectural principles, they
+accelerate network buildouts and enables service lifecycle automation.
+Customer integrations
+You can use the Blue Planet DevOps Toolkit (DTK) to build custom applications and solutions that
+integrate with Blue Planet products through APIs. Use these applications to integrate Blue Planet with
+third party products and customer OSS and BSS systems. You can also build custom user interfaces,
+workflows, reports, dashboards, and portals over the Blue Planet products.
+BPO Admin Guide, Release 24.04 Overview
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 13
+Hardware and software requirements
+This section covers:
+• Blue Planet server requirements
+• Blue Planet required and custom software
+• Post-installation procedures
+For the latest hardware and software details, see theBlue Planet Orchestration Engineering Guide.
+Blue Planet server requirements
+For Blue Planet server hardware and VM requirements see theBlue Planet Orchestration Deployment
+Guide.
+
+If you have upgraded from a previous release, your folders may be different; for
+example, /bp2 versus /opt/ciena). For more details, see theUnderstanding Blue Planet
+conceptssection in theBlue Planet Orchestration User Guide.
+Blue Planet required and custom software
+This topic describes the following details:
+• Blue Planet software
+• Accessing BPO
+• Definition documents
+• Third-party software
+• Resource adapters (RA)
+Blue Planet software
+The Blue Planet platform is the software backbone that runs microservices. Since each microservice is a
+small, autonomous service, a platform is required to ensure cohesive communication. To run the Blue
+Planet platform software, you require the BP Solution platform version that is compatible with your
+BPO Admin Guide, Release 24.04 Hardware and software requirements
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 14
+deployment of applications (or apps), such as orchestrate UI.
+Blue Planet Orchestrate contains these required baseline software solutions:
+• Core Platform
+• Extended Platform solution
+• Orchestrate solution
+• Orchestrate UI solution
+• BPO UI solution
+• BP Platform UI solution
+You need the MANO solution (MCO) if you want access to the NFV orchestration tools.
+For instructions on downloading and installing Blue Planet platform, orchestration, and other solutions,
+see theBlue Planet Orchestration Deployment Guideon the Ciena portal.
+For upgrade instructions, see theBlue Planet SOO/MDSO/MCO Solutions Upgradeon the Ciena portal.
+For SOO/MDSO/MCO server requirements including server disk space and partitions as well as required
+open ports, see theBlue Planet Orchestration Deployment Guide.
+Accessing BPO
+1. To log in to the Blue Planet UI, enter https://<bp_server_IP//blueplanet-app-bar-ui> to open the login
+screen with a secure connection, where<bp_server_IP>is the IP address or DNS name of your Blue
+Planet server.
+2. To log in to the legacy Blue Planet UI, from the App Bar UI, navigate toOrchestration > Legacy-UI.
+Definition documents
+You can customize Blue Planet by onboarding any customized definition documents into the Asset
+Management. All default BP definition documents are preloaded into the server upon installation. The
+Asset Management stores the standard library definitions, as well as any onboarded definitions you add.
+Asset Management provides a secure interface in which to manage these assets. The definitions include
+service templates, resource type schemas, declarative and imperative plans (for example, scripts), and UI
+icons and schemas.
+Blue Planet uses service templates to define the specific service offerings. These templates include
+standard versions provided by Ciena in the solution, or deployment-specific templates developed for or by
+the user. Templates provided by Ciena are onboarded automatically during installation. To onboard
+BPO Admin Guide, Release 24.04 Hardware and software requirements
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 15
+customized templates, selectAsset Manager > Onboarding > Asset Managementfrom the Blue Planet
+app bar. For instructions on customizing service templates and onboarding, see the DevOps Toolkit on
+the DevOps Exchange .
+Third-party software
+The Blue Planet platform requires a web browser (Chrome, Firefox, or Safari) with cookies enabled for the
+domain you are using to access the application. Ciena recommends Chrome.
+Other third-party open-source software is used to perform basic functions.
+Resource adapters (RA)
+Resource Adapters (RA) provide a service abstraction layer for individual domains (physical network
+elements, virtual network functions, and cloud resources). They provide the translation from the device to
+the orchestrator thus allowing Blue Planet to provide a single user-interface to multiple various devices.
+As part of the installation process, some RAs are automatically onboarded. Specific RAs may need to be
+onboarded during the initial Blue Planet installation and configuration process. To verify successful RA
+installation, from the Blue Planet app bar, checkAsset Manager > Onboarding > Asset Management.
+The RAs that get installed as part of your solution define the domain-types available to your users. RAs
+are available for both multi-domain service orchestration (MDSO) as well as multi cloud orchestrator
+(MCO) implementations. For information on how to develop your own RAs, look for details on the see the
+DevOps Toolkit on the DevOps Exchange .
+
+The D-NFVI RA is not available with the standard lineup. If you need a D-NFVI RA, you
+may request for a custom lineup.
+For information on specific RAs, see yourRA Information Sheets DevOps Exchange .
+BPO Admin Guide, Release 24.04 Hardware and software requirements
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 16
+Post-installation procedures
+This section provides a list of several required, recommended, and optional Blue Planet Orchestrate
+configuration procedures that you may need to complete post-installation. Ensure you review the table to
+determine what tasks may require your action.
+Table 2. Recommended configuration tasks
+CONDITION TASK WHEN NEEDED
+Required User and system setup • To configure users and tenants.
+• To configure RADIUS or LDAP refer to BPO
+Security Guide.
+• If password expires, or you need to change the
+password, check the following:
+1. Verify SMTP server configuration is done.
+2. Verify Swagger UAC notification-config settings.
+Check settings using `GET
+/api/v1/notificationconfig: * enabled=true *
+emailLinkServer = https://<host ip> or
+https://<host-name> or https://<site ip> *
+resetLinkPath=blueplanet-core-uac/reset-
+password
+• To ensure users have valid email IDs for
+forgotten password notifications.
+Required For more information, see
+Configuring an FTP server and
+FTP clientin theBlue Planet
+Orchestration User Guide.
+To use MCO VNFD package upload and download
+for network service deployment (requires an FTP
+server to store the VNF images required by
+VIM/VIMs).
+Required Backing up and restoring
+software
+To schedule or create Orchestrate backups.
+BPO Admin Guide, Release 24.04 Hardware and software requirements
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 17
+CONDITION TASK WHEN NEEDED
+Recommended Adding HAProxy with SSL
+certificates (recommended)
+To replace the installed default self-signed SSL
+certificate with one signed by a trusted authority
+for extra security.
+Recommended Updating DNS nameservers for
+Docker containers (optional)
+To set your BP Docker containers to use your DNS
+server to avoid network timeouts when offline.
+Recommended Configuring monitoring options
+in Blue Planet
+Changing Nagios and Grafana passwords, SNMP
+notifications, and developer-only settings.
+Recommended Configuring encryption support
+for domain and resource
+property storage
+For system administrators to help protect against
+credential disclosure in backup snapshots stored
+offsite.
+Recommended For more information, seeAlarm
+notificationsin theBlue Planet
+Orchestration User Guide.
+To create Blue Planet alarm management
+notifications to notify agents of new interactions
+when the default system notifications may not
+suffice.
+Optional For more information, see
+Policiesin theBlue Planet
+Orchestration User Guide.
+To configure stateless authorization and event
+policies or use the set of canned stateful policies
+such as sliding window or threshold crossing.
+Optional Avoiding memory issues by
+increasing JVM
+Experienced users can fine-tune JVM when
+running at scale.
+Optional Configuring user restrictions to
+display sensitive information in
+domain properties
+For system administrators to protect sensitive
+Blue Planet domain password information.
+BPO Admin Guide, Release 24.04 Hardware and software requirements
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 18
+System preferences
+TheSystem Preferencestab assists in customizing the features and appearance of BPO with additional
+options.
+Most of the fields in theSystem Preferencestab are similar to theUser Preferences. The only difference
+is user preferences are updated only for that user and system preferences are selected by administrators
+for all its users.
+ By default, the system preferences are not visible for administrators or users.
+To view system preferences, you need to:
+1. Create a new role with required permissions.
+2. Assign that new role to the required user.
+BPO Admin Guide, Release 24.04
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 19
+Creating a new role
+Create a role with the following permissions:
+• Add System Preferences
+• Launch System Preferences
+• Modify System Preferences
+For more information on how to create a role, refer to Creating a role .
+BPO Admin Guide, Release 24.04 Creating a new role
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 20
+Assigning new role to the required user
+To assign this role to the required user:
+1. From the App Bar UI, navigate toUser Access Control > Users.
+TheUserspage opens.
+2. Search for a specific user account using the following criteria:
+◦ Username
+◦ First name
+◦ Last name
+◦ Email
+◦ Systems (select All Users or existing users)
+3. Select a user account from the list.
+4. ClickEdit.
+5. From the Available roles table, select the newly created role with required permissions.
+6. Click the Add icon (>). The Assigned User Roles table is updated
+7. ClickApply.
+8. In the Confirm password dialog box, enter the password of the currently logged in user.
+9. ClickApply.
+The new role is assigned to the user. You can also assign this role to existing admin and administrators.
+The sections or fields that are available for both System and User Preferences are described inBlue
+Planet Orchestration User Guide>Preferencessection.
+The sections or fields that are only available in System Preferences include:
+BPO Admin Guide, Release 24.04 Assigning new role to the required user
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 21
+Report Grid
+The fields and options in Report Grid section include:
+FIELD OR OPTION DESCRIPTION
+Default filter change stream
+delay
+Defines the responsiveness of the data grid filters in milliseconds.
+Trim Whitespaces in Filters If enabled, the filters eliminate the entered whitespaces.
+Enable search after Enter only If enabled, the search is performed after pressing the Enter key.
+Characters
+The fields and options in Characters include:
+FIELD OR OPTION DESCRIPTION
+Single Character Wildcard Enables the administrator to define the single character wildcard, for
+example (*).
+Multicharacter Wildcard Enables the administrator to define the multicharacter wildcard, for
+example (%).
+Escape character Enables the administrator to define the escape character, for
+example (\).
+Character for NOT Enables the administrator to define the character for NOT operation,
+for example (!).
+Character for OR Enables the administrator to define the character for OR operation,
+for example (|).
+Operands
+The fields and options in Operands include:
+BPO Admin Guide, Release 24.04 Report Grid
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 22
+FIELD OR OPTION DESCRIPTION
+Less Than Operand Defines the operand for Less than operation (<).
+Equal Operand Defines the operand for equal operation (=).
+Greater Than or Equal Operand Defines the operand for Greater Than and Equal operation (>=).
+Not Equal Operand Defines the operand for Not Equal operation (!=).
+Less Than or Equal Operand Defines the operand for Less Than or Equal operation ( ).
+Greater Than Operand Defines the operand for Greater Than operation (>).
+Keywords
+The fields and options in Keywords include:
+FIELD OR OPTION DESCRIPTION
+Keyword for OR Defines the keyword for OR operation.
+Keyword for NULL Defines the keyword for NULL operation.
+BPO Admin Guide, Release 24.04 Report Grid
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 23
+Global Search
+The fields in Global Search section enables the administrator to customize the Global Search feature. The
+fields include:
+FIELD OR OPTION DESCRIPTION
+Poll Interval Defines the time period between the end of the timeout period of the
+last retry or completion of a network request, and the next request
+for data on the network.
+BPO Admin Guide, Release 24.04 Global Search
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 24
+Miscellaneous
+The fields in this section enables the administrator to customize the login attempts feature. The fields
+include:
+FIELD OR OPTION DESCRIPTION
+LoginPopup Attempts Defines the number of incorrect login attempts allowed per user. By
+default, the value is 5.
+BPO Admin Guide, Release 24.04 Miscellaneous
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 25
+User and system setup
+This section describes Blue Planet user and system setup tasks.
+The topics include:
+• Managing tenants or sub-tenants
+• Managing roles
+• Managing user accounts
+• Managing user groups
+• Creating bulk users and bulk usergroups
+• Managing user sessions
+• Generating and Deleting API Keys
+• Managing Passwords
+• Creating and updating custom uacadmin or sysadmin role
+BPO Admin Guide, Release 24.04
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 26
+Managing tenants or sub-tenants
+In the App Bar UI, you can use the UAC (User Access Control) icon to create tenants and users. You can
+also assign roles and provide permissions to access specific resources or applications.
+Tenants are groupings of users and associated resources that form a common reference for
+orchestrating instantiated resources and services.
+Blue Planet orchestration includes a master tenant. Administrators can use the master tenant, as well as
+create other sub-tenants to create organizational structures in managed domains.
+This section covers:
+• About tenant and sub-tenant creation
+• Tenant example use cases
+• Tenant guidelines
+• Naming best practice
+• Tenant and domain relationships
+• Adding and editing tenants
+• Deactivating tenants
+For details about how to configure administrative rights for individual LDAP users, refer toBPO Security
+Guide.
+About tenant and sub-tenant creation
+Tenants are groups of users that work as part of the same organization. A Tenant owns all domains and
+resources. Sub-tenants are group of users who work within the tenant organization.
+You can assign one or multiple tenants to a user.
+Tenant example use cases
+An example of tenant can be a Ciena tenant that is comprised of sub-tenants such as Engineering,
+Marketing, and Operations. These sub-tenants might have access to different resources, therefore could
+have specific users associated with them.
+BPO Admin Guide, Release 24.04 Managing tenants or sub-tenants
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 27
+Some ways to use sub-tenants include:
+• Organizing orchestration resource access by assigning users to tenants associated with specific
+leased-operators or customers of a service provider.
+• Managing domain access by creating specific domain account tenants such as OpenStack controller
+context where a tenant may be equivalent to a project.
+• Adding multiple tenants to administrators when someone goes on vacation using an LDAP user
+schema, then removing them when they are no longer needed.
+Administrators set up access control and security, but each Blue Planet app is responsible for
+implementing those rules.
+Tenant guidelines
+Keep the following rules and guidelines in mind when creating and using tenants and sub-tenants:
+• Only a user with the sysadmin role in the master tenant can create a new tenant.
+• The master tenant has access to all sub-tenant resources.
+• Sub-tenants can access resources within their own tenant and their child tenants only.
+• A new feature allows administrators to assign tenant access to other administrators to allow them to
+Log in to multiple tenants. This access is based on the accessible_tenants_attribute in their user
+profile, or if you are using LDAP to authenticate, then ultimately from the LDAP database. If
+accessible_tenants is not used, user can belong to one tenant only. For more information, refer toBPO
+Security Guide.
+• A persistent database stores all activities related to user administration of tenants.
+• Admin-created sub-tenant users access only the sub-tenant where they have privileges (unless
+accessible_tenants are configured).
+• You can only deactivate tenants, not delete them.
+Your system administrator assigns your user ID to a tenant. If you are unable to access applications or
+devices, contact your system administrator for privileges.
+Naming best practice
+The Blue Planet user interface enables you to sort various entries such as usernames, domain names,
+BPO Admin Guide, Release 24.04 Managing tenants or sub-tenants
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 28
+resources, and so on.
+If you plan to use numbers in the attribute name, ensure you use the same number of characters so that
+the UI can sort successfully.
+For example, if you have domain names such as SF-1, SF-5, and SF-2000, sorted attributes will appear as
+SF-1, SF-2000, and SF-5. If you change the names to SF-0001, SF-0005, and SF-2000, then sorting works
+as expected; SF-0001, SF-0005, and SF-2000. Using leading zeros will cause the sort to work as expected.
+Also using the same number of numerical characters fixes the sort issues that may occur.
+Tenant and domain relationships
+The relationship between tenants and domains are based on the following:
+• Tenants are a way to group users that are members of a common organization and have the same
+scope of responsibility in terms of managed resources.
+• Domains are used to own and manage resources. Domains are owned by a tenant.
+Blue Planet Orchestration associates resources to respective tenants.
+Adding and editing tenants
+To view and manage tenants:
+1. Login to BluePlanet as an admin user and master tenant.
+2. From the App Bar UI, selectUser Access Control > Tenants.
+3. To create a new tenant:
+a. Click+ Add.
+BPO Admin Guide, Release 24.04 Managing tenants or sub-tenants
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 29
+Tenants are created as children of the master or sub-tenants from which you perform the creation
+steps.
+b. Enter the following data into the form:
+▪ Tenant name: Maximum length allowed is 30 characters and it must be unique.
+▪ Description: Maximum length allowed is 255 characters.
+c. Select theParentfrom the dropdown list.
+d. Ensure you selectIs activeto activate this tenant. If you plan to activate this tenant later, leave this
+checkbox empty.
+
+For more information on how to name tenants so they sort as expected, see
+Naming best practice .
+e. ClickApply.
+f. In theConfirm Passworddialog box, Enter the Password of the current account. For SAML based
+application, a confirmation dialog box is displayed instead of password dialog box.
+g. ClickApply.
+4. To edit an existing tenant:
+a. Navigate toUser Access Control > Tenants.
+b. Select the tenant from the tenant list.
+
+If you do not see your tenant, you may need to log out and log to another tenant
+with the sysadmin access.
+c. ClickEdit.
+d. Update the data in the form and clickApply.
+BPO Admin Guide, Release 24.04 Managing tenants or sub-tenants
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 30
+e. In theConfirm Passworddialog box, enter the password of the current account. For SAML based
+application, a confirmation dialog box is displayed instead of password dialog box.
+f. ClickApply.
+Deactivating tenants
+To deactivate a tenant:
+1. From the App Bar UI, selectUser Access Control > Tenants.
+2. Select the tenant from the tenant list.
+3. ClickEdit.
+4. UncheckIs activeand clickApply.
+5. In theConfirm Passworddialog box, enter the password of the current account. For SAML based
+application, a confirmation dialog box is displayed instead of password dialog box.
+6. ClickApply. The status of tenant is updated to Disabled.
+BPO Admin Guide, Release 24.04 Managing tenants or sub-tenants
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 31
+Managing roles
+The following default roles are provided as part of BPO to assist with establishing main user roles to
+access different areas of the solution. You cannot modify these default roles, but you can define custom
+security roles.
+To create a custom role, see Creating a role :
+• Application admin - This includes administration of Orchestrate, application-level security, and basic
+visibility of network elements and services.
+• Observer - Read only access with basic visibility of network elements and services.
+• Provisioner - Create, modify, or delete resources. Cannot create or delete domains and products.
+• sysadmin - Master tenant sysadmin can create or deactivate a tenant. It works with Application Admin
+role.
+
+For SaaS (Software as a Service) environment, BluePlanet does not allow multi
+tenants. So, each customer has one SaaS deployment.
+• admin - All privileges except create tenants, deactivate tenants, create roles, and delete roles.
+• user - Privileges on identified tenant, can change user password.
+When you select a row in the "Roles" window, an action bar appears at the bottom right, comprising four
+buttons:
+• Delete - To delete the selected role(s).
+• Clone - To clone the selected role.
+• Edit - To edit the selected role.
+• Details - To open a new tab with additional details.
+All applicable actions have the button enabled. Buttons are disabled based on the following rules:
+• Aread onlyrole cannot be edited or deleted.
+• A role with assigned users cannot be deleted.
+• Only a single role can be edited.
+• Multiple roles can be deleted at once.
+• Default roles cannot be edited nor deleted.
+Open the "Details" window to see additional information related to the selected role(s), including a list of
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 32
+assigned permission.
+This section covers:
+• Role-based access control (RBAC)
+• Procedures for managing roles
+Role-based access control (RBAC)
+Blue Planet uses RBAC to allow administrators to set user permissions, roles, and tenants. Each role has
+specific permissions attached to it, so the permissions are evaluated to determine whether an action on a
+resource is permitted. In addition to the User Administration app that manages user and tenant tasks,
+each app sets their own roles for task completion.
+The following table lists several default Orchestration user application roles. Your access list may vary
+depending on the apps or solutions you install. You can also create your own roles.
+
+Each user should have both a Security application role and a Blue Planet Orchestration
+application role. For example, (admin, Application admin) or (user, Provisioner).
+Table 3. User application role examples
+APPLICATION ROLE DESCRIPTION
+Security admin All privileges for user (except operations on
+sysadmin user)).
+Security sysadmin All privileges for UAC operations (It works along
+with Application admin role only).
+Security user Privileges on identified tenant; can change user
+password.
+Alerts
+Performance Monitor
+Policy Manager
+watcher-admin Resource discrepancy notifications for events,
+alerts, and polling.
+Blue Planet
+Orchestration
+Application admin Author all content. This includes administration of
+Orchestrate, application-level security, and basic
+visibility of network resources and services.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 33
+APPLICATION ROLE DESCRIPTION
+Blue Planet
+Orchestration
+SMGR admin Slice Manager administrator. This includes
+privileges to create, delete, and modify
+subdomains, slices, and service specifications.
+Blue Planet
+Orchestration
+Provisioner Create, modify, or delete resources. Cannot create
+or delete domains and products.
+Blue Planet
+Orchestration
+Observer Read only access.
+For user roles, see theBlue Planet MDSO and MCO Solutions Release Notesfor details on existing issues.
+For details on how to configure Remote Authentication Dial-in User Service (RADIUS) or Lightweight
+Directory Access Protocol (LDAP) authentication security service to communicate with the Blue Planet
+user access control (UAC) administration app, seeBPO Security Guide.
+Procedures for managing roles
+You can manage roles with the following procedures:
+• Viewing permissions
+• Creating a role
+• Editing a role
+• Cloning a role
+• Deleting a role
+• Viewing role details
+Viewing permissions
+Each permission includes:
+• Name
+• Category
+• Operation
+• Endpoints (in expanded view)
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 34
+The main benefit of this page is that it allows you to have full control of filtering. It can quickly get you
+familiarized with the existing permissions and endpoints.
+To view all BPO permissions with all their attributes, similarly to the list selection of permissions in the
+"Create role" window:
+1. From the App Bar UI, navigate toUser Access Control > Permissions.
+ThePermissionswindow appears with a list of existing permissions.
+2. Sort and search permissions.
+3. Refine the list by permission name, category, action, and operation.
+4. Select aPermissionto view its details.
+Creating a role
+Use the following procedure to create a custom role and assign permissions and partitions as required.
+Before creating a role, you need to understand the minimum number of required permissions to access
+BPO.
+
+When the role is anExclusive, it cannot be combined with any other role while
+assigning it to user or user group.
+Due to the large number of permissions, you can either:
+• Assign a default role as a base role for a user, and then create a custom role with additional
+permissions and assign a custom role to the user.
+• Clone a default role, and then add or remove permissions. To clone a role, see Cloning a role .
+
+Removing a permission can impact access to BPO. For example, removing the view
+alarms permission will prevent the user from accessing alarms.
+
+When assigning a custom role to a user with security admin privilege, you must assign
+the additional role of sysadmin, if this user will be performing security operations such
+as creating a user account and creating a role.
+To create a role:
+1. Log in to BPO as a user with theApplication adminandUser Access Control sysadminroles.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 35
+2. From the App Bar UI, navigate toUser Access Control > Roles.
+TheRolespage appears with a list of existing roles.
+3. Click+ Add.
+TheAdd Roledialog box opens.
+4. Add information in the required fields. For more information, see Fields for creating a role .
+Table 4. Fields for creating a role
+FIELD DESCRIPTION
+Role Name
+(required)
+Add a name for the role, such as "Security admin". Maximum length allowed is
+50 characters and it must be unique within an application.
+Description
+(optional)
+Optionally, add details to describe the role. Maximum length allowed is 255
+characters.
+Exclusive
+(optional)
+Check the box if the role you are creating is an Exclusive.
+
+When the role is an Exclusive it cannot be combined with any
+other role while assigning it to user or user group.
+Permissions Provides a selection of permissions to be assigned to the role from available
+permissions.
+For each role you create, make sure to include the following permissions to
+properly log in to BPO:
+* View password policies
+* View roles
+5. From Available Permissions table, drag and drop the required permissions to the Assigned
+permissions table.
+6. You can sort the permissions by:
+a.page name: The possible options are Alarms, api-controller, Asset Manager, etc.
+b.name: The possible options are names of the permissions such as, delete-alarms, clear-alarms,
+etc.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 36
+c.action: The possible options are Delete, modify, launch, etc.
+d.operation: The possible options are GET, DELETE, POST, PUT, etc.
+e.systemName: All the systemName options can be used for sorting the table.
+7. ClickAdd Allicon to add all available permissions to assigned permissions.
+8. ClickApply. Once you have clicked onApply, aConfirm Passworddialog box appears.
+9. Enter the password of the currently logged in user in thePasswordfield.
+10. In theConfirm Passworddialog box, enter the password of the current account. For SAML based
+application, a confirmation dialog box is displayed instead of password dialog box.
+11. ClickApply. The new role appears in theRolespage.
+Editing a role
+ You cannot edit default roles (role with attribute "Is Customer Modifiable: No").
+
+When the role is anExclusive, it cannot be combined with any other role while
+assigning it to user or user group.
+To edit a role:
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 37
+1. Log in to BPO as a user with theApplication adminandUser Access Control sysadminroles.
+2. From the App Bar UI, navigate toUser Access Control > Roles.
+TheRolespage appears with a list of existing roles.
+3. Select a role from the list.
+4. ClickEdit.
+TheEdit Rolepage appears with the selected role information.
+To make a role an Exclusive, checkExclusive.
+To make a role non-Exclusive, uncheckExclusive.
+
+You can not make a role anExclusiveif it is already assigned to user or user
+groups in combination of other roles.
+5. From Available Permissions table, select a permission.
+6. Click theAddicon to add the available permission or clickAdd Allicon to add all available
+permissions to assigned permissions.
+7. Enter the updated information in the required fields. For more information, see Fields for editing a role .
+8. ClickApply. Once you have clicked onApply, aConfirm Passworddialog box appears.
+9. Enter the password of the currently logged in user in thePasswordfield.
+10. ClickApply. The edited role appears in theRolespage.
+Table 5. Fields for editing a role
+FIELD DESCRIPTION
+Name Edit this field to change the name for the role. This field is required.
+Description Optionally, add or edit details to describe the role.
+Exclusive Check or uncheck the box to make a role Exclusive or non-Exclusive.
+
+You can not make a role an Exclusive if it is already
+assigned to user or user groups in combination of
+other roles.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 38
+FIELD DESCRIPTION
+Permissions Provides a selection of permissions to be assigned to the role from
+available permissions.
+Cloning a role
+
+When the role is anExclusive, it cannot be combined with any other role while
+assigning it to user or user group.
+To clone a role:
+1. Log in to BPO as a user with theApplication adminandUser Access Control sysadminroles.
+2. From the App Bar UI, navigate toUser Access Control > Roles.
+TheRoleswindow appears with a list of existing roles.
+3. Search for a specific role.
+4. Select a role from the list.
+5. ClickCopy.
+TheAdd Role (name of selected role)dialog box opens.
+6. Enter the updated information in the required fields. For more information, see Fields for cloning a
+role.
+
+Permissions from a selected role are automatically saved to a cloned role. For
+details about changing permissions assigned to a role, see Editing a role .
+7. ClickApply. Once you have clicked onApply, aConfirm Passworddialog box appears.
+8. Enter the password of the currently logged in user in thePasswordfield.
+9. ClickApply. The cloned role appears in theRolespage.
+Table 6. Fields for cloning a role
+FIELD DESCRIPTION
+Name Edit this field to change the pre-populated name (Clone role <selected role
+name>). This field is required.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 39
+FIELD DESCRIPTION
+Description Optionally, add details to describe the new role.
+Exclusive Check or uncheck the box to make a role an Exclusive or non-Exclusive.
+
+When the role is anExclusive, it cannot be combined
+with any other role while assigning it to user or user
+group.
+Deleting a role
+ You cannot delete default roles (role with attribute "Is Customer Modifiable: No").
+To delete a role:
+1. Log in to BPO as a user with theApplication adminandUser Access Control sysadminroles.
+2. From the App Bar UI, navigate toUser Access Control > Roles.
+TheRolespage appears with a list of existing roles.
+3. Search for a specific role. Refer toBlue Planet Orchestration User Guide.
+4. Select a role from the list.
+5. ClickDelete.
+A confirmation message appears.
+6. Enter the password of the currently logged in user in thePasswordfield.
+7. ClickApply.
+The role is deleted from the list.
+Viewing role details
+To create a custom role, see Creating a role . To view details for an existing security roles:
+1. Log in to BPO as a user with theApplication adminandUser Access Control admin/sysadminroles.
+2. From the App Bar UI, navigate toUser Access Control > Roles.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 40
+TheRolespage opens with a list of existing roles.
+3. Refine the list by role name (refer to theBlue Planet Orchestration User Guide)
+4. Select the required role.
+TheRole Detailspage opens.
+BPO Admin Guide, Release 24.04 Managing roles
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 41
+Managing user accounts
+The BPO system comes preconfigured with the admin user that is assigned all default roles
+automatically:
+• Application admin - This includes administration of Orchestrate, application-level security, and basic
+visibility of network elements and services.
+• Observer - Read only access with basic visibility of network elements and services.
+• Provisioner - Create, modify, or delete resources. Cannot create or delete domains and products.
+• sysadmin - Master tenant sysadmin can create or deactivate a tenant. It works with Application Admin
+role.
+
+For SaaS (Software as a Service) environment, BluePlanet does not allow multi
+tenants. So, each customer has one SaaS deployment.
+• admin - All privileges except create tenants, deactivate tenants, create roles, and delete roles.
+• user - Privileges on identified tenant, can change user password.
+Admin users with Application admin and sysadmin roles can also create new users and assign roles as
+required. See Creating a user account .
+This section covers:
+• User configuration
+• Procedures to manage user accounts
+User configuration
+Blue Planet installs a single administrative user calledadminthat belongs to amastertenant within the
+user access control (UAC) app. The admin user sets up multiple users as well as multiple tenants (or
+customers of the software apps that make up Blue Planet). Multi-tenancy permits creation of separate
+customer tenants who can then set up associated users with access to only selected apps and resources.
+To create and manage multiple user accounts to access the orchestration UI and Blue Planet Application
+Programming Interface (API), in the App Bar UI selectSystem > Users. Ensure you give your users Blue
+Planet Orchestration user roles in addition to their specified role or they cannot perform orchestration
+tasks.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 42
+In addition, UAC allows you to set up additional tenants and sub-tenants to allow user access to specific
+tenant resources. For more details, see Managing tenants or sub-tenants .
+When planning your orchestration strategy for tenants and sub-tenant users, keep in mind the following:
+• User and its tenants
+• Tenant’s Resources
+• Required role permissions
+The following table describes the role privileges within Blue Planet.
+Table 7. Role privileges within the Security app
+TASK/ACTION USER1 ADMIN SYSADMIN
+Modify email address and password
+(self)
+x x x
+Modify API keys x x x
+Modify others' username, email
+address, or password
+x x
+Create a new user x x
+Enable (or disable) a user x x
+Create roles x (with Application
+admin role) 2
+Assign or modify user roles x x
+Create and delete API key assignments x x
+Assign or modify user roles x x
+Create, edit, and deactivate tenants or
+sub-tenants
+x
+Edit password configuration policy x x
+1 Check theBlue Planet MDSO and MCO Solutions Release Notesfor details on any existing issues. 2
+Sysadmin user must also have Application admin role to create new users and assign roles.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 43
+Procedures to manage user accounts
+This section covers:
+• Creating a user account
+• Viewing user accounts
+• Resetting a user account password
+• Editing a user account
+• Activating, inactivating, and unlocking multiple users
+• Resetting a forgotten user password
+Creating a user account
+Use the following to create a user account.
+Admin users with Application admin and sysadmin roles can also create new users and assign roles as
+required. The initial list of roles in the panel include a set of predefined roles that are deployed with BPO:
+• Application admin - This includes administration of Orchestrate, application-level security, and basic
+visibility of network elements and services.
+• Observer - Read only access with basic visibility of network elements and services.
+• Provisioner - Create, modify, or delete resources. Cannot create or delete domains and products.
+• sysadmin - Master tenant sysadmin, can create or deactivate a tenant. Works with the Application
+Admin role.
+
+For SaaS (Software as a Service) environment, BluePlanet does not allow multi
+tenants. So, each customer has one SaaS deployment.
+• admin - All privileges except create tenants, deactivate tenants, create roles, and delete roles.
+• user - Privileges on identified tenant, can change user password.
+Admin users can create additional roles. When creating a new user account, Admin users can request
+that the user change their password. If this option is selected, once the account is created, the user
+receives an email with a link to reset their password. The user has 24 hours to activate the account before
+the provided link expires. When this time expires, the user can either contact an Administrator to reset the
+account or use the "forgot password" link on the login screen. For details, see "Resetting your forgotten
+user password" in theBlue Planet Orchestration User Guide.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 44
+Before you start this procedure, make sure that you
+• Log in to BPO as a user with theApplication adminandUser Access Control admin/sysadminroles.
+• Have set up your external email service.
+
+The email service associated with the user account is an external email service.
+The user needs a valid email address to access BPO; the email service associated
+with this email address is not part of the BPO solution. This external email service
+must be set up before you create a user account. Otherwise, the forced password
+change feature will not work on the user account that you are attempting to create.
+• Verify that the BPO email service has been configured. For more information, refer toBlue Planet
+Orchestration User Guide.
+This email service is an internal service that is used to send a password email to the user’s email
+account.
+
+When assigning a custom role to a user, you must assign an additional role. For
+security admin users, the sysadmin role is required.
+To create a user account:
+1. From the App Bar UI, navigate toUser Access Control > Users.
+TheUserspage appears with details about the currently logged in users.
+2. Click+ Add.
+TheAdd userpage opens.
+3. To activate the new user account immediately, checkIs active.
+4. To activate the new user account later, leaveIs activeunchecked.
+5. Enter the information about the new user account in the fields, as required. For more information, see
+User account fields .
+6. To force a password change, checkPassword change required.
+ Check this box only if the email server has been set up.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 45
+
+If the email server has not been set up, the Force password change feature will not
+work.
+If a forced password change is not required, leave the check box unchecked.
+7. From theRoles fromdropdown, select the required roles.
+ If you are assigning an Exclusive role, it cannot be combined with any other roles.
+8. Click theAddicon to add the available roles or clickAdd Allicon to add all available roles to assigned
+user roles.
+9. ClickApply.
+Once you have clicked onApply, aConfirm Passworddialog box appears.
+10. Enter the password of the currently logged in user in thePasswordfield.
+11. ClickApply.
+The new user account displays in the User accounts page. The user then receives an email with a link
+to activate the account and reset the password.
+Table 8. User account fields
+FIELD DESCRIPTION
+Username
+(Required)
+The username. Maximum length allowed is 100 characters and it must be unique in
+a tenant. Allows username containing[a-zA-Z0-9.-_@+-].
+First name
+(Required)
+The user’s first name. Maximum length allowed is 255 characters.
+Last name
+(Required)
+The user’s last name. Maximum length allowed is 255 characters.
+Email (Required) The user’s email address. Maximum length allowed is 254 characters.
+Description The description of the user account. Maximum length allowed is 255 characters
+and email id must be unique.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 46
+FIELD DESCRIPTION
+Roles (Required) Select one or more of the existing or custom roles from available roles.
+
+When assigning a cloned role or a custom role to a user, an UAC
+role is also required. Otherwise, the user won’t be able to log in.
+Password The user’s password. Must not be empty also must not contain value from fields -
+User Name, First Name, Last Name and Email. If the password validations are
+enabled those will be verified. For more validations, see Managing Passwords .
+
+If thePassword change requiredcheck box is checked, the
+Passwordfield is disabled. To view the password, clickShow.
+Viewing user accounts
+To view user accounts:
+1. Log in to BPO as a user with theApplication adminandUser Access Control admin/sysadminrole.
+2. From the App Bar UI, navigate toUser Access Control > Users.
+TheUserspage appears with the currently logged in user details.
+3. Using the following criteria, search for a specific user account:
+◦ First name
+◦ Last name
+◦ Username
+◦ Email
+◦ Systems (select All Users or specific existing users)
+4. Select a user to view their details.
+TheUser Detailswindow opens with details about the user account.
+Resetting a user account password
+To reset a password for a user account:
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 47
+1. Log in to BPO as a user with theApplication adminandUser Access Control admin/sysadminrole.
+2. From the App Bar UI, navigate toUser Access Control > Users.
+TheUser accountspage opens.
+3. Search for a specific user account (refer toBlue Planet Orchestration User Guide)
+4. Select a user account from the list.
+5. ClickReset Password.
+TheUser Detailsdialog box opens.
+6. Enter the passwords in theOld Password,New Password, andConfirm Passwordfields. To view the
+password, clickShowin the password field.
+7. ClickApply.
+Once you have clicked onApply, aConfirm Passworddialog box appears.
+8. Enter the password of the currently logged in user in thePasswordfield.
+9. ClickApply.
+The password for the selected user account is reset.
+Editing a user account
+Use this procedure to edit a user account, including setting up a forced password change request.
+Admin users with Application admin and sysadmin roles can edit user accounts and assign roles as
+required. The initial list of roles in the dialog include a set of predefined roles that are deployed with BPO:
+• Application admin - This includes administration of Orchestrate, application-level security, and basic
+visibility of network elements and services.
+• Observer - Read only access with basic visibility of network elements and services.
+• Provisioner - Create, modify, or delete resources. Cannot create or delete domains and products.
+• sysadmin - Master tenant sysadmin can create or deactivate a tenant. It works with Application Admin
+role.
+
+For SaaS (Software as a Service) environment, BluePlanet does not allow multi
+tenants. So, each customer has one SaaS deployment.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 48
+• admin - All privileges except create tenants, deactivate tenants, create roles, and delete roles.
+• user - Privileges on identified tenant, can change user password.
+Additional roles will be shown as created by an admin user.
+Before you start this procedure, make sure that you:
+• Log in to BPO as a user with theApplication admin and admin/sysadminrole.
+• Have set up your external email service.
+
+The email service associated with the user account is an external email service.
+You need a valid email address to access BPO; the email service associated with
+this email address is not part of the BPO solution. This external email service must
+be set up before you create a user account. Otherwise, the forced password
+change feature will not work on the user account that you are attempting to create.
+• TheBPO email servicehas been configured. For more information, refer toBlue Planet Orchestration
+User Guide.
+This email service is an internal service that is used to send the password email to the user’s email
+account.
+
+When assigning a custom role to a user, you must assign an additional role. For
+security admin users, the sysadmin role is required.
+To edit a user account:
+1. From the App Bar UI, navigate toUser Access Control > Users.
+TheUserspage opens.
+2. Search for a specific user account using the following criteria:
+◦ Username
+◦ First name
+◦ Last name
+◦ Email
+◦ Systems (select All Users or existing users)
+3. Select a user account from the list.
+BPO Admin Guide, Release 24.04 Managing user accounts
+450-3702-400-2404 Issue 1.3 ©2024 September 2024 | Page 49

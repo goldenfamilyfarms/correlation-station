@@ -1,0 +1,645 @@
+{
+  "customerName": "YMCA AKRON",
+  "serviceName": "33.L1XX.000196..TWCC",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "ELINE",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "AKRNOHEI5ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AKRNOHEI5ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "ADVA"
+              },
+              {
+                "name": "model",
+                "value": "FSP 150-XG116PROH"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.9.214.175"
+              },
+              {
+                "name": "location",
+                "value": "A_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "50 S MAIN ST 44308"
+              },
+              {
+                "name": "fqdn",
+                "value": "AKRNOHEI5ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AKRNOHEI5ZW-ETH_PORT-1-1-1-5",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH_PORT-1-1-1-5"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33002.GE1.AKRNOHEIEZW.AKRNOHEIM3W"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKRNOHEI5ZW-ETH_PORT-1-1-1-8",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH_PORT-1-1-1-8"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE10.AKRPOH120QW.AKRNOHEI5ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "AKRPOH120QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AKRPOH120QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.9.214.32"
+              },
+              {
+                "name": "location",
+                "value": "A_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "917 EASTWOOD AVE 44305"
+              },
+              {
+                "name": "fqdn",
+                "value": "AKRPOH120QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AKRPOH120QW-XE-1/0/60",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "XE-1/0/60"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE10.AKRPOH120QW.AKRNOHEI5ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKRPOH120QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKRPOH121CW.AKRPOH120QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKRPOH120QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKRPOH121CW.AKRPOH120QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "AKRPOH121CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AKRPOH121CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "65.189.178.70"
+              },
+              {
+                "name": "location",
+                "value": "A_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "917 EASTWOOD AVE 44305"
+              },
+              {
+                "name": "fqdn",
+                "value": "AKRPOH121CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AKRPOH121CW-ET-3/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-3/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKRPOH121CW.AKRPOH120QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKRPOH121CW-ET-8/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-8/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKRPOH121CW.AKRPOH120QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "AKRPOH120QW-XE-1/0/60",
+              "AKRNOHEI5ZW-ETH_PORT-1-1-1-8"
+            ],
+            "uuid": "AKRPOH120QW-XE-1/0/60_AKRNOHEI5ZW-ETH_PORT-1-1-1-8"
+          },
+          {
+            "nodeEdgePoint": [
+              "AKRPOH121CW-ET-3/3/0",
+              "AKRPOH120QW-ET-0/0/96"
+            ],
+            "uuid": "AKRPOH121CW-ET-3/3/0_AKRPOH120QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "AKRPOH121CW-ET-8/3/0",
+              "AKRPOH120QW-ET-1/0/96"
+            ],
+            "uuid": "AKRPOH121CW-ET-8/3/0_AKRPOH120QW-ET-1/0/96"
+          }
+        ]
+      }
+    },
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "AKROOHML2CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AKROOHML2CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "65.189.178.6"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "1210 BROWNSTONE AVE 44310"
+              },
+              {
+                "name": "fqdn",
+                "value": "AKROOHML2CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AKROOHML2CW-ET-2/3/1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-2/3/1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKROOHML2CW.AKROOHML1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE18"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKROOHML2CW-ET-8/3/1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-8/3/1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKROOHML2CW.AKROOHML1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE18"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "AKROOHML1QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AKROOHML1QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.8.22.10"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "1210 BROWNSTONE AVE 44310"
+              },
+              {
+                "name": "fqdn",
+                "value": "AKROOHML1QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AKROOHML1QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKROOHML2CW.AKROOHML1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE18"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKROOHML1QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE40L.AKROOHML2CW.AKROOHML1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE18"
+                  }
+                ]
+              },
+              {
+                "uuid": "AKROOHML1QW-XE-0/0/43",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "XE-0/0/43"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE10.AKROOHML1QW.CYFLOHUF2ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "CYFLOHUF2ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "CYFLOHUF2ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "RAD"
+              },
+              {
+                "name": "model",
+                "value": "ETX-2I-10G-B/8.5/8SFPP"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.10.25.56"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "544 BROAD BLVD 44221"
+              },
+              {
+                "name": "fqdn",
+                "value": "CYFLOHUF2ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "CYFLOHUF2ZW-0/8",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "0/8"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33001.GE10.AKROOHML1QW.CYFLOHUF2ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "CYFLOHUF2ZW-0/3",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "0/3"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "33.L1XX.000196..TWCC"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "AKROOHML2CW-ET-2/3/1",
+              "AKROOHML1QW-ET-0/0/96"
+            ],
+            "uuid": "AKROOHML2CW-ET-2/3/1_AKROOHML1QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "AKROOHML2CW-ET-8/3/1",
+              "AKROOHML1QW-ET-1/0/96"
+            ],
+            "uuid": "AKROOHML2CW-ET-8/3/1_AKROOHML1QW-ET-1/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "AKROOHML1QW-XE-0/0/43",
+              "CYFLOHUF2ZW-0/8"
+            ],
+            "uuid": "AKROOHML1QW-XE-0/0/43_CYFLOHUF2ZW-0/8"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "SILVER"
+              }
+            ],
+            "evc-ingress-bwp": "10m",
+            "evc-egress-bwp": "10m",
+            "adminState": true,
+            "userLabel": "33.L1XX.000196..TWCC",
+            "maxNumOfEvcEndPoint": 2,
+            "serviceType": "EVPL",
+            "connectionType": "Point to Point",
+            "sVlan": "201",
+            "endPoints": [
+              {
+                "uniId": "AKRNOHEI5ZW-ETH_PORT-1-1-1-5",
+                "adminState": true,
+                "address": "50 S MAIN ST 44308",
+                "sVlan": "201",
+                "sVlanOperation": "PUSH",
+                "ceVlans": [
+                  "201"
+                ]
+              },
+              {
+                "uniId": "CYFLOHUF2ZW-0/3",
+                "adminState": true,
+                "address": "544 BROAD BLVD 44221",
+                "sVlan": "201",
+                "sVlanOperation": "PUSH"
+              }
+            ],
+            "evcId": "5250759"
+          }
+        ]
+      }
+    }
+  ]
+}

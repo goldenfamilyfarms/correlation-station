@@ -1,0 +1,13 @@
+.pdf:
+  image: registry.blueplanet.com/blueplanet/devtools/common-ci-cd-automations/pdf-image:0.0.1
+  stage: release
+  tags:
+    - aws
+  script:
+    - asciidoctor-pdf -a pdf-stylesdir=/usr/local/src/resources -a mdso_version=`jq .mdso_version version.json -r` -a version=`jq .version version.json -r` -a book-build -a pdf-style=themes/bp-theme.yml -a pdf-fontsdir=/usr/local/src/resources/fonts docs/index.adoc
+    - mkdir -p ./$CI_PROJECT_PATH
+    - cp docs/index.pdf ./$CI_PROJECT_PATH.pdf
+  artifacts:
+    paths:
+      - $CI_PROJECT_PATH.pdf
+  allow_failure: true

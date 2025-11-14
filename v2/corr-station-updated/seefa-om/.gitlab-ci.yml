@@ -1,0 +1,247 @@
+# GitLab CI/CD Pipeline for Correlation Station & Sense Apps
+# Author: Derrick Golden
+# Version: 1.0.0
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+
+variables:
+  PYTHON_VERSION: "3.11"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_BUILDKIT: 1
+  META_SERVER: "159.56.4.94"
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+  - validate
+
+.python_base:
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install --no-cache-dir ruff flake8 pytest pytest-cov
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-python
+    paths:
+      - .cache/pip/
+
+# ============================================
+# Lint Stage
+# ============================================
+
+ruff-lint:
+  extends: .python_base
+  stage: lint
+  script:
+    - ruff check correlation-engine/app
+    - ruff check mdso-alloy/ || true
+  allow_failure: false
+
+ruff-format:
+  extends: .python_base
+  stage: lint
+  script:
+    - ruff format --check correlation-engine/app
+    - ruff format --check mdso-alloy/ || true
+  allow_failure: false
+
+# ============================================
+# Test Stage
+# ============================================
+
+test:correlation-engine:
+  extends: .python_base
+  stage: test
+  before_script:
+    - cd correlation-engine
+    - pip install -r requirements.txt
+  script:
+    - pytest tests/ -v --cov=app --cov-report=xml --cov-report=term
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: correlation-engine/coverage.xml
+    paths:
+      - correlation-engine/coverage.xml
+    expire_in: 30 days
+
+test:sense-apps:
+  extends: .python_base
+  stage: test
+  parallel:
+    matrix:
+      - APP: beorn
+      - APP: palantir
+      - APP: arda
+  before_script:
+    - cd sense-apps/$APP
+    - pip install -r requirements.txt
+  script:
+    - pytest tests/ -v --cov=${APP}_app
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  allow_failure: true
+
+# ============================================
+# Build Stage
+# ============================================
+
+# build:correlation-engine:
+#   stage: build
+#   image: docker:24-git
+#   services:
+#     - docker:24-dind
+#   variables:
+#     IMAGE_TAG: $CI_REGISTRY_IMAGE/correlation-engine:$CI_COMMIT_SHORT_SHA
+#     IMAGE_LATEST: $CI_REGISTRY_IMAGE/correlation-engine:latest
+#   before_script:
+#     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+#   script:
+#     - |
+#       if [ "$CI_COMMIT_TAG" ]; then
+#         TAG="$CI_COMMIT_TAG"
+#       else
+#         TAG="$CI_COMMIT_SHORT_SHA"
+#       fi
+#     - cd correlation-engine
+#     - docker build -t $CI_REGISTRY_IMAGE/correlation-engine:$TAG -t $IMAGE_LATEST .
+#     - docker push $CI_REGISTRY_IMAGE/correlation-engine:$TAG
+#     - docker push $IMAGE_LATEST
+#   only:
+#     - main
+#     - develop
+#     - tags
+
+build:sense-apps:
+  stage: build
+  image: docker:24-git
+  services:
+    - docker:24-dind
+  parallel:
+    matrix:
+      - APP: beorn
+      - APP: palantir
+      - APP: arda
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      if [ "$CI_COMMIT_TAG" ]; then
+        TAG="$CI_COMMIT_TAG"
+      else
+        TAG="$CI_COMMIT_SHORT_SHA"
+      fi
+    - cd sense-apps/$APP
+    - docker build -t $CI_REGISTRY_IMAGE/sense-$APP:$TAG -t $CI_REGISTRY_IMAGE/sense-$APP:latest .
+    - docker push $CI_REGISTRY_IMAGE/sense-$APP:$TAG
+    - docker push $CI_REGISTRY_IMAGE/sense-$APP:latest
+  only:
+    - main
+    - develop
+    - tags
+
+# ============================================
+# Deploy Stage
+# ============================================
+
+deploy:staging:
+  stage: deploy
+  image: docker:24
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $META_SERVER >> ~/.ssh/known_hosts
+  script:
+    - |
+      ssh root@$META_SERVER << 'EOF'
+        cd /opt/correlation-station
+        docker compose pull
+        docker compose up -d
+        docker compose ps
+      EOF
+  environment:
+    name: staging
+    url: http://$META_SERVER:8443
+  only:
+    - develop
+  when: manual
+
+deploy:production:
+  stage: deploy
+  image: docker:24
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $META_SERVER >> ~/.ssh/known_hosts
+  script:
+    - |
+      ssh root@$META_SERVER << 'EOF'
+        cd /opt/correlation-station
+        docker compose pull
+        docker compose up -d
+        docker compose ps
+      EOF
+  environment:
+    name: production
+    url: http://$META_SERVER:8443
+  only:
+    - main
+    - tags
+  when: manual
+
+# ============================================
+# Validation Stage
+# ============================================
+
+validate:health-checks:
+  stage: validate
+  image: curlimages/curl:latest
+  script:
+    - sleep 30
+    - curl -f http://$META_SERVER:8080/health
+    - curl -f http://$META_SERVER:8443/api/health
+    - curl -f http://$META_SERVER:3100/ready
+    - curl -f http://$META_SERVER:3200/ready
+  needs:
+    - job: deploy:staging
+      optional: true
+    - job: deploy:production
+      optional: true
+  allow_failure: true
+
+# ============================================
+# Notification (optional)
+# ============================================
+
+notify:slack:
+  stage: .post
+  image: curlimages/curl:latest
+  script:
+    - |
+      if [ "$CI_JOB_STATUS" == "success" ]; then
+        MESSAGE="✅ Pipeline succeeded for $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
+      else
+        MESSAGE="❌ Pipeline failed for $CI_PROJECT_NAME ($CI_COMMIT_REF_NAME)"
+      fi
+    - |
+      curl -X POST "$SLACK_WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d "{\"text\": \"$MESSAGE - Commit: $CI_COMMIT_SHORT_SHA by $CI_COMMIT_AUTHOR\"}"
+  when: always
+  only:
+    - main
+    - tags
+  allow_failure: true

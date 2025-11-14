@@ -1,0 +1,121 @@
+# Job for non-ra onboard type apps
+# Includes linting, app build etc
+
+include:
+  - local: 'code-quality/.code-climate.yml'
+  - local: 'lint/.lint-gitlab-ci-template-master.yml'
+  - local: 'bpmn/.mvn-package.yml'
+  - local: 'auto-build/.auto-uprev-version.yml'
+  - local: 'auto-build/.auto-build-app.yml'
+  - local: 'auto-build/.update-app-in-remote-fig-repo.yml'
+  - local: 'auto-build/.auto-release.yml'
+
+stages:
+  - lint
+  - test
+  - uprev
+  - compile
+  - build
+  - update-remote-solution
+  - release
+
+# Lint
+
+.code-quality:
+  extends: .code-quality
+
+flake8:
+  extends: .flake8
+
+hocon-lint:
+  extends: .hocon-lint
+
+json-lint:
+  extends: .json-lint
+
+legacy-script-check:
+  extends: .legacy-script-check
+
+python-version-check:
+  extends: .python-version-check
+
+plansdk-deprecated-check:
+  extends: .plansdk-deprecated-check
+
+# Uprev
+
+uprev:
+  extends: .uprev
+  except:
+    changes:
+      - version.json
+      - triggers
+    variables:
+      - $SKIP_UPREV =~ /true/
+    refs:
+      - schedules
+  only:
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+
+# compile:
+mvn-package:
+  extends: .mvn-package
+
+mr-mvn-package:
+  extends: .mvn-package
+  only:
+    - merge_requests
+  when: manual
+
+# Build
+build-app:
+  extends: .build-app
+  dependencies: ["mvn-package"]
+  only:
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+    changes:
+      - version.json
+  except:
+    - schedules
+
+mr-build-app:
+  extends: .build-app
+  needs: []
+  dependencies: ["mr-mvn-package"]
+  only:
+    - merge_requests
+  except:
+    - schedules
+  when: manual
+
+# Update remote
+
+update-remote-solution:
+  extends: .update-remote-solution
+  only:
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+    changes:
+      - version.json
+
+# Release
+
+release:
+  extends: .release
+  except:
+    variables:
+      - $SKIP_RELEASE =~ /true/
+    refs:
+      - schedules
+  only:
+    changes:
+      - version.json
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+  when: manual

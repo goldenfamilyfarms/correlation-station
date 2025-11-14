@@ -1,0 +1,309 @@
+{
+    "customerName": "MASTERCARD TECHNOLOGIES NAT'L",
+    "serviceName": "81.L1XX.911364..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "FIA",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "KSCDMO421CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "KSCDMO421CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.31.233.134"
+                            },
+                            {
+                                "name": "address",
+                                "value": "4002 N CHERRY ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "KSCDMO421CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "KSCDMO421CW-ET-1/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "KSCDMO421CW-ET-4/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-4/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "KSCDMO420QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "KSCDMO420QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.4.132.150"
+                            },
+                            {
+                                "name": "address",
+                                "value": "4002 N CHERRY ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "KSCDMO420QW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "KSCDMO420QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "KSCDMO420QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "KSCDMO420QW-XE-1/0/69",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/0/69"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "KSCYMO932ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "KSCYMO932ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX-2I-10G/4SFPP/4SFP4UTP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "11530 N AMBASSADOR DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "KSCYMO932ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "KSCYMO932ZW-ETH PORT 0/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 0/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "KSCYMO932ZW-ETH PORT 0/9",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 0/9"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "KSCDMO421CW-ET-1/3/0",
+                            "KSCDMO420QW-ET-0/0/96"
+                        ],
+                        "uuid": "KSCDMO421CW-ET-1/3/0_KSCDMO420QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "KSCDMO421CW-ET-4/3/0",
+                            "KSCDMO420QW-ET-1/0/96"
+                        ],
+                        "uuid": "KSCDMO421CW-ET-4/3/0_KSCDMO420QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "KSCDMO420QW-XE-1/0/69",
+                            "KSCYMO932ZW-ETH PORT 0/1"
+                        ],
+                        "uuid": "KSCDMO420QW-XE-1/0/69_KSCYMO932ZW-ETH PORT 0/1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "evc-ingress-bwp": "1g",
+                        "evc-egress-bwp": "1g",
+                        "adminState": true,
+                        "userLabel": "81.L1XX.911364..CHTR",
+                        "maxNumOfEvcEndPoint": 1,
+                        "serviceType": "IP",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1191",
+                        "endPoints": [
+                            {
+                                "uniId": "KSCYMO932ZW-ETH PORT 0/9",
+                                "adminState": true,
+                                "address": "11530 N AMBASSADOR DR",
+                                "sVlan": "1191",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ],
+                "fia": [
+                    {
+                        "type": "BGP",
+                        "endPoints": [
+                            {
+                                "uniId": "KSCDMO421CW-ET-1/3/0",
+                                "lanIpv4Addresses": [
+                                    "70.125.125.200/29"
+                                ],
+                                "lanIpv6Addresses": [
+                                    "2605:ED00:65CA::/48"
+                                ],
+                                "wanIpv4Address": "70.125.125.192/30",
+                                "wanIpv6Address": "2605:6000:0:8::F:A52C/127",
+                                "bgp": {
+                                    "asn": "397174",
+                                    "BGPIpv4Prefixes": "208.116.230.0/24",
+                                    "exportPolicy": "DEFAULT ROUTES"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

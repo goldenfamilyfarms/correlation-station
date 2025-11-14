@@ -1,0 +1,238 @@
+{
+    "customerName": "NITEL LEGACY CHARTER",
+    "serviceName": "80.L1XX.989247..CHTR",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "LSANCARC1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "LSANCARC1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.43.180.1"
+                            },
+                            {
+                                "name": "address",
+                                "value": "624 S GRAND AVE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "LSANCARC1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "LSANCARC1CW-XE-10/0/10",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-10/0/10"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": []
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "VNTRCAMV1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "VNTRCAMV1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.43.180.55"
+                            },
+                            {
+                                "name": "address",
+                                "value": "2525 KNOLL DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "VNTRCAMV1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "VNTRCAMV1CW-GE-1/2/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-1/2/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "VNTRCAVC4ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "VNTRCAVC4ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "800 S VICTORIA AVE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "VNTRCAVC4ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "VNTRCAVC4ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "VNTRCAVC4ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "VNTRCAMV1CW-GE-1/2/0",
+                            "VNTRCAVC4ZW-ETH PORT 1"
+                        ],
+                        "uuid": "VNTRCAMV1CW-GE-1/2/0_VNTRCAVC4ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "perfTier": [
+                            {
+                                "name": "METRO"
+                            }
+                        ],
+                        "evc-ingress-bwp": "10m",
+                        "evc-egress-bwp": "10m",
+                        "evcId": "465359",
+                        "adminState": true,
+                        "userLabel": "80.L1XX.989247..CHTR",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1141",
+                        "endPoints": [
+                            {
+                                "uniId": "LSANCARC1CW-XE-10/0/10",
+                                "adminState": true,
+                                "address": "624 S GRAND AVE",
+                                "sVlan": "1141"
+                            },
+                            {
+                                "uniId": "VNTRCAVC4ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "800 S VICTORIA AVE",
+                                "sVlan": "1141",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

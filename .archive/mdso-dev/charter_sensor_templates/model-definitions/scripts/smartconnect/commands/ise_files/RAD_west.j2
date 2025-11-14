@@ -1,0 +1,29 @@
+configure management user "comm_support" level tech password comm#SupPWD
+configure management tacacsplus group "TACACS" accounting shell system commands
+
+configure management tacacsplus server 198.24.118.189
+key "62D3E6473EC826BCCFE81B02CD75A91C" hash
+timeout 3
+group "TACACS"
+no shutdown
+exit all
+
+configure management access auth-policy 1st-level tacacs+ 2nd-level local
+
+configure management snmp config-change-notification
+configure management snmp community "v2_read-only" name "N4cSDgWPU973QXg6MjR5"
+configure management snmp community "v2_read-only" sec-name "v2_read"
+configure management snmp security-to-group snmpv2c sec-name "v2_trapstation" group-name "v2_trap"
+configure management snmp security-to-group snmpv2c sec-name "v2_trapstation" no shutdown
+configure management snmp community "trapstation" name "commrad{{state}}"
+configure management snmp community "trapstation" sec-name "v2_trapstation"
+configure management snmp target-params "trapstation_params" message-processing-model snmpv2c
+configure management snmp target-params "trapstation_params" version snmpv2c
+configure management snmp target-params "trapstation_params" security name "v2_trapstation" level no-auth-no-priv
+configure management snmp target-params "trapstation_params" no shutdown
+configure management snmp target "trapstation" target-params "trapstation_params"
+configure management snmp target "trapstation" address udp-domain 198.24.118.140
+configure management snmp target "trapstation" tag-list "unmasked"
+configure management snmp target "trapstation" no shutdown 
+
+save

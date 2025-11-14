@@ -1,0 +1,36 @@
+# Job to build app based on version.json
+# image names as follows: $REGISTRY_NAME/$VENDOR_NAME/${PROJECT_NAME/-/_}:$IMAGE_TAG
+# where $IMAGE_TAG can look like:  version-tag or branch.version-tag (when not in master/main branch)
+
+
+# By default, only changes in version.json will trigger this
+.mvn-package:
+  variables:
+    MAIN_BRANCH: "master"
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
+  stage: compile
+  tags:
+    - ciena
+  except:
+    - schedules
+  dependencies: []
+  image: registry.blueplanet.com/blueplanet/devtools/common-ci-cd-automations/bpmn-image:0.0.1
+  script:
+    - source auto_build_set_env
+    - source get_image_tag
+    - cd bpmn
+    - mvn clean install
+    - mv target/$PROJECT_NAME.war assets/war-files/$PROJECT_NAME.war
+  artifacts:
+    paths:
+      - bpmn/assets/war-files/*.war
+    expire_in: 7 days
+
+  only:
+    refs:
+      - master
+      - main
+      - /^release\/\d+\.\d+.*$/
+    changes:
+      - version.json
+

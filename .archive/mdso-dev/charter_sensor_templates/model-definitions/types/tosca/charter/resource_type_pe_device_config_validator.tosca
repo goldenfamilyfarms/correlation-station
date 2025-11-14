@@ -1,0 +1,63 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "PE Device Config Validator"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the PE Device config validator that will do the initial
+pre-checks on PE device.
+"""
+authors     = [ "Sahil Sidhar(ssidhar@ciena.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    PeDeviceConfigValidator {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = PE Device Config Validator
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - This resource will do the following:
+            Perform pre-checks on PE device before trying to build circuit.
+        """
+
+        properties {
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "ID for the circuit details created from the Granite system"
+                type = string
+                optional = false
+                updatable = false
+            }
+        }
+
+        requirements {
+
+        }
+
+        capabilities {
+
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    PeDeviceConfigValidator {
+        title = PE Device Config Validator
+        description = "PE Device Config Validator"
+        implements = charter.resourceTypes.PeDeviceConfigValidator
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.pedeviceconfigvalidator.Activate"
+            }
+
+        }
+    }
+}

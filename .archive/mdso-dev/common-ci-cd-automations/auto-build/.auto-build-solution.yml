@@ -1,0 +1,68 @@
+# A job to build solutions using version.json and fig.j2 in this repo.
+# image names as follows: $REGISTRY_NAME/$VENDOR_NAME/solution-${PROJECT_NAME/-/_}:$IMAGE_TAG
+# where $IMAGE_TAG can look like:  version-tag or branch.version-tag (when not in master/main branch)
+
+.build-solution:
+  variables:
+    MAIN_BRANCH: "master"
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
+    BUNDLED_SOLUTION: "false"
+    SINGLE_APP_SOLUTION: "false"
+  stage: build
+  tags:
+    - mdso
+  except:
+    - schedules
+  image: $REGISTRY_NAME/docker/blueplanet/devtools/common-ci-cd-automations/build-image:latest
+  dependencies: []
+  script:
+    - source auto_build_set_env
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY_NAME
+    - APP_IMAGE_NAME=$REGISTRY_NAME/docker/${PROJECT_NAME//-/_}
+    - source get_image_tag
+    - IMAGE_NAME=$REGISTRY_NAME/docker/solution-${PROJECT_NAME//-/_}
+    - >
+      if docker manifest inspect $IMAGE_NAME:$IMAGE_TAG 1>/dev/null ; then
+          echo "
+          *********************************************
+          *
+          * ERROR: $IMAGE_NAME:$IMAGE_TAG already exists on registry
+          *
+          * Troubleshooting:
+          * - Was this manually pushed to the docker registry?
+          * - Was \`version.json\` file updated but the version/tag values weren't bumped? Any changes in \`version.json\` will not trigger an automatic uprev step
+          *
+          *********************************************"
+          exit 1
+      else
+          echo Building $IMAGE_NAME:$IMAGE_TAG
+      fi
+    - >
+      if $BUNDLED_SOLUTION ; then
+        echo -e "import json\nwith open('version.json', 'r') as file: versions = json.load(file)\nfor i in range(len(versions['apps'])): versions['apps'][i]['version'] = '$IMAGE_TAG'\nwith open('version.json', 'w') as file: json.dump(versions, file)" | python3
+      fi
+    - jinja2 -D IMAGE_TAG=${IMAGE_TAG} /usr/local/bin/fig.j2 version.json > fig.yml
+    - cat fig.yml
+    - > 
+      if $BUNDLED_SOLUTION ; then
+        echo -e "import json\nwith open('version.json', 'r') as file: versions = json.load(file)\nfor i in range(len(versions['apps'])): print(versions['registry'] + '/' + versions['vendor'] + '/' + versions['apps'][i]['name'] + ':' + versions['apps'][i]['version'])" | python3 | for images in $(</dev/stdin); do docker pull $images; done
+      else
+        docker pull $APP_IMAGE_NAME:$IMAGE_TAG
+      fi
+    - usolmaker -f fig.yml $IMAGE_NAME $IMAGE_TAG | docker load
+    - docker images
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - echo "Pushed $IMAGE_NAME:$IMAGE_TAG"
+    - FILE=$(find . -maxdepth 1 -iname change*)
+    - 'if [[ -n "$FILE" ]]; then CHANGES="\n Changelog: $CI_PROJECT_URL/-/blob/$CI_COMMIT_SHORT_SHA${FILE/\.}"; fi'
+    - >
+      if [[ ! -z "$CHANNEL_SLACK_WEBHOOK_URL" && -z "$CI_MERGE_REQUEST_ID" ]] ; then
+        curl -X POST --data "{\"text\":\":tada: Pushed \`$IMAGE_NAME:$IMAGE_TAG\` $CHANGES\"}" $CHANNEL_SLACK_WEBHOOK_URL;
+      fi
+    - docker image rm $IMAGE_NAME:$IMAGE_TAG
+    - >
+      if $BUNDLED_SOLUTION ; then
+        for app in $apps; do docker image rm $app; done
+      else
+        docker image rm $APP_IMAGE_NAME:$IMAGE_TAG
+      fi

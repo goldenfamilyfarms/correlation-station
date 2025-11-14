@@ -1,0 +1,3 @@
+--index-url http://blueplanet/vfirewall-templates-pypi/simple/
+
+plansdk

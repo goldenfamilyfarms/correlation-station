@@ -1,0 +1,191 @@
+{
+    "customerName": "JACOBS TECHNOLOGY INC",
+    "serviceName": "93.L1XX.003149..TWCC",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "FIA",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "TLLHTNFY3CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "TLLHTNFY3CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "CISCO"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ASR 9001"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "96.34.245.89"
+                            },
+                            {
+                                "name": "address",
+                                "value": "618 E CARROLL ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "TLLHTNFY3CW.SE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "TLLHTNFY3CW-TE0/0/2/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "TE0/0/2/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "TLLHTNPT3ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "TLLHTNPT3ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX-220A"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "172.21.89.173"
+                            },
+                            {
+                                "name": "address",
+                                "value": "550 WILLIAM NORTHERN BLVD"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "TLLHTNPT3ZW.SE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "TLLHTNPT3ZW-4/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "4/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "TLLHTNPT3ZW-3/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "3/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "TLLHTNFY3CW-TE0/0/2/1",
+                            "TLLHTNPT3ZW-4/1"
+                        ],
+                        "uuid": "TLLHTNFY3CW-TE0/0/2/1_TLLHTNPT3ZW-4/1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "evc-ingress-bwp": "1g",
+                        "evc-egress-bwp": "1g",
+                        "adminState": true,
+                        "userLabel": "93.L1XX.003149..TWCC",
+                        "maxNumOfEvcEndPoint": 1,
+                        "serviceType": "IP",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1100",
+                        "endPoints": [
+                            {
+                                "uniId": "TLLHTNPT3ZW-3/1",
+                                "adminState": true,
+                                "address": "550 WILLIAM NORTHERN BLVD",
+                                "sVlan": "1100",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ],
+                "fia": [
+                    {
+                        "type": "BGP",
+                        "endPoints": [
+                            {
+                                "uniId": "TLLHTNFY3CW-TE0/0/2/1",
+                                "lanIpv4Addresses": [
+                                    "35.130.113.164/30"
+                                ],
+                                "lanIpv6Addresses": [
+                                    "2600:6C26:49::/48"
+                                ],
+                                "wanIpv6Address": "2600:6C26::4800:A/127",
+                                "bgp": {
+                                    "asn": "12075",
+                                    "BGPIpv4Prefixes": "168.88.224.0/24, 168.88.124.0/23, 168.88.126.0/24, 141.159.0.0/16",
+                                    "exportPolicy": "FULL ROUTES WITH DEFAULT ROUTE"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

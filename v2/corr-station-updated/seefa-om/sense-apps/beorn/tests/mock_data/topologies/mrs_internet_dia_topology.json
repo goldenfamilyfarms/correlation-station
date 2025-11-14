@@ -1,0 +1,349 @@
+{
+  "customerName": "GRUENE MANSION INN",
+  "serviceName": "83.L1XX.002704..CHTR",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "FIA",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "NBRNTXEO1CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "NBRNTXEO1CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "24.73.242.14"
+              },
+              {
+                "name": "address",
+                "value": "160 S BUSINESS IH 35 78130"
+              },
+              {
+                "name": "fqdn",
+                "value": "NBRNTXEO1CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "NBRNTXEO1CW-ET-3/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-3/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "21001.GE40L.NBRNTXEO1CW.NBRNTXEO0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "NBRNTXEO1CW-ET-9/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-9/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "21001.GE40L.NBRNTXEO1CW.NBRNTXEO0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "NBRNTXEO0QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "NBRNTXEO0QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.93.142.9"
+              },
+              {
+                "name": "address",
+                "value": "160 S BUSINESS IH 35 78130"
+              },
+              {
+                "name": "fqdn",
+                "value": "NBRNTXEO0QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "NBRNTXEO0QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "21001.GE40L.NBRNTXEO1CW.NBRNTXEO0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "NBRNTXEO0QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "21001.GE40L.NBRNTXEO1CW.NBRNTXEO0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "NBRNTXEO0QW-XE-1/0/89",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "XE-1/0/89"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "83001.GE10.NBRNTXEO0QW.NBROTXLD1ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "NBROTXLD1ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "NBROTXLD1ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "ADVA"
+              },
+              {
+                "name": "model",
+                "value": "FSP 150-XG108"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.5.47.141"
+              },
+              {
+                "name": "address",
+                "value": "1275 GRUENE RD 78130"
+              },
+              {
+                "name": "fqdn",
+                "value": "NBROTXLD1ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "NBROTXLD1ZW-NETWORK-1-1-1-1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "NETWORK-1-1-1-1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "83001.GE10.NBRNTXEO0QW.NBROTXLD1ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "NBROTXLD1ZW-ACCESS-1-1-1-3",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ACCESS-1-1-1-3"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "83001.GE1.NBROTXLD1ZW.NBROTXLDM1W"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "NBRNTXEO1CW-ET-3/3/0",
+              "NBRNTXEO0QW-ET-0/0/96"
+            ],
+            "uuid": "NBRNTXEO1CW-ET-3/3/0_NBRNTXEO0QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "NBRNTXEO1CW-ET-9/3/0",
+              "NBRNTXEO0QW-ET-1/0/96"
+            ],
+            "uuid": "NBRNTXEO1CW-ET-9/3/0_NBRNTXEO0QW-ET-1/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "NBRNTXEO0QW-XE-1/0/89",
+              "NBROTXLD1ZW-NETWORK-1-1-1-1"
+            ],
+            "uuid": "NBRNTXEO0QW-XE-1/0/89_NBROTXLD1ZW-NETWORK-1-1-1-1"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "BRONZE"
+              }
+            ],
+            "evc-ingress-bwp": "200m",
+            "evc-egress-bwp": "200m",
+            "adminState": true,
+            "userLabel": "83.L1XX.002704..CHTR",
+            "maxNumOfEvcEndPoint": 1,
+            "serviceType": "IP",
+            "connectionType": "Point to Point",
+            "sVlan": "1530",
+            "msVlan": "88",
+            "endPoints": [
+              {
+                "uniId": "NBROTXLD1ZW-ACCESS-1-1-1-3",
+                "adminState": true,
+                "address": "1275 GRUENE RD 78130",
+                "msVlan": "88",
+                "ceVlan": [
+                  "1530",
+                  "88"
+                ]
+              }
+            ]
+          }
+        ],
+        "fia": [
+          {
+            "type": "STATIC",
+            "endPoints": [
+              {
+                "uniId": "NBRNTXEO1CW-ET-3/3/0",
+                "lanIpv4Addresses": [
+                  "50.84.18.120/29"
+                ],
+                "lanIpv6Addresses": [
+                  "2605:ED00:477C::/48"
+                ],
+                "wanIpv4Address": "150.220.232.4/30",
+                "wanIpv6Address": "2605:ED00:EB80:36::/64"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

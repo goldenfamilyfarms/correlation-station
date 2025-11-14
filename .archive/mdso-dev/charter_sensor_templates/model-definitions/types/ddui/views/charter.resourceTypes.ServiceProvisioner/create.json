@@ -1,0 +1,23 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [
+        {
+            "label": "General",
+            "children": [
+                {
+                    "model": "label"
+                },
+                {
+                    "model": "properties.circuit_id"
+                },
+                {
+                    "model": "properties.circuit_details_id"
+                },
+                {
+                    "model": "properties.context"
+                }
+            ]
+        }
+    ]
+}

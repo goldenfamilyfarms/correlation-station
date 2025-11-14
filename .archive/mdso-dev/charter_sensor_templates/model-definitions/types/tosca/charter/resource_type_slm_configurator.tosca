@@ -1,0 +1,97 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "SLM Configurator"
+package     = charter
+version     = "1.0"
+description = """
+This document defines SLM Configurator. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Allison Patino (allison.patino@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    slmConfigurator {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = SLM Configurator
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a SLM Configurator resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        - For service types like ELINE, ELAN, etc. eligible for SLM configurations
+        """
+
+        properties {
+            circuit_id {
+                title = "circuit id"
+                description = "circuit id"
+                type = string
+                optional = false
+                updatable = false
+            }
+            circuit_details_id {
+                title = "circuit details id"
+                description = "circuit details id"
+                type = string
+                optional = true
+            }
+            origin_cid {
+                title = "origin cid"
+                description = "origin cid"
+                type = string
+                optional = true
+                updatable = false
+            }
+            origin_cd_id {
+                title = "origin cd id"
+                description = "origin circuit details id"
+                type = string
+                optional = true
+            }
+            core_only {
+                title = "core only"
+                description = "core only flag"
+                type = boolean
+                optional = true
+            }
+            onboarding_complete {
+                title = "onboarding complete"
+                description = onboarding processes already completed for all devices within topology
+                type = boolean
+                optional = true
+            }
+            mdso_configured_slm {
+                title = "mdso configured slm"
+                description = mdso applied slm configuration
+                type = object
+                items.type = boolean
+                output = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    slmConfigurator {
+        title = SLM Configurator
+        description = SLM Configurator
+        implements = charter.resourceTypes.slmConfigurator
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmConfigurator.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmConfigurator.Terminate"
+            }
+        }
+    }
+}

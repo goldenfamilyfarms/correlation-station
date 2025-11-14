@@ -1,0 +1,61 @@
+# OpenTelemetry Collector config for Blue Planet (starter)
+# - Receives OTLP traces/metrics from instrumented apps
+# - Scrapes Prometheus endpoints (inferred targets)
+# - Exports to OTLP endpoint (set OTEL_EXPORTER_OTLP_ENDPOINT env var) or logging for dry-run
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'bp-apigw'
+          static_configs:
+            - targets: ['apigw:8080']
+          metrics_path: '/metrics'
+        - job_name: 'bp-bpocore'
+          static_configs:
+            - targets: ['bpocore:8080']
+          metrics_path: '/metrics'
+        - job_name: 'bp-asset-manager'
+          static_configs:
+            - targets: ['asset-manager:8080']
+          metrics_path: '/metrics'
+        - job_name: 'bp-postgres'
+          static_configs:
+            - targets: ['postgres:9187']
+        - job_name: 'bp-kafka'
+          static_configs:
+            - targets: ['kafka-broker-0:9404','kafka-broker-1:9404']
+
+processors:
+  batch:
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 4000
+    spike_limit_mib: 500
+
+exporters:
+  otlp:
+    endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector-export:4317}
+    tls:
+      insecure: true
+  logging:
+    loglevel: info
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp, logging]
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [batch]
+      exporters: [otlp, logging]
+
+# Notes:
+# - Set OTEL_EXPORTER_OTLP_ENDPOINT to your chosen backend (e.g., tempo, honeycomb, signoz collector).
+# - For production, configure TLS for the OTLP exporter and secure the collector endpoints.

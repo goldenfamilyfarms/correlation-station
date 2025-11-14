@@ -1,0 +1,10 @@
+Value isis_router (\w+)
+Value system_id ((\d+.\d+.\d+)|\S+)
+Value area (\d+.\d+.\d+)
+
+Start
+  ^IS-IS Router: ${isis_router}
+  ^\s+System Id: ${system_id}
+  ^\s+${area} -> Record
+
+EOF

@@ -1,0 +1,22 @@
+Value type (\S+)
+Value id ([0-9/]+)
+Value name ([\S]+)
+Value admin_state ([UD][a-z]+)
+Value operational_state (\S+)
+Value rate ([0-9]+)
+
+Start   
+  #Port           Number         Name            Admin    Oper      Speed
+  #-----------------------------------------------------------------------------
+  #Ethernet       0/101          MNG-ETH         Up       Up        100000000
+  #Ethernet       1/1            mx480-02.ge-0/0/Up       Down      1000000000
+  #Ethernet       1/2            UNI::@::        Down     Down      1000000000
+  #Ethernet       1/3            CPE:ETX220A_MTU_Up       Up        100000000
+  #Ethernet       1/4            CPE:SPIRENT:TestUp       Down      1000000000
+  #Ethernet       1/5            UNI::@::        Down     Down      1000000000
+  #Ethernet       4/1            mx480-02.xe-5/0/Up       Up        10000000000
+  #Ethernet       4/2            SPIRENT:P3/2    Up       Down      10000000000
+  #SVI            1              INBAND-MGMT     Up       Up        0         
+  ^${type}\s+${id}\s+${name}\s*${admin_state}\s+${operational_state}\s+${rate} -> Record
+
+EOF

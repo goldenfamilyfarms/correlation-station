@@ -1,0 +1,157 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed Services FortiAnalyzer"
+package     = charter
+version     = "1.0"
+description = """
+This document defines ADOM creation in FortiAnalyzer.
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    managedServicesFortiAnalyzer {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Managed Services FortiAnalyzer
+        description = """
+        - This document defines ADOM creation in FortiAnalyzer.
+        """
+
+        properties {
+            isManagedSecurityServices{
+                title = isManagedSecurityServices
+                description = flag variable
+                type = string
+                default = "Yes"
+                enum = [
+                    "Yes"
+                ]
+            },
+            serialNumber {
+                title = "serial number"
+                description = "serial number of fortinet device"
+                type = string
+                optional = true
+            },
+            fortigateIpAddress {
+                title = "fortigate ip address"
+                description = "ip address fortinet device"
+                type = string
+                optional = true
+            },
+            tid {
+                title = "tid of the device"
+                description = "tid of device being provisioned"
+                type = string
+                optional = true
+            },
+            platform {
+                title = "device model"
+                description = "device model as listed in Fortimanager"
+                type = string
+                optional = true
+                enum = ["FortiGate-VM64","FortiGate-61F"]
+
+            },
+            version {
+                title = "version"
+                description = "version number of Fortigate device"
+                type = string
+                optional = true
+            },
+            build {
+                title: "build",
+                description: "The specific firmware build",
+                type: string,
+                optional: true
+            },
+            vendor {
+                title = "type"
+                description = "Device Vendor"
+                type = string
+                optional = true
+            },
+            device_model {
+                title = "device model",
+                description = "The specific device model",
+                type = string,
+                optional = true
+            },
+            comments {
+                title = "comments"
+                description = "add comments in new adom creation"
+                type = string
+                optional = true
+            },
+            dataPolicyKeepLogsForAnalytics {
+                title = "Data Policy Keep Logs for Analytics"
+                description = "Data Policy Keep Logs for Analytics"
+                type = integer
+                optional = true
+            },
+            dataPolicyKeepLogsForArchive {
+                title = "Data Policy Keep Logs for Archive"
+                description = "Data Policy Keep Logs for Archive"
+                type = integer
+                optional = true
+            },
+            diskUtilizationAllocated {
+                title = "Disk Utilization Allocated"
+                description = "Disk Utilization Allocated"
+                type = integer
+                optional = true
+            },
+            diskUtilizationAnalyticsArchived {
+                title = "Disk Utilization Analytics Archived"
+                description = "Disk Utilization Analytics Archived"
+                type = integer
+                optional = true
+            },
+            diskUtilizationAnalyticsArchivedUnit {
+                title = "Disk Utilization Analytics Archived Unit"
+                description = "Disk Utilization Analytics Archived Unit"
+                type = string
+                default = "MB"
+                enum = ["MB","GB","TB"]
+                optional = true
+            },
+           customer {
+                title       = Customer
+                description = "Customer data for enrolling the VFW in ForitTools"
+                propertyType = chartervfw.propertyTypes.Customer
+            },
+            diskUtilizationAlertAndDeleteWhenUsage {
+                title = "Disk Utilization Alert and Delete when Usage"
+                description = "Disk Utilization Alert and Delete when Usage"
+                type = integer
+                default = 90
+                optional = true
+            
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    managedServicesFortiAnalyzer {
+        title = Managed Services FortiAnalyzer
+        description = "Managed Services FortiAnalyzer"
+        implements = charter.resourceTypes.managedServicesFortiAnalyzer
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiAnalyzer.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiAnalyzer.Terminate"
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+# General development ignore files
+**/.*.swp
+*.env
+# why, Apple?!
+**/.DS_Store
+
+# Python specific
+**/pyvenv.cfg
+**/pip-selfcheck.json
+**/.Python
+**/secrets.py
+
+**/__pycache__/**
+palantir/**/.cache
+
+include/**
+
+bin/**
+lib/**
+
+.idea
+venv_palantir/**
+.cache/
+.coverage
+
+logs/log**
+log.log
+
+palantir_app/microservices.cfg
+
+Scripts/**
+venv*
+palantir_venv/
+.vscode
+
+bash.exe.stackdump
