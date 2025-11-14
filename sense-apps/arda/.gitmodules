@@ -1,4 +1,0 @@
-[submodule "common_sense"]
-	path = common_sense
-	url = ../common_sense.git
-	branch = master

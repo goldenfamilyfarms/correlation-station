@@ -1,4 +1,0 @@
-Value key (.+)
-
-Start
-  ^New API key: ${key}
