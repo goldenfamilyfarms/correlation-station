@@ -79,13 +79,13 @@ async def ingest_otlp_traces(
     """
     correlation_engine = request.app.state.correlation_engine
     TRACES_RECEIVED = request.app.state.TRACES_RECEIVED
-    
+
     if not correlation_engine:
         raise HTTPException(status_code=503, detail="Correlation engine not initialized")
 
     try:
         content_type = request.headers.get("content-type", "")
-        
+
         # Handle protobuf format
         if "application/x-protobuf" in content_type:
             body = await request.body()
@@ -96,20 +96,19 @@ async def ingest_otlp_traces(
             # Handle JSON format
             data = await request.json()
 
-        # Extract resource spans (simplified parsing)
+        # Extract resource spans
         resource_spans = data.get("resourceSpans", [])
 
         total_spans = 0
         for resource_span in resource_spans:
-            resource = resource_span.get("resource", {})
             scope_spans = resource_span.get("scopeSpans", [])
 
             for scope_span in scope_spans:
                 spans = scope_span.get("spans", [])
                 total_spans += len(spans)
 
-                # TODO: Convert to internal format and add to correlator
-                # For now, just track metrics
+        # Forward traces to correlation engine for processing
+        await correlation_engine.add_traces(data)
 
         TRACES_RECEIVED.labels(source="otlp").inc(total_spans)
 
