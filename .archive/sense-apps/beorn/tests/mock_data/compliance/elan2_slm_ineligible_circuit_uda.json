@@ -1,0 +1,11 @@
+[
+    {
+        "CIRC_PATH_INST_ID": "1529701",
+        "PATH_NAME": "CHRTSE.VRFID.121865.POINTBANK",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "EVC ATTRIBUTES",
+        "ATTR_NAME": "SERVICE LEVEL OBJECTIVES-SLO",
+        "ATTR_VALUE": "SILVER"
+    }
+]

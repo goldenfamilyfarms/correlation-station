@@ -1,0 +1,244 @@
+networks:
+  observability:
+    name: observability
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/23
+volumes:
+  grafana-data: {}
+  loki-data: {}
+  tempo-data: {}
+  prometheus-data: {}
+services:
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "8443:8443"   # Keep this mapping
+    environment:
+      - GF_SERVER_HTTP_ADDR=0.0.0.0
+      - GF_SERVER_HTTP_PORT=8443
+
+      - GF_SERVER_ROOT_URL=http://austx-mdso-logs-02.chtrse.com/grafana
+      - GF_SERVER_ENFORCE_DOMAIN=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_LOG_LEVEL=debug  # CHANGE: Enable debug temporarily
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability-stack/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - observability
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+      - ./observability-stack/loki/loki-config.yaml:/etc/loki/local-config.yaml
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tempo:
+    image: grafana/tempo:2.3.0
+    container_name: tempo
+    restart: unless-stopped
+    ports:
+      - "9000:3200"        # Tempo HTTP (UI/API)
+      # DO NOT publish OTLP on host; keep internal only
+      # - "14317:4317"
+      # - "14318:4318"
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - tempo-data:/var/tempo
+      - ./observability-stack/tempo/tempo-config.yaml:/etc/tempo.yaml
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3200/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - prometheus-data:/prometheus
+      - ./observability-stack/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  otel-gateway:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    container_name: gateway
+    restart: unless-stopped
+    command: ["--config=/etc/otel-config.yaml"]
+    # ALL external access goes through nginx
+    # No direct host port mappings for OTLP endpoints
+    ports:
+      # - "55680:4317"   # OTLP gRPC (host)
+      - "55681:4318"   # OTLP HTTP (host)
+      - "8888:8888"    # Collector Prom metrics (host)
+      - "13133:13133"  # Health check (host)
+    expose:
+      - "4317"    # OTLP gRPC - internal Docker network only
+      # - "4318"    # OTLP HTTP - internal Docker network only
+      - "8888"    # Prometheus metrics - internal only
+      - "13133"   # Health check - internal only
+    volumes:
+      - ./gateway/otel-config.yaml:/etc/otel-config.yaml
+    networks:
+      - observability
+    depends_on:
+      - loki
+      - tempo
+      - correlation-engine
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:13133"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  correlation-engine:
+    build:
+      context: ./correlation-engine
+      dockerfile: Dockerfile
+    container_name: correlation-engine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - LOG_LEVEL=info
+      - CORR_WINDOW_SECONDS=60
+      - MAX_BATCH_SIZE=5000
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - TEMPO_GRPC_ENDPOINT=tempo:4317
+      - TEMPO_HTTP_ENDPOINT=http://tempo:4318
+      - PROMETHEUS_PUSHGATEWAY=
+      - ENABLE_BASIC_AUTH=false
+      - BASIC_AUTH_USER=
+      - BASIC_AUTH_PASS=
+      - DATADOG_API_KEY=${DATADOG_API_KEY:-}
+      - DATADOG_SITE=${DATADOG_SITE:-datadoghq.com}
+      - DEPLOYMENT_ENV=dev
+    volumes:
+      - ./correlation-engine/app:/app/app
+    networks:
+      - observability
+    depends_on:
+      - loki
+      - tempo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # # ============================================
+  # # Sense Apps (OTel Instrumented)
+  # # ============================================
+  # beorn:
+  #   build:
+  #     context: ./sense-apps/beorn
+  #     dockerfile: Dockerfile
+  #   container_name: beorn
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5001:5001"
+  #   environment:
+  #     - SERVICE_NAME=beorn
+  #     - SERVICE_PORT=5001
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+  #     - OTEL_SERVICE_NAME=beorn
+  #     - DEPLOYMENT_ENV=dev
+  #     - LOG_LEVEL=info
+  #   networks:
+  #     - observability
+  #   depends_on:
+  #     - otel-gateway
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+
+  # palantir:
+  #   build:
+  #     context: ./sense-apps/palantir
+  #     dockerfile: Dockerfile
+  #   container_name: palantir
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5002:5002"
+  #   environment:
+  #     - SERVICE_NAME=palantir
+  #     - SERVICE_PORT=5002
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+  #     - OTEL_SERVICE_NAME=palantir
+  #     - DEPLOYMENT_ENV=dev
+  #     - LOG_LEVEL=info
+  #   networks:
+  #     - observability
+  #   depends_on:
+  #     - otel-gateway
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+
+  # arda:
+  #   build:
+  #     context: ./sense-apps/arda
+  #     dockerfile: Dockerfile
+  #   container_name: arda
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5003:5003"
+  #   environment:
+  #     - SERVICE_NAME=arda
+  #     - SERVICE_PORT=5003
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+  #     - OTEL_SERVICE_NAME=arda
+  #     - DEPLOYMENT_ENV=dev
+  #     - LOG_LEVEL=info
+  #   networks:
+  #     - observability
+  #   depends_on:
+  #     - otel-gateway
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3

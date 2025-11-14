@@ -1,0 +1,33 @@
+Value name (.+)
+Value comments (.+)
+Value secfabgrp (none|read-write|read)
+Value ftviewgrp (none|read-write|read)
+Value authgrp (none|read-write|read)
+Value sysgrp (none|read-write|read)
+Value netgrp (none|read-write|read)
+Value loggrp (none|read-write|read)
+Value fwgrp (none|read-write|read)
+Value vpngrp (none|read-write|read)
+Value utmgrp (none|read-write|read)
+Value wanoptgrp (none|read-write|read)
+Value wifi (none|read-write|read)
+Value admintimeout_override (enable|disable)
+Value system_diagnostics (enable|disable)
+
+Start
+  ^\s{4}edit "${name}"
+  ^\s{8}set comments '${comments}'
+  ^\s{8}set secfabgrp ${secfabgrp}
+  ^\s{8}set ftviewgrp ${ftviewgrp}
+  ^\s{8}set authgrp ${authgrp}
+  ^\s{8}set sysgrp ${sysgrp}
+  ^\s{8}set netgrp ${netgrp}
+  ^\s{8}set loggrp ${loggrp}
+  ^\s{8}set fwgrp ${fwgrp}
+  ^\s{8}set vpngrp ${vpngrp}
+  ^\s{8}set utmgrp ${utmgrp}
+  ^\s{8}set wanoptgrp ${wanoptgrp}
+  ^\s{8}set wifi ${wifi}
+  ^\s{8}set admintimeout-override ${admintimeout_override}
+  ^\s{8}set system-diagnostics ${system_diagnostics}
+  ^\s{4}next -> Record

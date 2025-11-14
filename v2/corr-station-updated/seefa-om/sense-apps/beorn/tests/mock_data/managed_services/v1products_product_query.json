@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "60147049-4a0c-4a36-b5a9-0910db2a9c15",
+      "resourceTypeId": "charter.resourceTypes.ManagedServicesActivator",
+      "title": "Managed Services Activator",
+      "description": "Activate Managed Services Device",
+      "active": true,
+      "domainId": "built-in",
+      "constraints": {},
+      "providerData": {
+        "template": "charter.serviceTemplates.ManagedServicesActivator"
+      }
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 1000
+}

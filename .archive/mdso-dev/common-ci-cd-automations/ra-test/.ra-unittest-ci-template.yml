@@ -1,0 +1,12 @@
+.ra-unit-test:
+  image: artifactory.spectrumtoolbox.com/artifactory/docker/blueplanet/base-image-devops-toolkit:20220816-py3.8
+  stage: test
+  tags:
+    - mdso
+  script:
+    - export NAME=$(python setup.py --name)
+    - pip install -i https://pypi.org/simple --extra-index-url https://gitlab-ci-token:$CI_JOB_TOKEN@pypi.blueplanet.com/simple -r requirements.txt -e .
+    - export RASDK_SETTINGS_MODULE=$NAME.settings
+    - bpprov-cli validate $NAME/model
+    - bpprov-cli test $NAME/model --coverage
+    - bpprov-cli test-error $NAME/model

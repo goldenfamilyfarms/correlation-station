@@ -1,0 +1,107 @@
+include:
+  - local: 'code-quality/.code-climate.yml'
+  - local: 'lint/.lint-gitlab-ci-template-master.yml'
+  - local: 'auto-build/.auto-uprev-version.yml'
+  - local: 'auto-build/.auto-build-pypi-package.yml'
+  - local: 'auto-build/.auto-build-pypi-master.yml'
+
+
+stages:
+  - lint
+  - test
+  - uprev
+  - build-package
+  - build
+
+variables:
+  OVERRIDE_PROJECT_ID:
+    value: 1275
+    description: "Project ID to push package to. Default to bp/registry"
+  MAIN_BRANCH: master
+
+# Lint
+
+# code quality jobs will run in the lint stages in all cases except when the version file has been modified.
+.code-quality-pre-bump:
+  extends: .code-quality
+  stage: lint
+  only:
+    refs:
+      - merge_requests
+      - master
+      - tags
+      - /^release\/\d+\.\d+.*$/
+  except:
+    changes:
+      - "version.json"
+
+.code-quality-post-bump:
+  extends: .code-quality
+  stage: .post
+  only:
+    refs:
+      - merge_requests
+      - master
+      - tags
+      - /^release\/\d+\.\d+.*$/
+    changes:
+      - "version.json"
+
+flake8:
+  extends: .flake8
+
+hocon-lint:
+  extends: .hocon-lint
+
+json-lint:
+  extends: .json-lint
+
+build-package:
+  extends: .build-package
+  only:
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+
+#uprev:
+#  extends: .uprev
+#  except:
+#    changes:
+#      - version.json
+#      - triggers
+#    variables:
+#      - $SKIP_UPREV =~ /true/
+#    refs:
+#      - schedules
+#  only:
+#    refs:
+#      - master
+#      - /^release\/\d+\.\d+.*$/
+
+mr-build-package:
+  extends: .build-package
+  needs: []
+  before_script:
+    - tmp=$(mktemp)
+    - jq --arg CI_PIPELINE_ID "$CI_PIPELINE_ID"  '.tag = (if .tag == null or .tag == "" then "dev" + $CI_PIPELINE_ID else .tag +".dev" + $CI_PIPELINE_ID end)' version.json > "$tmp" && mv "$tmp" version.json
+    - cat version.json
+  only:
+    - merge_requests
+  when: manual
+
+mkpypi:
+  extends: .pypi-build
+  before_script:
+    - export PACKAGE_VER=$(python setup.py --version)
+  needs: [ build-package ]
+
+
+# Extend this job in your CI file if you want this optional job
+.mr-mkpypi:
+  extends: .pypi-build
+  before_script:
+    - export PACKAGE_VER=$(python3 setup.py --version)".dev"$CI_PIPELINE_ID
+  needs: [ mr-build-package ]
+  only:
+    - merge_requests
+  when: on_success

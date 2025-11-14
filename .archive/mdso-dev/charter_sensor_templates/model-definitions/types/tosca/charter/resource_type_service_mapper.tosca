@@ -1,0 +1,189 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Service Mapper"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Service Mapper. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Manuel Patino (manuel.patino@charter.com)", "Roman Penn (roman.penn@charter.com)","Susie Minor (susie.minor@charter.com)","Jose Cruz Padron (jose.cruz-padron@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    ServiceMapper {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Service Mapper
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a Service Mapper resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        - For service types like ELINE, ELAN, FIA, etc.
+        """
+
+        properties {
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "ID of circuit details resource"
+                type = string
+                optional = false
+                updatable = false
+            }
+            device_properties {
+                title = "Device Properties"
+                description = "Device Management IP, MediaType and placeholder for future properties to be mapped"
+                type = object
+                config = true
+                optional = true
+                items.type = object
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string 
+                optional = true
+                updatable = true
+            }
+            service_differences {
+                title = "Service Differences"
+                description = "Differences of TPEs/FREs"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            initial_differences {
+                title = "Initial Differences"
+                description = "Differences of TPEs/FREs"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            remediation_flag {
+                title = "Remediation Flag"
+                description = "Remediation flag for non-service impacting differences"
+                type = boolean
+                optional = true
+                updatable = true
+                default = false
+            }
+            slm_eligible {
+                title = "SLM Eligible"
+                description = "Circuit is eligible for SLM configuration"
+                type = boolean
+                optional = true
+            }
+            slm_traffic_passing {
+                title = "SLM Traffic Passing"
+                description = "SLM traffic is passing bidirectionally"
+                type = boolean
+                output = true
+                optional = true
+            }
+            eligible {
+                title = "Eligible"
+                description = "Device Eligibility"
+                optional = true
+                config = false
+                type = boolean
+            }
+            mdso_provisioned {
+                title = "MDSO Provisioned"
+                description = "MDSO created Network Service resource for this circuit"
+                optional = false
+                config = false
+                type = boolean
+            }
+            service_type {
+                title = "Service Type"
+                description = "Network Service Type (FIA, ELINE, ELAN, etc)"
+                type = string
+                updatable = true
+                optional = true
+            }
+            circuit_details {
+                title = "Circuit Details"
+                description = "circuit details"
+                type = object
+                config = false
+                optional = true
+            }
+            remediation_attempted {
+                title = "Remediation Attempted"
+                description = "Circuit has been repaired"
+                type = boolean
+                optional = true
+                config = false
+            }
+            cpe_swap {
+                title = "CPE Swap"
+                description = "Details about swapped CPE if shelf swap detected"
+                type = object
+                updatable = true
+                optional = true
+            }
+            cpe_swap_note {
+                title = "CPE Swap Note"
+                description = "Salesforce note for CPE swap reporting"
+                type = string
+                updatable = true
+                optional = true
+            }
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "circuit details id"
+                type = string
+                config = false
+                optional = true
+                updatable = true
+            }
+            network_service_id {
+                title = "Network Service ID"
+                description = "Network Service ID"
+                type = string
+                optional = true
+                updatable = true
+            }
+            order_type {
+                title = "SEEFA Order Type"
+                description = "NEW or CHANGE"
+                type = string
+                optional = true
+                enum = ["NEW", "CHANGE"]
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    ServiceMapper {
+        title = Service Mapper
+        description = "Service Mapper"
+        implements = charter.resourceTypes.ServiceMapper
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.serviceMapper.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.serviceMapper.Terminate"
+            }
+        }
+    }
+}

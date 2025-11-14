@@ -1,0 +1,143 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "ELAN Mapper"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Currently named ELAN Mapper. THis will be the groundowrk for the service mapper rework.
+Currently this will allow idividual calls for ELAN specifc mapping.
+Also containing a Headless mode for elan mapping to be used in current work streams.
+"""
+authors     = [ "Robert Saunders (robert.j.saunders@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    ElanMapper {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = ELAN Mapper
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a ELAN Mapper resource.
+        """
+
+        properties {
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            device_properties {
+                title = "Device Properties"
+                description = "Device Management IP, MediaType and placeholder for future properties to be mapped"
+                type = object
+                config = true
+                optional = true
+                items.type = object
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string 
+                optional = true
+                updatable = true
+            }
+            service_differences {
+                title = "Service Differences"
+                description = "Differences of Network/Design"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            initial_differences {
+                title = "Initial Differences"
+                description = "Differences of TPEs/FREs"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            remediation_flag {
+                title = "Remediation Flag"
+                description = "Remediation flag for non-service impacting differences"
+                type = boolean
+                optional = true
+                updatable = true
+                default = false
+            }
+            slm_eligible {
+                title = "SLM Eligible"
+                description = "Circuit is eligible for SLM configuration"
+                type = boolean
+                optional = true
+            }
+            slm_traffic_passing {
+                title = "SLM Traffic Passing"
+                description = "SLM traffic is passing bidirectionally"
+                type = boolean
+                output = true
+                optional = true
+            }
+            network_service_id {
+                title = "Network Service ID"
+                description = "Network Service resource ID, only exists if network service for circuit exists"
+                optional = true
+                type = string
+            }
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "circuit details id"
+                type = string
+                config = false
+                optional = true
+                updatable = true
+            }
+            circuit_details {
+                title = "Circuit Details"
+                description = "circuit details"
+                type = object
+                config = false
+                optional = true
+            }
+            remediation_attempted {
+                title = "Remediation Attempted"
+                description = "Circuit has been repaired"
+                type = boolean
+                optional = true
+                config = false
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string 
+                optional = true
+                updatable = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    ElanMapper {
+        title = ELAN Mapper
+        description = "ELAN Mapper"
+        implements = charter.resourceTypes.ElanMapper
+
+        plans {
+            activate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.elanMapper.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.elanMapper.Terminate"
+            }
+        }
+    }
+}

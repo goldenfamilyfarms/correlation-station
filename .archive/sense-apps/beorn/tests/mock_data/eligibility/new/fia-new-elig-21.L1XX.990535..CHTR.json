@@ -1,0 +1,304 @@
+{
+    "customerName": "SOUTHERN GRACE",
+    "serviceName": "21.L1XX.990535..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "FIA",
+    "serviceMedia": "FIBER",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CRTNTXJT1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CRTNTXJT1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.31.233.147"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1045 VENTURE CT"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CRTNTXJT1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CRTNTXJT1CW-ET-1/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRTNTXJT1CW-ET-7/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-7/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CRTNTXJT0QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CRTNTXJT0QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.4.127.55"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1045 VENTURE CT"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CRTNTXJT0QW.SW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CRTNTXJT0QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRTNTXJT0QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRTNTXJT0QW-GE-0/0/58",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-0/0/58"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CRTNTXXE1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CRTNTXXE1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "ADVA"
+                            },
+                            {
+                                "name": "model",
+                                "value": "FSP 150-GE114PRO-C"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1330 CAPITAL PKWY"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CRTNTXXE1ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CRTNTXXE1ZW-NETWORK-1-1-1-1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "NETWORK-1-1-1-1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRTNTXXE1ZW-ACCESS-1-1-1-3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ACCESS-1-1-1-3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "CRTNTXJT1CW-ET-1/3/0",
+                            "CRTNTXJT0QW-ET-0/0/96"
+                        ],
+                        "uuid": "CRTNTXJT1CW-ET-1/3/0_CRTNTXJT0QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CRTNTXJT1CW-ET-7/3/0",
+                            "CRTNTXJT0QW-ET-1/0/96"
+                        ],
+                        "uuid": "CRTNTXJT1CW-ET-7/3/0_CRTNTXJT0QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CRTNTXJT0QW-GE-0/0/58",
+                            "CRTNTXXE1ZW-NETWORK-1-1-1-1"
+                        ],
+                        "uuid": "CRTNTXJT0QW-GE-0/0/58_CRTNTXXE1ZW-NETWORK-1-1-1-1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "evc-ingress-bwp": "50m",
+                        "evc-egress-bwp": "50m",
+                        "adminState": true,
+                        "userLabel": "21.L1XX.990535..CHTR",
+                        "maxNumOfEvcEndPoint": 1,
+                        "serviceType": "IP",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1167",
+                        "endPoints": [
+                            {
+                                "uniId": "CRTNTXXE1ZW-ACCESS-1-1-1-3",
+                                "adminState": true,
+                                "address": "1330 CAPITAL PKWY",
+                                "sVlan": "1167",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ],
+                "fia": [
+                    {
+                        "type": "DIRECT",
+                        "endPoints": [
+                            {
+                                "uniId": "CRTNTXJT1CW-ET-1/3/0",
+                                "lanIpv4Addresses": [
+                                    "71.40.200.224/29"
+                                ],
+                                "lanIpv6Addresses": [
+                                    "2605:ED00:6A00::/48"
+                                ],
+                                "wanIpv6Address": "2605:ED00:1113::286/127"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

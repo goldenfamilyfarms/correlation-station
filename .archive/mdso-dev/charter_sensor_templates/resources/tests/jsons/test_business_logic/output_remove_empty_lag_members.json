@@ -1,0 +1,258 @@
+{
+	"serviceType": "FIA",
+	"customerName": "ANDROMEDA PROJECT TEST",
+	"service": [
+		{
+			"model": "MEF-LEGATO-EVC",
+			"version": "2017-07-27",
+			"data": {
+				"fia": [
+					{
+						"endPoints": [
+							{
+								"nextIpv6Hop": "2605:6000:0:8::f:5db5/127",
+								"wanIpv6Address": "2605:6000:0:8::F:5DB4/127",
+								"lanIpv6Addresses": [
+									"2605:ED00:394C::/48"
+								],
+								"uniId": "AUSDTXIR2CW-ET-2/2/0",
+								"lanIpv4Addresses": [
+									"192.168.14.1/30"
+								],
+								"firewallFilters": [
+									{
+										"direction": "ingress",
+										"type": "ipv4",
+										"name": "FIA-Filter"
+									},
+									{
+										"direction": "ingress",
+										"type": "ipv6",
+										"name": "FIA-Filter-v6"
+									}
+								]
+							}
+						],
+						"type": "DIRECT"
+					}
+				],
+				"evc": [
+					{
+						"serviceType": "IP",
+						"maxNumOfEvcEndPoint": 1,
+						"sVlan": "1102",
+						"connectionType": "Point to Point",
+						"userLabel": "51.L1XX.008488..TWCC",
+						"adminState": true,
+						"cosNames": [
+							{
+								"name": "BRONZE"
+							}
+						],
+						"evc-ingress-bwp": "20m",
+						"endPoints": [
+							{
+								"adminState": true,
+								"uniId": "AUSDTXIR2CW-ET-2/2/0",
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"adminState": true,
+								"uniId": "AUSDTXIR2QW-ET-0/0/99",
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"adminState": true,
+								"uniId": "AUSDTXIR2CW-ET-2/2/1",
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"adminState": true,
+								"uniId": "AUSDTXIR2QW-ET-1/0/99",
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"adminState": true,
+								"uniId": "AUSDTXIR2QW-GE-1/0/95",
+								"address": "11921 N MOPAC EXPY"
+							}
+						],
+						"evc-egress-bwp": "20m"
+					}
+				]
+			}
+		}
+	],
+	"modelVersion": "2.0",
+	"serviceName": "51.L1XX.008488..TWCC",
+	"customerType": "CUST",
+	"topology": [
+		{
+			"model": "ONF_TAPI",
+			"version": "2.0.0",
+			"data": {
+				"node": [
+					{
+						"ownedNodeEdgePoint": [
+							{
+								"uuid": "AUSDTXIR2CW-ET-2/2/0",
+								"name": [
+									{
+										"name": "Name",
+										"value": "ET-2/2/0"
+									},
+									{
+										"name": "Role",
+										"value": "INNI"
+									},
+									{
+										"name": "LAG Member",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2CW-ET-2/2/1",
+								"name": [
+									{
+										"name": "Name",
+										"value": "ET-2/2/1"
+									},
+									{
+										"name": "Role",
+										"value": "INNI"
+									},
+									{
+										"name": "LAG Member",
+										"value": "AE0"
+									}
+								]
+							}
+						],
+						"uuid": "AUSDTXIR2CW",
+						"name": [
+							{
+								"name": "Host Name",
+								"value": "AUSDTXIR2CW"
+							},
+							{
+								"name": "Role",
+								"value": "PE"
+							},
+							{
+								"name": "Vendor",
+								"value": "JUNIPER"
+							},
+							{
+								"name": "Model",
+								"value": "MX480 ETHERNET ROUTER-AC BASE"
+							},
+							{
+								"name": "Management IP",
+								"value": "71.42.150.66"
+							},
+							{
+								"name": "Address",
+								"value": "11921 N MOPAC EXPY"
+							}
+						]
+					},
+					{
+						"ownedNodeEdgePoint": [
+							{
+								"uuid": "AUSDTXIR2QW-ET-0/0/99",
+								"name": [
+									{
+										"name": "Name",
+										"value": "ET-0/0/99"
+									},
+									{
+										"name": "Role",
+										"value": "INNI"
+									},
+									{
+										"name": "LAG Member",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2QW-ET-1/0/99",
+								"name": [
+									{
+										"name": "Name",
+										"value": "ET-1/0/99"
+									},
+									{
+										"name": "Role",
+										"value": "INNI"
+									},
+									{
+										"name": "LAG Member",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2QW-GE-1/0/95",
+								"name": [
+									{
+										"name": "Name",
+										"value": "GE-1/0/95"
+									},
+									{
+										"name": "Role",
+										"value": "UNI"
+									}
+								]
+							}
+						],
+						"uuid": "AUSDTXIR2QW",
+						"name": [
+							{
+								"name": "Host Name",
+								"value": "AUSDTXIR2QW"
+							},
+							{
+								"name": "Role",
+								"value": "AGG"
+							},
+							{
+								"name": "Vendor",
+								"value": "JUNIPER"
+							},
+							{
+								"name": "Model",
+								"value": "QFX5100-96S"
+							},
+							{
+								"name": "Management IP",
+								"value": "71.42.150.235"
+							},
+							{
+								"name": "Address",
+								"value": "11921 N MOPAC EXPY"
+							}
+						]
+					}
+				],
+				"link": [
+					{
+						"nodeEdgePoint": [
+							"AUSDTXIR2CW-ET-2/2/0",
+							"AUSDTXIR2QW-ET-0/0/99"
+						],
+						"uuid": "AUSDTXIR2CW-ET-2/2/0_AUSDTXIR2QW-ET-0/0/99"
+					},
+					{
+						"nodeEdgePoint": [
+							"AUSDTXIR2CW-ET-2/2/1",
+							"AUSDTXIR2QW-ET-1/0/99"
+						],
+						"uuid": "AUSDTXIR2CW-ET-2/2/1_AUSDTXIR2QW-ET-1/0/99"
+					}
+				]
+			}
+		}
+	]
+}

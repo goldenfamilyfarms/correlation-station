@@ -1,0 +1,99 @@
+.code-quality:
+  image: docker:stable
+  allow_failure: true
+  services:
+    - name: docker:dind
+      # Remove command and add to runner directly after 13.6.
+      # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#dind-service-defined-inside-of-gitlab-runner-configuration
+      command: ["--insecure-registry=10.0.24.9:6000","--registry-mirror=http://10.0.24.9:6000" ]
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: "/certs"
+  script:
+    - |
+      if [ ! -f ".codeclimate.yml" ]; then
+      cat <<EOF > .codeclimate.yml
+      version: 2
+      plugins:
+        duplication:
+          enabled: true
+        fixme:
+          enabled: true
+      EOF
+      if [[  -n  "$(find . -type f -name '*.py')" ]]; then
+      cat <<EOF >> .codeclimate.yml
+        pylint:
+          enabled: true
+        bandit:
+          enabled: true
+        sonar-python:
+          enabled: true
+      EOF
+      if [[ ! -f  "~/.pylintrc" ]]  && [[ ! -f  "pylintrc" ]]; then
+      cat <<EOF> pylintrc
+      [FORMAT]
+      max-line-length=140
+
+      EOF
+      fi
+      cat pylintrc
+      fi
+      if [[  -n  "$(find . -type f -name '*.js')" ]]; then
+      cat <<EOF >> .codeclimate.yml
+        eslint:
+          enabled: true
+          config:
+            extensions:
+            - .es6
+            - .js
+            - .jsx
+            - .mjs
+            - .ts
+            - .tsx
+      EOF
+      fi
+      if [[  -n  "$(find . -type f -name '*.java')" ]]; then
+      cat <<EOF >> .codeclimate.yml
+        sonar-java:
+          enabled: true
+      EOF
+      fi
+      fi
+    - cat  .codeclimate.yml
+    - docker run
+      --rm
+      --env CODECLIMATE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      --volume /tmp/cc:/tmp/cc
+      --name codeclimate
+      codeclimate/codeclimate engines:install
+    - start_seconds="$(date +%s)"
+    - docker run
+      --rm
+      --env CODECLIMATE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      --volume /tmp/cc:/tmp/cc
+      --name codeclimate
+      codeclimate/codeclimate analyze --dev -f json > codeclimate.json
+    - docker run
+      --rm
+      --env CODECLIMATE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      --volume /tmp/cc:/tmp/cc
+      --name codeclimate
+      codeclimate/codeclimate analyze --dev -f html > codeclimate.html
+    - echo "Step completed in $(($(date +%s) - $start_seconds)) seconds"
+  artifacts:
+    reports:
+      codequality: codeclimate.json
+    expire_in: 3 yrs
+    paths:
+      - codeclimate.json
+      - codeclimate.html
+  tags:
+    - dind
+    #- aws-dind
+

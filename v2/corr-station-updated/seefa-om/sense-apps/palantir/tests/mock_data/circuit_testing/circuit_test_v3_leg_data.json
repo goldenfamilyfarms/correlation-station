@@ -1,0 +1,83 @@
+{
+    "LegName": "51.L4XX.000246..CHTR-None",
+    "VCID": " 495078",
+    "ZSide": {
+        "CustomerAddr": "11921 N MOPAC EXPY",
+        "PE": {
+            "Vendor": "JUNIPER",
+            "Model": "MX240",
+            "Hostname": "AUSDTXIR6CW",
+            "IpAddress": "71.42.150.82",
+            "VLANOperation": null,
+            "ServiceVLANID": null,
+            "TestAccessPort": "ge-1/0/0",
+            "Interface": "et-2/3/2",
+            "InterfaceInfo": null,
+            "Description": null,
+            "EVCType": null,
+            "CustomerVLANID": null,
+            "WBox": [
+                {
+                    "Name": "CHCGILDTS6W",
+                    "Vendor": "JUNIPER",
+                    "Model": "NFX250-S1",
+                    "VTA": []
+                }
+            ]
+        },
+        "CPE": {
+            "Vendor": "JUNIPER",
+            "Model": "MX240",
+            "Hostname": "AUSDTXIR6CW",
+            "TestAccessPort": null,
+            "InterfaceInfo": null,
+            "Description": null,
+            "PortType": null,
+            "Interface": "et-2/3/2",
+            "VLANOperation": null,
+            "ServiceVLANID": null,
+            "EVCType": null,
+            "IpAddress": "71.42.150.82",
+            "CustomerVLANID": null
+        }
+    },
+    "ASide": {
+        "CustomerAddr": "11921 N MOPAC EXPY",
+        "PE": {
+            "Vendor": "JUNIPER",
+            "Model": "MX240",
+            "Hostname": "AUSDTXIR6CW",
+            "IpAddress": "71.42.150.82",
+            "VLANOperation": null,
+            "ServiceVLANID": null,
+            "TestAccessPort": "ge-1/0/0",
+            "Interface": "et-2/3/2",
+            "InterfaceInfo": null,
+            "Description": null,
+            "CustomerVLANID": null,
+            "WBox": [
+                {
+                    "Name": "CHCGILDTS6W",
+                    "Vendor": "JUNIPER",
+                    "Model": "NFX250-S1",
+                    "VTA": []
+                }
+            ]
+        },
+        "CPE": {
+            "Vendor": "JUNIPER",
+            "Model": "MX240",
+            "Hostname": "AUSDTXIR6CW",
+            "TestAccessPort": null,
+            "InterfaceInfo": null,
+            "Description": null,
+            "PortType": null,
+            "Interface": "et-2/3/2",
+            "VLANOperation": null,
+            "ServiceVLANID": null,
+            "EVCType": null,
+            "IpAddress": "71.42.150.82",
+            "CustomerVLANID": null
+        }
+    }
+}

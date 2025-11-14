@@ -1,0 +1,505 @@
+{
+    "customerName": "TEST ACCT",
+    "serviceName": "51.L1XX.817141..CHTR",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "serviceMedia": "FIBER/COAX HYBRID",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "AUSLTXAB7AW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSLTXAB7AW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "MTU"
+                },
+                {
+                  "name": "vendor",
+                  "value": "RAD"
+                },
+                {
+                  "name": "model",
+                  "value": "ETX-2I-10G/4SFPP/4SFP4UTP"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "71.42.150.245"
+                },
+                {
+                  "name": "location",
+                  "value": "A_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78739"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSLTXAB7AW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "ON-HOLD"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSLTXAB7AW-ETH PORT 0/3",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH PORT 0/3"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "ENNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSLTXAB7AW.AUSLTXAB7AW"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSLTXAB7AW-ETH PORT 0/1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH PORT 0/1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR3CW.AUSLTXAB7AW"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "AUSDTXIR3CW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSDTXIR3CW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "MX480"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "71.42.150.67"
+                },
+                {
+                  "name": "location",
+                  "value": "A_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSDTXIR3CW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSDTXIR3CW-XE-4/3/3",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "XE-4/3/3"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR3CW.AUSLTXAB7AW"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "AUSDTXIR3CW-XE-4/3/3",
+                "AUSLTXAB7AW-ETH PORT 0/1"
+              ],
+              "uuid": "AUSDTXIR3CW-XE-4/3/3_AUSLTXAB7AW-ETH PORT 0/1"
+            }
+          ]
+        }
+      },
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "AUSDTXIR2CW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSDTXIR2CW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "MX480"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "71.42.150.66"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSDTXIR2CW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSDTXIR2CW-ET-2/2/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-2/2/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE40L.AUSDTXIR2CW.AUSDTXIR2QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE0"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSDTXIR2CW-ET-2/2/1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-2/2/1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE40L.AUSDTXIR2CW.AUSDTXIR2QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE0"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "AUSDTXIR2QW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSDTXIR2QW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "AGG"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "QFX5100-96S"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "71.42.150.235"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSDTXIR2QW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSDTXIR2QW-ET-0/0/99",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-0/0/99"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE40L.AUSDTXIR2CW.AUSDTXIR2QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE0"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSDTXIR2QW-ET-1/0/99",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-1/0/99"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE40L.AUSDTXIR2CW.AUSDTXIR2QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE0"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSDTXIR2QW-XE-1/0/34",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "XE-1/0/34"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR2QW.AUSLTXABIZW"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "AUSLTXABIZW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "AUSLTXABIZW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "RAD"
+                },
+                {
+                  "name": "model",
+                  "value": "ETX-2I-10G/4SFPP/4SFP4UTP"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "97.105.228.150"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "11921 N MOPAC EXPY 78759"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "AUSLTXABIZW.DEV.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "AUSLTXABIZW-ETH PORT 0/1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH PORT 0/1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51001.GE10.AUSDTXIR2QW.AUSLTXABIZW"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "AUSLTXABIZW-ETH PORT 0/9",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH PORT 0/9"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "UNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "51.L1XX.817141..CHTR"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "AUSDTXIR2CW-ET-2/2/0",
+                "AUSDTXIR2QW-ET-0/0/99"
+              ],
+              "uuid": "AUSDTXIR2CW-ET-2/2/0_AUSDTXIR2QW-ET-0/0/99"
+            },
+            {
+              "nodeEdgePoint": [
+                "AUSDTXIR2CW-ET-2/2/1",
+                "AUSDTXIR2QW-ET-1/0/99"
+              ],
+              "uuid": "AUSDTXIR2CW-ET-2/2/1_AUSDTXIR2QW-ET-1/0/99"
+            },
+            {
+              "nodeEdgePoint": [
+                "AUSDTXIR2QW-XE-1/0/34",
+                "AUSLTXABIZW-ETH PORT 0/1"
+              ],
+              "uuid": "AUSDTXIR2QW-XE-1/0/34_AUSLTXABIZW-ETH PORT 0/1"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "GOLD"
+                }
+              ],
+              "perfTier": [
+                {
+                  "name": "METRO"
+                }
+              ],
+              "evc-ingress-bwp": "500m",
+              "evc-egress-bwp": "500m",
+              "evcId": "491210",
+              "adminState": true,
+              "userLabel": "51.L1XX.817141..CHTR",
+              "maxNumOfEvcEndPoint": 2,
+              "serviceType": "EPL",
+              "connectionType": "Point to Point",
+              "sVlan": "1210",
+              "endPoints": [
+                {
+                  "uniId": "AUSLTXAB7AW-ETH PORT 0/3",
+                  "adminState": true,
+                  "address": "11921 N MOPAC EXPY 78739",
+                  "sVlan": "1210"
+                },
+                {
+                  "uniId": "AUSLTXABIZW-ETH PORT 0/9",
+                  "adminState": true,
+                  "address": "11921 N MOPAC EXPY 78759",
+                  "sVlan": "1210",
+                  "sVlanOperation": "PUSH"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }

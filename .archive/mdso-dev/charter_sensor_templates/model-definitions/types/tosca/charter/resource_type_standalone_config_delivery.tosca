@@ -1,0 +1,182 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Standalone Config Delivery - SCoD"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Standalone Config Delivery. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "David Edelson (david.edelson@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    standaloneConfigDelivery {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Standalone Config Delivery
+        description = """
+        - This document defines a resource that intakes path details, a configuration, 
+          turns up upstream ports if necessary, and applies the configuration to the target device
+        - This Resource Definition requires the following:
+            Target Device
+                TID
+                FQDN/IP/DHCP
+                Vendor
+                Model
+                CONFIGURATION
+            Upstream Device
+                FQDN
+                Vendor
+                Port Facing Target
+            PE Router
+                FQDN
+                Vendor
+
+        - Contains overall state of the network service.
+        - For service types like ELINE, ELAN, FIA, etc.
+        - Contains state and other information about each site in the network service.
+        """
+
+        properties {
+            target_device {
+                title = "Target Device FQDN"
+                description = "FQDN of Target Device to be configured"
+                type = string
+                optional = false
+                updatable = true
+            }
+            target_vendor {
+                title = "Target Device Vendor"
+                description = "Target Device Vendor"
+                type = string
+                optional = false
+                updatable = true
+            }
+            target_model {
+                title = "Target Device Model"
+                description = "Target Device Model"
+                type = string
+                optional = false
+                updatable = true
+            }
+            upstream_device_FQDN {
+                title = "Upstream Device FQDN"
+                description = "FQDN of the Upstream Device"
+                type = string
+                optional = false
+            }
+            upstream_device_vendor {
+                title = "Upstream Device Vendor"
+                description = "Vendor of the Upstream Device"
+                type = string
+                optional = false
+            }
+            upstream_port {
+                title = "Upstream Device Port"
+                description = "Port associated with site/node"
+                type = string
+                optional = false
+            }
+            pe_router_FQDN {
+                title = "PE Router FQDN"
+                description = "Identifier of the Upstream Device"
+                type = string
+                optional = false
+            }
+            pe_router_vendor {
+                title = "PE Router Vendor"
+                description = "Identifier of the Upstream Device"
+                type = string
+                optional = false
+            }
+            ip {
+                config = false
+                title = "CPE IP"
+                description = "IP Address of CPE"
+                type = string
+                optional = true
+            }
+            cpe_activation {
+	            config = false
+                title = "CPE Activation Status"
+                description = "Progress of Activation"
+                type = string
+    	        optional = true
+		    }
+            cpe_activation_error {
+	            config = false
+                title = "CPE Activation Error Status"
+                description = "Error status of Activation"
+                type = string
+    	        optional = true        
+	    	}
+            scod_error_code {
+	            config = false
+                title = "Standalone Config Delivery Error Code"
+                description = "Error Code"
+                type = string
+    	        optional = true
+	    	}
+            upstream_pill_details {
+                title = "Upstream Device Post Install Light Level Details"
+                description = "dictionary to hold PILL Details"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            target_pill_details {
+                title = "Target Device Post Install Light Level Details"
+                description = "dictionary to hold PILL Details"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            target_uplink {
+	            config = true
+                title = "Target Uplink"
+                description = "Uplink port on target device"
+                type = string
+                optional = true
+            }
+	        cpe_config {
+		        config = true
+        		title = "CPE Configuration"
+        		description = "CPE Configuration"
+                type = array
+                optional = true
+                items {
+                    title = "CPE Config Line"
+                    description = "Sure is a line of CPE Config"
+                    type = string
+                }
+		    }
+        }
+    }
+}
+
+serviceTemplates {
+    standaloneConfigDelivery {
+        title = Standalone Config Delivery
+        description = "Standalone Config Delivery"
+        implements = charter.resourceTypes.standaloneConfigDelivery
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.standaloneconfigdelivery.standaloneconfigdelivery.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.standaloneconfigdelivery.standaloneconfigdelivery.Terminate"
+            }
+        }
+    }
+}

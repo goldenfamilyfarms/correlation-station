@@ -1,0 +1,139 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed Services Activator"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Service Mapper. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    ManagedServicesActivator {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Managed Services Activator
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a Service Mapper resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        - For service types like ELINE, ELAN, FIA, etc.
+        """
+
+        properties {
+
+            service_type {
+                title = "Service Type"
+                enum = ["MNE", "MSS", "MRS"]
+                default = "MRS"
+                type = string
+                optional = true
+            }
+            msa_activation {
+	            config = false
+                title = "Managed Services Activation Status"
+                description = "Progress of Activation"
+                type = string
+    	        optional = true
+		    }
+            msa_activation_error {
+	            config = false
+                title = "Managed Services Activation Error Status"
+                description = "Error status of Activation"
+                type = string
+    	        optional = true
+	    	}
+            resource_properties {
+                title = "Resource Properties"
+                type = object
+                optional = true
+            }
+            fqdn {
+                title = "fqdn"
+                description = "domain of the device"
+                type = string
+                optional = true
+            },
+            ipAddress {
+                title = "ip address"
+                description = "ip address of the device"
+                type = string
+                optional = true
+            },
+            configuration {
+                title = "configuration"msa
+                description = "full configuration for the device"
+                type = array
+                optional = true
+            },
+            additionalAttributes {
+                title = "Additional Attributes"
+                description = "Additional Attributes"
+                propertyType = tosca.propertyTypes.AdditionalAttributes
+                optional = true
+            }
+            vendor {
+                title = "vendor"
+                description = "vendor"
+                type = string
+                optional = true
+            },
+            model {
+                title = "model"
+                description = "model"
+                type = string
+                optional = true
+            },
+            operationType {
+                title = "Service Option"
+                description = "New or Update Configuration"
+                type = string
+                optional = true
+                default = "New"
+                enum = [
+                    "New",
+                    "Update"
+                ]
+            },
+            ignore_errors {
+                title = "ignore errors"
+                description = "run through all commands even if one errors in the middle."
+                type = boolean
+                default = false
+                optional = true
+            },
+            firmwareVersion {
+                title = "firmware version"
+                description = "approved firmware version"
+                type = string
+                optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    ManagedServicesActivator {
+        title = Managed Services Activator
+        description = "Managed Services Activator"
+        implements = charter.resourceTypes.ManagedServicesActivator
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.managedServicesActivator.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.managedServicesActivator.Terminate"
+            }
+        }
+    }
+}

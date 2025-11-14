@@ -1,0 +1,119 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Turnup Locate IP"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the TurnUP Locate IP Tool (TULIP). 
+This tool will be used to turn up the CPE facing port and 
+finding the IP of the newly installed CPE.
+"""
+authors = [ "David Edelson (David.Edelson@charter.com)", "Linda Luong (linda.luong@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    turnupLocateIP {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Turnup Locate IP
+        description = """
+        - This document defines a resource that intakes path details and determines the mgmt IP of a recently installed CPE.
+        - This Resource Definition requires the following:
+            Upstream Device
+                FQDN
+                Vendor
+                Port Facing Target
+            PE Router
+                FQDN
+                Vendor
+
+        - Contains overall state of the network service.
+        - For service types like ELINE, ELAN, FIA, etc.
+        - Contains state and other information about each site in the network service.
+        """
+
+        properties {
+            upstream_device_FQDN {
+                title = "Upstream Device FQDN"
+                description = "FQDN of the Upstream Device"
+                type = string
+                optional = false
+            }
+            upstream_device_vendor {
+                title = "Upstream Device Vendor"
+                description = "Vendor of the Upstream Device"
+                type = string
+                optional = false
+            }
+            upstream_port {
+                title = "Upstream Device Port"
+                description = "Port associated with site/node"
+                type = string
+                optional = false
+            }
+            pe_router_FQDN {
+                title = "PE Router FQDN"
+                description = "FQDN of the PE Router"
+                type = string
+                optional = false
+            }
+            pe_router_vendor {
+                title = "PE Router Vendor"
+                description = "PE Vendor"
+                type = string
+                optional = false
+            }
+            ip {
+                config = false
+                title = "CPE IP"
+                description = "IP Address of CPE"
+                type = string
+                optional = true
+            }
+            tulip_status {
+                config = false
+                title = "Tulip Status"
+                description = "Progress of Turnup Locate IP status"
+                type = string
+    	        optional = true
+		    }
+            tulip_error {
+                config = false
+                title = "Tulip Error Status"
+                description = "Error status of Tulip"
+                type = string
+    	        optional = true        
+	    	}
+            tulip_error_code {
+                config = false
+                title = "Tulip Error Code"
+                description = "Error Code"
+                type = string
+    	        optional = true
+	    	}
+		}
+    }
+}
+
+serviceTemplates {
+    turnupLocateIP {
+        title = TurnupLocateIP
+        description = "Turnup LocateIP"
+        implements = charter.resourceTypes.turnupLocateIP
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.turnupLocateIP.turnupLocateIP.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.turnupLocateIP.turnupLocateIP.Terminate"
+            }
+        }
+    }
+}

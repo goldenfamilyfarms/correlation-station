@@ -1,0 +1,59 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "SFP Thresholds"
+package     = charter
+version     = "1.0"
+description = """
+    This document defines the SFP Thresholds model.  This is the object which will hold
+    the acceptable light level thresholds based on SFP details.
+"""
+authors     = [ "David Edelson (david.edelson@charter.com)" ]
+
+imports {
+    root = tosca.resourceTypes.Root
+}
+
+resourceTypes {
+    sfpThresholds {
+        derivedFrom = [ root ]
+        title = SFP Thresholds
+        description = """
+        - This Resource Definition only requires a name and list of dictionaries to create (POST).
+        """    
+
+        properties {
+            sfp_details {
+                config = true
+                title = "sfp_details List"
+                description = "List of dictionaries with sfp values and the associated thresholds"
+                type = array
+                optional = false
+                items.type = object
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    sfpThresholds {
+        title = sfpThresholds
+        description = "SFP Details and Associated Thresholds"
+        implements = charter.resourceTypes.sfpThresholds
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+            
+            update {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+
+        }
+    }
+}

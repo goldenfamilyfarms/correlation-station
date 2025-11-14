@@ -1,0 +1,136 @@
+{
+  "CustomerName": "VERIZON WIRELESS WI NEW BERLIN CHTR ICOMS",
+  "CircuitID": "60.L4XX.000287..CHTR",
+  "Bandwidth": "10 Gbps",
+  "ServiceLevel": "GOLD METRO",
+  "Status": "Live",
+  "Legs": [
+    {
+      "LegName": "60.L4XX.000287..CHTR-1141",
+      "VCID": "502765",
+      "ZSide": {
+        "CustomerAddr": "45 MILLER DR",
+        "PE": {
+          "Vendor": "JUNIPER",
+          "Model": "MX960",
+          "Hostname": "BARBWIDV1CW",
+          "IpAddress": "150.181.2.5",
+          "VLANOperation": null,
+          "ServiceVLANID": "1141",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "et-10/3/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "EVCType": null,
+          "CustomerVLANID": "1141",
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ADVA",
+          "Model": "FSP 150-XG116PROH",
+          "Hostname": "BARBWIGV73W",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "eth_port-1-1-1-5",
+          "VLANOperation": "PUSH",
+          "ServiceVLANID": "1141",
+          "EVCType": null,
+          "IpAddress": "10.51.108.130",
+          "CustomerVLANID": "1141"
+        }
+      },
+      "ASide": {
+        "CustomerAddr": null,
+        "PE": {
+          "Vendor": "NOKIA",
+          "Model": "7750 SR-2S",
+          "Hostname": "NWBLWICZ1TW",
+          "IpAddress": "76.58.44.209",
+          "VLANOperation": null,
+          "ServiceVLANID": "1141",
+          "TestAccessPort": "1/x1/1/c18/1",
+          "WBoxTestAccessPort": "1-1-1-8",
+          "Interface": "1/x1/1/c11/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "CustomerVLANID": null,
+          "WBox": [
+            {
+              "Name": "NWBLWICZD0S",
+              "Vendor": "ADVA",
+              "Model": "FSP 150-XG118PRO (VTA)",
+              "VTA": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "LegName": "60.L4XX.000287..CHTR-1142",
+      "VCID": "502767",
+      "ZSide": {
+        "CustomerAddr": "45 MILLER DR",
+        "PE": {
+          "Vendor": "JUNIPER",
+          "Model": "MX960",
+          "Hostname": "BARBWIDV1CW",
+          "IpAddress": "150.181.2.5",
+          "VLANOperation": null,
+          "ServiceVLANID": "1142",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "et-10/3/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "EVCType": null,
+          "CustomerVLANID": "1142",
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ADVA",
+          "Model": "FSP 150-XG116PROH",
+          "Hostname": "BARBWIGV73W",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "eth_port-1-1-1-5",
+          "VLANOperation": "PUSH",
+          "ServiceVLANID": "1142",
+          "EVCType": null,
+          "IpAddress": "10.51.108.130",
+          "CustomerVLANID": "1142"
+        }
+      },
+      "ASide": {
+        "CustomerAddr": null,
+        "PE": {
+          "Vendor": "NOKIA",
+          "Model": "7750 SR-2S",
+          "Hostname": "NWBLWICZ2TW",
+          "IpAddress": "76.58.44.210",
+          "VLANOperation": null,
+          "ServiceVLANID": "1142",
+          "TestAccessPort": "1/x1/1/c18/1",
+          "WBoxTestAccessPort": "1-1-1-6",
+          "Interface": "1/x1/1/c11/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "CustomerVLANID": null,
+          "WBox": [
+            {
+              "Name": "NWBLWICZD0S",
+              "Vendor": "ADVA",
+              "Model": "FSP 150-XG118PRO (VTA)",
+              "VTA": []
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "UnitType": null
+}

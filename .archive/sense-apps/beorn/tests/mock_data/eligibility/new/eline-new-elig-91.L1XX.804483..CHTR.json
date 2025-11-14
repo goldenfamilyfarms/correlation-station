@@ -1,0 +1,361 @@
+{
+    "customerName": "GRANITE COMMUNICATIONS",
+    "serviceName": "91.L1XX.804483..CHTR",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "ATLNGAMQ1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "ATLNGAMQ1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.4.35.97"
+                            },
+                            {
+                                "name": "address",
+                                "value": "56 MARIETTA ST NW"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "ATLNGAMQ1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "ATLNGAMQ1CW-XE-3/0/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-3/0/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": []
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "APEXNCCO2CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "APEXNCCO2CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.199.192.223"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1903 LAKE PINE DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "APEXNCCO2CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "APEXNCCO2CW-ET-1/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "APEXNCCO2CW-ET-10/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-10/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "APEXNCCO2QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "APEXNCCO2QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.20.220.2"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1903 LAKE PINE DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "APEXNCCO2QW.SE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "APEXNCCO2QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "APEXNCCO2QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "APEXNCCO2QW-GE-0/0/77",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-0/0/77"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "RLGINCIU1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "RLGINCIU1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "111 HAMPTON WOODS LN"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "RLGINCIU1ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "RLGINCIU1ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "RLGINCIU1ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "APEXNCCO2CW-ET-1/3/0",
+                            "APEXNCCO2QW-ET-0/0/96"
+                        ],
+                        "uuid": "APEXNCCO2CW-ET-1/3/0_APEXNCCO2QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "APEXNCCO2CW-ET-10/3/0",
+                            "APEXNCCO2QW-ET-1/0/96"
+                        ],
+                        "uuid": "APEXNCCO2CW-ET-10/3/0_APEXNCCO2QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "APEXNCCO2QW-GE-0/0/77",
+                            "RLGINCIU1ZW-ETH PORT 1"
+                        ],
+                        "uuid": "APEXNCCO2QW-GE-0/0/77_RLGINCIU1ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "perfTier": [
+                            {
+                                "name": "REGIONAL"
+                            }
+                        ],
+                        "evc-ingress-bwp": "100m",
+                        "evc-egress-bwp": "100m",
+                        "evcId": "464248",
+                        "adminState": true,
+                        "userLabel": "91.L1XX.804483..CHTR",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "206",
+                        "endPoints": [
+                            {
+                                "uniId": "ATLNGAMQ1CW-XE-3/0/0",
+                                "adminState": true,
+                                "address": "56 MARIETTA ST NW",
+                                "sVlan": "197"
+                            },
+                            {
+                                "uniId": "ATLNGAMQ1CW-XE-3/0/0",
+                                "adminState": true,
+                                "address": "56 MARIETTA ST NW",
+                                "sVlan": "206"
+                            },
+                            {
+                                "uniId": "RLGINCIU1ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "111 HAMPTON WOODS LN",
+                                "sVlan": "206",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

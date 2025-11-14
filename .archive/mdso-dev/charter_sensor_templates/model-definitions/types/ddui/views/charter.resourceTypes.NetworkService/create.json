@@ -1,0 +1,24 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [
+        {
+            "label": "General",
+            "children": [
+                {
+                    "model": "label"
+                },
+                {
+                    "model": "properties.circuit_id"
+                },
+                {
+                    "model": "properties.stage"
+                },
+                {
+                    "model": "properties.use_alternate_circuit_details_server",
+                    "label": "Use alternate circuit details server"
+                }
+            ]
+        }
+    ]
+}

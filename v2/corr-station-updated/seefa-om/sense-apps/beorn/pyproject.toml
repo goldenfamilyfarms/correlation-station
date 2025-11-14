@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 121
+exclude = [
+    "common_sense"
+]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.per-file-ignores]
+"beorn_app/__init__.py" = ["E402"]

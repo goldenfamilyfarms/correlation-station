@@ -1,0 +1,69 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"  # format version and validator
+title       = "Device File Onboarder"
+package     = charter
+version     = "1.0"
+description = """
+    Resource to import a CSV file located  /bp2/scriptplan_xxx_xxx/data.  The contents of the file should be
+    in a CSV format and have the HostName of the device 
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+
+imports {
+}
+
+resourceTypes {
+    DeviceFileOnboarder {
+        derivedFrom = tosca.resourceTypes.Root
+        title = "Device File Onboarder"
+        description = """
+        This resource will take a file name and import
+        """
+
+        properties {
+        
+            file_name {
+                title = "Name of File"
+                description = "Name of file under /bp2/bpocore_xxxx_x/data"
+                type = "string"
+                optional = false
+                updatable = false
+            }
+            
+            batch_size {
+                title = "Batch Size"
+                description = "Number of concurrent imports"
+                type = integer
+                default = 10
+                optional = true
+                updatable = false
+            }
+            
+            batch_completion_size_percentage {
+                title = "% Batch Completion"
+                description = "Percentage at which we consider a batch completed"
+                type = integer
+                default = 70
+                optional = true
+                updatable = true
+            }
+            
+        }
+    }
+}
+
+serviceTemplates {
+    DeviceFileOnboarder {
+        title = "Device File Onboarder"
+        description = "Device File Onboarder"
+        implements = charter.resourceTypes.DeviceFileOnboarder
+
+        plans {
+            activate {
+                type = remote
+                language = python
+                path = "scripts.deviceconfiguration.deviceonboarder.DeviceFileOnboarder"
+            }
+        }
+    }
+}

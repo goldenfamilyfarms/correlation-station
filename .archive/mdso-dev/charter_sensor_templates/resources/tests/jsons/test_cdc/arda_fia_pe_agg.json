@@ -1,0 +1,248 @@
+{
+	"customerName": "ANDROMEDA PROJECT TEST",
+	"serviceName": "51.L1XX.008488..TWCC",
+	"serviceType": "FIA",
+	"customerType": "CUST",
+	"modelVersion": "2.0",
+	"topology": [
+		{
+			"model": "ONF_TAPI",
+			"version": "2.0.0",
+			"data": {
+				"node": [
+					{
+						"uuid": "AUSDTXIR2CW",
+						"name": [
+							{
+								"name": "hostName",
+								"value": "AUSDTXIR2CW"
+							},
+							{
+								"name": "deviceRole",
+								"value": "PE"
+							},
+							{
+								"name": "vendor",
+								"value": "JUNIPER"
+							},
+							{
+								"name": "model",
+								"value": "MX480 ETHERNET ROUTER-AC BASE"
+							},
+							{
+								"name": "managementIP",
+								"value": "71.42.150.66"
+							},
+							{
+								"name": "address",
+								"value": "11921 N MOPAC EXPY"
+							}
+						],
+						"ownedNodeEdgePoint": [
+							{
+								"uuid": "AUSDTXIR2CW-ET-2/2/0",
+								"name": [
+									{
+										"name": "name",
+										"value": "ET-2/2/0"
+									},
+									{
+										"name": "portRole",
+										"value": "INNI"
+									},
+									{
+										"name": "lagMember",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2CW-ET-2/2/1",
+								"name": [
+									{
+										"name": "name",
+										"value": "ET-2/2/1"
+									},
+									{
+										"name": "portRole",
+										"value": "INNI"
+									},
+									{
+										"name": "lagMember",
+										"value": "AE0"
+									}
+								]
+							}
+						]
+					},
+					{
+						"uuid": "AUSDTXIR2QW",
+						"name": [
+							{
+								"name": "hostName",
+								"value": "AUSDTXIR2QW"
+							},
+							{
+								"name": "deviceRole",
+								"value": "AGG"
+							},
+							{
+								"name": "vendor",
+								"value": "JUNIPER"
+							},
+							{
+								"name": "model",
+								"value": "QFX5100-96S"
+							},
+							{
+								"name": "managementIP",
+								"value": "71.42.150.235"
+							},
+							{
+								"name": "address",
+								"value": "11921 N MOPAC EXPY"
+							}
+						],
+						"ownedNodeEdgePoint": [
+							{
+								"uuid": "AUSDTXIR2QW-ET-0/0/99",
+								"name": [
+									{
+										"name": "name",
+										"value": "ET-0/0/99"
+									},
+									{
+										"name": "portRole",
+										"value": "INNI"
+									},
+									{
+										"name": "lagMember",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2QW-ET-1/0/99",
+								"name": [
+									{
+										"name": "name",
+										"value": "ET-1/0/99"
+									},
+									{
+										"name": "portRole",
+										"value": "INNI"
+									},
+									{
+										"name": "lagMember",
+										"value": "AE0"
+									}
+								]
+							},
+							{
+								"uuid": "AUSDTXIR2QW-GE-1/0/95",
+								"name": [
+									{
+										"name": "name",
+										"value": "GE-1/0/95"
+									},
+									{
+										"name": "portRole",
+										"value": "UNI"
+									},
+									{
+										"name": "lagMember"
+									}
+								]
+							}
+						]
+					}
+				],
+				"link": [
+					{
+						"nodeEdgePoint": [
+							"AUSDTXIR2CW-ET-2/2/0",
+							"AUSDTXIR2QW-ET-0/0/99"
+						],
+						"uuid": "AUSDTXIR2CW-ET-2/2/0_AUSDTXIR2QW-ET-0/0/99"
+					},
+					{
+						"nodeEdgePoint": [
+							"AUSDTXIR2CW-ET-2/2/1",
+							"AUSDTXIR2QW-ET-1/0/99"
+						],
+						"uuid": "AUSDTXIR2CW-ET-2/2/1_AUSDTXIR2QW-ET-1/0/99"
+					}
+				]
+			}
+		}
+	],
+	"service": [
+		{
+			"model": "MEF-LEGATO-EVC",
+			"version": "2017-07-27",
+			"data": {
+				"evc": [
+					{
+						"cosNames": [
+							{
+								"name": "BRONZE"
+							}
+						],
+						"evc-ingress-bwp": "20m",
+						"evc-egress-bwp": "20m",
+						"sVlan": "1102",
+						"endPoints": [
+							{
+								"uniId": "AUSDTXIR2CW-ET-2/2/0",
+								"adminState": true,
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"uniId": "AUSDTXIR2QW-ET-0/0/99",
+								"adminState": true,
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"uniId": "AUSDTXIR2CW-ET-2/2/1",
+								"adminState": true,
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"uniId": "AUSDTXIR2QW-ET-1/0/99",
+								"adminState": true,
+								"address": "11921 N MOPAC EXPY"
+							},
+							{
+								"uniId": "AUSDTXIR2QW-GE-1/0/95",
+								"adminState": true,
+								"address": "11921 N MOPAC EXPY"
+							}
+						],
+						"connectionType": "Point to Point",
+						"adminState": true,
+						"userLabel": "51.L1XX.008488..TWCC",
+						"maxNumOfEvcEndPoint": 1,
+						"serviceType": "IP"
+					}
+				],
+				"fia": [
+					{
+						"type": "DIRECT",
+						"endPoints": [
+							{
+								"uniId": "AUSDTXIR2CW-ET-2/2/0",
+								"lanIpv4Addresses": [
+									"192.168.14.0/30"
+								],
+								"lanIpv6Addresses": [
+									"2605:ED00:394C::/48"
+								],
+								"wanIpv6Address": "2605:6000:0:8::F:5DB4/127"
+							}
+						]
+					}
+				]
+			}
+		}
+	]
+}
