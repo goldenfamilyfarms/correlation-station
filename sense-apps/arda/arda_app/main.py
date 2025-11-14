@@ -13,9 +13,9 @@ from pydantic_core import ValidationError
 # Add common directory to path for shared utilities
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 
-# Import lightweight OTEL instrumentation
+# Import comprehensive OTEL observability
 try:
-    from otel_utils import setup_otel_sense, instrument_fastapi_app
+    from observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -63,16 +63,16 @@ async def read_index():
 # Set logger
 logger = setup_logging()
 
-# Initialize lightweight OTEL instrumentation for FastAPI
+# Initialize comprehensive OTEL observability for FastAPI (traces + metrics)
 if OTEL_AVAILABLE:
     try:
-        setup_otel_sense(
+        setup_observability(
+            app,
             service_name="arda",
             service_version=__VERSION__,
             environment=os.getenv("DEPLOYMENT_ENV", "prod")
         )
-        instrument_fastapi_app(app, "arda")
-        logger.info("Arda OTEL instrumentation initialized (lightweight mode)")
+        logger.info("Arda OTEL observability initialized (traces + metrics)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")
 else:
