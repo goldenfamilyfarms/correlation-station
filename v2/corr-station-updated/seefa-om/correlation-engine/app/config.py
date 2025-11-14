@@ -80,6 +80,15 @@ class Settings(BaseSettings):
     max_protobuf_size: int = 10 * 1024 * 1024  # 10MB
     max_json_size: int = 10 * 1024 * 1024  # 10MB
 
+    # State Management & Horizontal Scaling
+    use_redis_state: bool = False  # Feature flag for Redis state management
+    redis_url: str = "redis://localhost:6379"  # Redis connection URL
+    redis_max_connections: int = 50  # Max connections in pool
+    redis_key_prefix: str = "corr:"  # Prefix for all Redis keys
+    correlation_ttl_seconds: int = 3600  # TTL for correlations (1 hour)
+    correlation_window_seconds: int = 60  # Time window for correlation
+    max_correlation_age_hours: int = 24  # Max age before cleanup
+
     @field_validator('allow_origins', mode='before')
     @classmethod
     def parse_origins(cls, v):

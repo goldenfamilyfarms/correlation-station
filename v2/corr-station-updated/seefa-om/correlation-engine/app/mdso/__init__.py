@@ -3,12 +3,22 @@ from .client import MDSOClient
 from .log_collector import MDSOLogCollector
 from .error_analyzer import MDSOErrorAnalyzer
 from .models import MDSOResource, MDSOOrchTrace, MDSOError
+from .repository import (
+    MDSORepository,
+    HTTPMDSORepository,
+    InMemoryMDSORepository,
+    CachedMDSORepository,
+)
 
 __all__ = [
     "MDSOClient",
-    "MDSOLogCollector", 
+    "MDSOLogCollector",
     "MDSOErrorAnalyzer",
     "MDSOResource",
     "MDSOOrchTrace",
     "MDSOError",
+    "MDSORepository",
+    "HTTPMDSORepository",
+    "InMemoryMDSORepository",
+    "CachedMDSORepository",
 ]

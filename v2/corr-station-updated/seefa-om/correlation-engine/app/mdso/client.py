@@ -135,9 +135,43 @@ class MDSOClient:
             
             resources = [MDSOResource(**item) for item in items]
             logger.info("mdso_resources_fetched", product=product_name, count=len(resources))
-            
+
             return resources
-    
+
+    async def get_resource_by_id(
+        self,
+        resource_id: str
+    ) -> Optional[MDSOResource]:
+        """Get a single resource by ID"""
+        with tracer.start_as_current_span(
+            "mdso.get_resource_by_id",
+            attributes={"mdso.resource_id": resource_id}
+        ) as span:
+            token = await self.get_token()
+            headers = {"Authorization": f"Bearer {token}"}
+
+            url = f"{self.base_url}/bpocore/market/api/v1/resources/{resource_id}"
+
+            try:
+                response = await self._client.get(url, headers=headers)
+                response.raise_for_status()
+
+                item = response.json()
+                resource = MDSOResource(**item)
+                span.set_attribute("mdso.resource_found", True)
+                logger.info("mdso_resource_fetched", resource_id=resource_id)
+                return resource
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 404:
+                    span.set_attribute("mdso.resource_found", False)
+                    logger.warning("mdso_resource_not_found", resource_id=resource_id)
+                    return None
+                raise
+            except Exception as e:
+                span.set_status(Status(StatusCode.ERROR, str(e)))
+                logger.error("mdso_get_resource_failed", resource_id=resource_id, error=str(e))
+                raise
+
     async def get_orch_trace(
         self, 
         circuit_id: str, 

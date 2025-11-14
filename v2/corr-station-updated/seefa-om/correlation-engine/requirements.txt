@@ -33,6 +33,12 @@ opentelemetry-instrumentation-httpx>=0.41b0
 # Python standard library enhancements
 python-dotenv==1.0.0
 
+# Redis for state management (horizontal scaling)
+redis==5.0.1  # Async Redis client
+
+# DateTime handling
+pendulum==3.0.0  # Used by MDSO log collector
+
 # Testing dependencies
 pytest==7.4.3
 pytest-asyncio==0.21.1
