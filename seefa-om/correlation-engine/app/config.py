@@ -14,12 +14,27 @@ class Settings(BaseSettings):
     # Correlation settings
     corr_window_seconds: int = 60
     max_batch_size: int = 5000
+    max_queue_size: int = 10000
+    max_correlation_history: int = 10000
+
+    # Advanced correlation features
+    enable_trace_synthesis: bool = True
+    correlation_confidence_threshold: float = 0.5
+    trace_synthesis_window_seconds: int = 60
 
     # Backend URLs
     loki_url: str = "http://loki:3100/loki/api/v1/push"
     tempo_grpc_endpoint: str = "tempo:4317"
     tempo_http_endpoint: str = "http://tempo:4318"
     prometheus_pushgateway: Optional[str] = None
+
+    # Export retry settings
+    export_retry_attempts: int = 3
+    export_retry_delay: float = 1.0
+    export_timeout: float = 10.0
+    enable_circuit_breaker: bool = True
+    circuit_breaker_failure_threshold: int = 5
+    circuit_breaker_recovery_timeout: int = 60
 
     # Authentication
     enable_basic_auth: bool = False

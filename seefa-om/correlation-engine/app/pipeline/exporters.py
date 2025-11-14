@@ -1,12 +1,15 @@
 """Exporters - send correlated data to backends (Loki/Tempo/Prometheus/Datadog)"""
 import json
 import time
+import asyncio
 from typing import Optional, List, Dict, Any
+from datetime import datetime, timedelta
 import httpx
 import structlog
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Histogram, Gauge
 
 from app.models import LogBatch, CorrelationEvent
+from app.config import settings
 
 logger = structlog.get_logger()
 
@@ -21,19 +24,111 @@ EXPORT_DURATION = Histogram(
     'Export duration',
     ['backend']
 )
+EXPORT_RETRIES = Counter(
+    'export_retries_total',
+    'Total export retries',
+    ['backend']
+)
+CIRCUIT_BREAKER_STATE = Gauge(
+    'circuit_breaker_state',
+    'Circuit breaker state (0=closed, 1=open, 2=half-open)',
+    ['backend']
+)
+
+
+class CircuitBreaker:
+    """Simple circuit breaker pattern"""
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = timedelta(seconds=recovery_timeout)
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = "closed"  # closed, open, half-open
+
+    def can_execute(self) -> bool:
+        """Check if execution is allowed"""
+        if self.state == "closed":
+            return True
+
+        if self.state == "open":
+            # Check if recovery timeout elapsed
+            if self.last_failure_time and datetime.now() - self.last_failure_time >= self.recovery_timeout:
+                self.state = "half-open"
+                logger.info("Circuit breaker half-open, testing connection")
+                return True
+            return False
+
+        # half-open state - allow single request
+        return True
+
+    def record_success(self):
+        """Record successful execution"""
+        if self.state == "half-open":
+            self.state = "closed"
+            self.failure_count = 0
+            logger.info("Circuit breaker closed, connection recovered")
+
+    def record_failure(self):
+        """Record failed execution"""
+        self.failure_count += 1
+        self.last_failure_time = datetime.now()
+
+        if self.failure_count >= self.failure_threshold:
+            if self.state != "open":
+                self.state = "open"
+                logger.warning(
+                    "Circuit breaker open, too many failures",
+                    failures=self.failure_count,
+                    recovery_timeout=self.recovery_timeout.total_seconds()
+                )
+
+    def get_state_code(self) -> int:
+        """Get state as numeric code for metrics"""
+        return {"closed": 0, "open": 1, "half-open": 2}.get(self.state, 0)
+
+
+async def retry_with_backoff(func, max_retries: int = 3, initial_delay: float = 1.0, backend: str = "unknown"):
+    """Retry function with exponential backoff"""
+    for attempt in range(max_retries):
+        try:
+            return await func()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+
+            delay = initial_delay * (2 ** attempt)
+            EXPORT_RETRIES.labels(backend=backend).inc()
+            logger.warning(
+                f"Export failed, retrying in {delay}s",
+                backend=backend,
+                attempt=attempt + 1,
+                max_retries=max_retries,
+                error=str(e)
+            )
+            await asyncio.sleep(delay)
 
 
 class LokiExporter:
     """Export logs to Loki"""
     def __init__(self, loki_url: str):
         self.loki_url = loki_url
-        self.client = httpx.AsyncClient(timeout=10.0)
+        self.client = httpx.AsyncClient(timeout=settings.export_timeout)
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=settings.circuit_breaker_failure_threshold,
+            recovery_timeout=settings.circuit_breaker_recovery_timeout
+        ) if settings.enable_circuit_breaker else None
 
     async def export_logs(self, batch: LogBatch):
-        """Export log batch to Loki"""
+        """Export log batch to Loki with retry and circuit breaker"""
+        # Check circuit breaker
+        if self.circuit_breaker and not self.circuit_breaker.can_execute():
+            EXPORT_ATTEMPTS.labels(backend="loki", status="circuit_open").inc()
+            logger.warning("Loki export skipped, circuit breaker open")
+            return
+
         start_time = time.time()
 
-        try:
+        async def _export():
             # Convert to Loki streams format
             streams = self._convert_to_loki_streams(batch)
 
@@ -45,10 +140,24 @@ class LokiExporter:
             )
             response.raise_for_status()
 
+        try:
+            await retry_with_backoff(
+                _export,
+                max_retries=settings.export_retry_attempts,
+                initial_delay=settings.export_retry_delay,
+                backend="loki"
+            )
+
             EXPORT_ATTEMPTS.labels(backend="loki", status="success").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_success()
+                CIRCUIT_BREAKER_STATE.labels(backend="loki").set(self.circuit_breaker.get_state_code())
             logger.debug("Logs exported to Loki", service=batch.resource.service, count=len(batch.records))
         except Exception as e:
             EXPORT_ATTEMPTS.labels(backend="loki", status="error").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_failure()
+                CIRCUIT_BREAKER_STATE.labels(backend="loki").set(self.circuit_breaker.get_state_code())
             logger.error("Failed to export logs to Loki", error=str(e), service=batch.resource.service)
         finally:
             EXPORT_DURATION.labels(backend="loki").observe(time.time() - start_time)
@@ -123,7 +232,11 @@ class TempoExporter:
     """Export traces to Tempo"""
     def __init__(self, tempo_http_endpoint: str):
         self.tempo_http_endpoint = tempo_http_endpoint
-        self.client = httpx.AsyncClient(timeout=10.0)
+        self.client = httpx.AsyncClient(timeout=settings.export_timeout)
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=settings.circuit_breaker_failure_threshold,
+            recovery_timeout=settings.circuit_breaker_recovery_timeout
+        ) if settings.enable_circuit_breaker else None
 
     async def export_correlation_span(self, correlation: CorrelationEvent):
         """Export a synthetic correlation span to Tempo"""
@@ -203,6 +316,150 @@ class TempoExporter:
                         "endTimeUnixNano": str(span_end_ns),
                         "attributes": attributes,
                         "status": {"code": "STATUS_CODE_OK"}
+                    }]
+                }]
+            }]
+        }
+
+    async def export_traces(self, trace_batch: Dict[str, Any]):
+        """Export OTLP traces to Tempo"""
+        # Check circuit breaker
+        if self.circuit_breaker and not self.circuit_breaker.can_execute():
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="circuit_open").inc()
+            logger.warning("Tempo export skipped, circuit breaker open")
+            return
+
+        start_time = time.time()
+
+        async def _export():
+            response = await self.client.post(
+                f"{self.tempo_http_endpoint}/v1/traces",
+                json=trace_batch,
+                headers={"Content-Type": "application/json"},
+            )
+            response.raise_for_status()
+
+        try:
+            await retry_with_backoff(
+                _export,
+                max_retries=settings.export_retry_attempts,
+                initial_delay=settings.export_retry_delay,
+                backend="tempo"
+            )
+
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="success").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_success()
+                CIRCUIT_BREAKER_STATE.labels(backend="tempo").set(self.circuit_breaker.get_state_code())
+            logger.debug("Traces exported to Tempo")
+        except Exception as e:
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="error").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_failure()
+                CIRCUIT_BREAKER_STATE.labels(backend="tempo").set(self.circuit_breaker.get_state_code())
+            logger.error("Failed to export traces to Tempo", error=str(e))
+        finally:
+            EXPORT_DURATION.labels(backend="tempo").observe(time.time() - start_time)
+
+    async def export_bridge_span(self, bridge_span: Dict[str, Any]):
+        """Export synthetic bridge span to Tempo"""
+        # Check circuit breaker
+        if self.circuit_breaker and not self.circuit_breaker.can_execute():
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="circuit_open").inc()
+            logger.warning("Tempo bridge span export skipped, circuit breaker open")
+            return
+
+        start_time = time.time()
+
+        async def _export():
+            # Convert bridge span dict to OTLP format
+            otlp_trace = self._bridge_span_to_otlp(bridge_span)
+
+            response = await self.client.post(
+                f"{self.tempo_http_endpoint}/v1/traces",
+                json=otlp_trace,
+                headers={"Content-Type": "application/json"},
+            )
+            response.raise_for_status()
+
+        try:
+            await retry_with_backoff(
+                _export,
+                max_retries=settings.export_retry_attempts,
+                initial_delay=settings.export_retry_delay,
+                backend="tempo"
+            )
+
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="success").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_success()
+                CIRCUIT_BREAKER_STATE.labels(backend="tempo").set(self.circuit_breaker.get_state_code())
+            logger.debug("Bridge span exported to Tempo", span=bridge_span.get("name"))
+        except Exception as e:
+            EXPORT_ATTEMPTS.labels(backend="tempo", status="error").inc()
+            if self.circuit_breaker:
+                self.circuit_breaker.record_failure()
+                CIRCUIT_BREAKER_STATE.labels(backend="tempo").set(self.circuit_breaker.get_state_code())
+            logger.error("Failed to export bridge span to Tempo", error=str(e))
+        finally:
+            EXPORT_DURATION.labels(backend="tempo").observe(time.time() - start_time)
+
+    def _bridge_span_to_otlp(self, bridge_span: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert bridge span dict to OTLP format"""
+        # Convert attributes to OTLP format
+        attributes = []
+        for key, value in bridge_span.get("attributes", {}).items():
+            attr = {"key": key, "value": {}}
+            if isinstance(value, bool):
+                attr["value"]["boolValue"] = value
+            elif isinstance(value, int):
+                attr["value"]["intValue"] = str(value)
+            elif isinstance(value, float):
+                attr["value"]["doubleValue"] = value
+            else:
+                attr["value"]["stringValue"] = str(value)
+            attributes.append(attr)
+
+        # Convert links to OTLP format
+        links = []
+        for link in bridge_span.get("links", []):
+            link_attrs = []
+            for key, value in link.get("attributes", {}).items():
+                link_attrs.append({
+                    "key": key,
+                    "value": {"stringValue": str(value)}
+                })
+
+            links.append({
+                "traceId": link["trace_id"],
+                "spanId": link["span_id"],
+                "attributes": link_attrs
+            })
+
+        return {
+            "resourceSpans": [{
+                "resource": {
+                    "attributes": [
+                        {"key": "service.name", "value": {"stringValue": "correlation-station"}},
+                        {"key": "span.type", "value": {"stringValue": "synthetic"}},
+                    ]
+                },
+                "scopeSpans": [{
+                    "scope": {
+                        "name": "trace-synthesizer",
+                        "version": "1.0.0"
+                    },
+                    "spans": [{
+                        "traceId": bridge_span["trace_id"],
+                        "spanId": bridge_span["span_id"],
+                        "parentSpanId": bridge_span.get("parent_span_id", ""),
+                        "name": bridge_span.get("name", "synthetic_bridge"),
+                        "kind": bridge_span.get("kind", 3),
+                        "startTimeUnixNano": str(bridge_span["start_time_unix_nano"]),
+                        "endTimeUnixNano": str(bridge_span["end_time_unix_nano"]),
+                        "attributes": attributes,
+                        "links": links,
+                        "status": bridge_span.get("status", {"code": 1})
                     }]
                 }]
             }]
@@ -299,9 +556,17 @@ class ExporterManager:
         # Export to Datadog (optional)
         await self.datadog.export_logs(batch)
 
+    async def export_traces(self, trace_batch: Dict[str, Any]):
+        """Export traces to Tempo"""
+        await self.tempo.export_traces(trace_batch)
+
     async def export_correlation_span(self, correlation: CorrelationEvent):
         """Export correlation span to Tempo"""
         await self.tempo.export_correlation_span(correlation)
+
+    async def export_bridge_span(self, bridge_span: Dict[str, Any]):
+        """Export synthetic bridge span to Tempo"""
+        await self.tempo.export_bridge_span(bridge_span)
 
     async def close(self):
         """Close all exporters"""
