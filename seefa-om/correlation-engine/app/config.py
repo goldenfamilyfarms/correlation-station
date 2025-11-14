@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     # Deployment
     deployment_env: str = "dev"
 
+    # Self-Observability (correlation engine monitoring itself)
+    enable_self_observability: bool = True
+    self_observability_datadog_enabled: bool = False
+    self_observability_metric_interval_ms: int = 60000
+
     @field_validator('allow_origins', mode='before')
     @classmethod
     def parse_origins(cls, v):

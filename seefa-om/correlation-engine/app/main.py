@@ -18,6 +18,14 @@ from app.routes import health, logs, otlp, correlations
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 
+# Import observability for self-monitoring
+try:
+    from app.observability import setup_observability
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    logging.warning("OpenTelemetry instrumentation not available")
+
 # Configure structured logging
 structlog.configure(
     processors=[
@@ -151,6 +159,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ===== SELF-OBSERVABILITY =====
+# Instrument correlation engine to monitor itself
+# Exports directly to Tempo/DataDog (NOT to self) to avoid infinite loops
+if OTEL_AVAILABLE and settings.enable_self_observability:
+    try:
+        setup_observability(
+            app,
+            service_name="correlation-engine",
+            service_version="1.0.0",
+            environment=settings.deployment_env,
+            tempo_grpc_endpoint=settings.tempo_grpc_endpoint,
+            datadog_enabled=settings.self_observability_datadog_enabled,
+            enable_metrics=True,
+            metric_export_interval_ms=settings.self_observability_metric_interval_ms,
+        )
+        logger.info("Correlation Engine self-observability enabled")
+    except Exception as e:
+        logger.warning(f"Failed to initialize self-observability: {e}")
+else:
+    logger.info("Self-observability disabled or unavailable")
 
 
 # Request logging middleware
