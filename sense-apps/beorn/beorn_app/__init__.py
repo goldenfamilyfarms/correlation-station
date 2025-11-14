@@ -14,9 +14,9 @@ from beorn_app.config import AppConfig, AuthConfig, UrlConfig
 # Add common directory to path for shared utilities
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 
-# Import lightweight OTEL instrumentation (replaces resource-intensive middleware)
+# Import comprehensive OTEL observability (replaces resource-intensive middleware)
 try:
-    from otel_utils import setup_otel_sense, instrument_flask_app
+    from observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -71,16 +71,16 @@ app = Flask(__name__)
 app.config["ERROR_404_HELP"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 
-# Initialize lightweight OTEL instrumentation
+# Initialize comprehensive OTEL observability (traces + metrics)
 if OTEL_AVAILABLE:
     try:
-        setup_otel_sense(
+        setup_observability(
+            app,
             service_name="beorn",
             service_version=version.strip(),
             environment=os.getenv("DEPLOYMENT_ENV", "prod")
         )
-        instrument_flask_app(app, "beorn")
-        logger.info("Beorn OTEL instrumentation initialized (lightweight mode)")
+        logger.info("Beorn OTEL observability initialized (traces + metrics)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")
 

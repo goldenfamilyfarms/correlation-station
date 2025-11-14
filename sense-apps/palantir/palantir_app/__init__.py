@@ -15,9 +15,9 @@ from palantir_app.config import AppConfig, AuthConfig, UrlConfig
 # Add common directory to path for shared utilities
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
 
-# Import lightweight OTEL instrumentation (replaces resource-intensive middleware)
+# Import comprehensive OTEL observability (replaces resource-intensive middleware)
 try:
-    from otel_utils import setup_otel_sense, instrument_flask_app
+    from observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -75,16 +75,16 @@ app.config["ERROR_INCLUDE_MESSAGE"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["ERROR_404_HELP"] = False
 
-# Initialize lightweight OTEL instrumentation (replaces resource-intensive middleware)
+# Initialize comprehensive OTEL observability (traces + metrics)
 if OTEL_AVAILABLE:
     try:
-        setup_otel_sense(
+        setup_observability(
+            app,
             service_name="palantir",
             service_version=version.strip(),
             environment=os.getenv("DEPLOYMENT_ENV", "prod")
         )
-        instrument_flask_app(app, "palantir")
-        logger.info("Palantir OTEL instrumentation initialized (lightweight mode)")
+        logger.info("Palantir OTEL observability initialized (traces + metrics)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")
 else:
