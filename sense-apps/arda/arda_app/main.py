@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common')
 
 # Import lightweight OTEL instrumentation
 try:
-    from otel_sense import setup_otel_sense, instrument_fastapi_lightweight
+    from otel_utils import setup_otel_sense, instrument_fastapi_app
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -71,7 +71,7 @@ if OTEL_AVAILABLE:
             service_version=__VERSION__,
             environment=os.getenv("DEPLOYMENT_ENV", "prod")
         )
-        instrument_fastapi_lightweight(app, "arda")
+        instrument_fastapi_app(app, "arda")
         logger.info("Arda OTEL instrumentation initialized (lightweight mode)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")

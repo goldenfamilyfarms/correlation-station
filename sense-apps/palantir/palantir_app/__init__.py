@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common')
 
 # Import lightweight OTEL instrumentation (replaces resource-intensive middleware)
 try:
-    from otel_sense import setup_otel_sense, instrument_flask_lightweight
+    from otel_utils import setup_otel_sense, instrument_flask_app
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
@@ -83,7 +83,7 @@ if OTEL_AVAILABLE:
             service_version=version.strip(),
             environment=os.getenv("DEPLOYMENT_ENV", "prod")
         )
-        instrument_flask_lightweight(app, "palantir")
+        instrument_flask_app(app, "palantir")
         logger.info("Palantir OTEL instrumentation initialized (lightweight mode)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")
