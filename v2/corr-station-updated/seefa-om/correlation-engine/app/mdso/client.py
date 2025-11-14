@@ -2,6 +2,7 @@
 import json
 import structlog
 from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta, timezone
 import httpx
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
@@ -14,19 +15,50 @@ tracer = trace.get_tracer(__name__)
 
 class MDSOClient:
     """Async MDSO API client"""
-    
-    def __init__(self, base_url: str, username: str, password: str):
+
+    def __init__(
+        self,
+        base_url: str,
+        username: str,
+        password: str,
+        verify_ssl: bool = True,
+        ssl_ca_bundle: Optional[str] = None,
+        timeout: float = 30.0,
+        token_expiry_seconds: int = 3600
+    ):
         self.base_url = base_url.rstrip("/")
         self.username = username
         self.password = password
         self._token: Optional[str] = None
-        self._client = httpx.AsyncClient(verify=False, timeout=30.0)
+        self._token_expiry: Optional[datetime] = None
+        self.token_expiry_seconds = token_expiry_seconds
+
+        # Configure SSL verification
+        verify = verify_ssl
+        if ssl_ca_bundle:
+            verify = ssl_ca_bundle
+
+        self._client = httpx.AsyncClient(verify=verify, timeout=timeout)
+
+        if not verify_ssl:
+            logger.warning(
+                "MDSO client SSL verification disabled - this is insecure!",
+                recommendation="Set MDSO_VERIFY_SSL=true and provide CA bundle"
+            )
     
     async def get_token(self) -> str:
-        """Get authentication token from MDSO"""
+        """Get authentication token from MDSO with expiry checking"""
         with tracer.start_as_current_span("mdso.get_token") as span:
-            if self._token:
-                return self._token
+            # Check if token exists and is not expired
+            if self._token and self._token_expiry:
+                now = datetime.now(timezone.utc)
+                if now < self._token_expiry:
+                    span.set_attribute("mdso.token_cached", True)
+                    return self._token
+                else:
+                    logger.info("mdso_token_expired", expired_at=self._token_expiry.isoformat())
+                    self._token = None
+                    self._token_expiry = None
             
             headers = {"Content-Type": "application/json", "Accept": "application/json"}
             body = {"username": self.username, "password": self.password, "tenant": "master"}
@@ -39,8 +71,10 @@ class MDSOClient:
                 )
                 response.raise_for_status()
                 self._token = response.json()["token"]
+                self._token_expiry = datetime.now(timezone.utc) + timedelta(seconds=self.token_expiry_seconds)
                 span.set_attribute("mdso.token_acquired", True)
-                logger.info("mdso_token_acquired")
+                span.set_attribute("mdso.token_expires_at", self._token_expiry.isoformat())
+                logger.info("mdso_token_acquired", expires_at=self._token_expiry.isoformat())
                 return self._token
             except Exception as e:
                 span.set_status(Status(StatusCode.ERROR, str(e)))
@@ -61,6 +95,7 @@ class MDSOClient:
                     headers=headers
                 )
                 self._token = None
+                self._token_expiry = None
                 logger.info("mdso_token_deleted")
             except Exception as e:
                 logger.warning("mdso_token_delete_failed", error=str(e))

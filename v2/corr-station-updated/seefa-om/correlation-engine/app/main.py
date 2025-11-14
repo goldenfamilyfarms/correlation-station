@@ -102,19 +102,29 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     yield
 
-    # Shutdown
+    # Shutdown - proper cleanup with single close() call
     logger.info("Shutting down Correlation Engine")
     correlation_engine.stop()
+
+    # Cancel background task
     correlation_task.cancel()
+
     try:
+        # Wait for task to complete cancellation
         await correlation_task
     except asyncio.CancelledError:
-        await exporter_manager.close()
-        logger.info("Correlation Engine stopped")
-        raise
+        logger.info("Correlation task cancelled successfully")
+    except Exception as e:
+        logger.exception("Error during correlation task shutdown", error=str(e))
+    finally:
+        # Ensure exporter cleanup happens exactly once
+        try:
+            await exporter_manager.close()
+            logger.info("Exporters closed successfully")
+        except Exception as e:
+            logger.exception("Error closing exporters", error=str(e))
 
-    await exporter_manager.close()
-    logger.info("Correlation Engine stopped")
+        logger.info("Correlation Engine stopped")
 
 
 # Create FastAPI app

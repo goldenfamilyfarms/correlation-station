@@ -56,6 +56,30 @@ class Settings(BaseSettings):
     self_observability_datadog_enabled: bool = False
     self_observability_metric_interval_ms: int = 60000
 
+    # MDSO Client Settings
+    mdso_base_url: Optional[str] = None
+    mdso_username: Optional[str] = None
+    mdso_password: Optional[str] = None
+    mdso_verify_ssl: bool = True
+    mdso_ssl_ca_bundle: Optional[str] = None
+    mdso_timeout: float = 30.0
+    mdso_token_expiry_seconds: int = 3600  # 1 hour
+
+    # HTTP Client Settings
+    http_verify_ssl: bool = True
+    http_max_connections: int = 100
+    http_max_keepalive_connections: int = 20
+
+    # Queue Settings
+    queue_retry_attempts: int = 3
+    queue_retry_delay: float = 0.1
+    enable_queue_metrics: bool = True
+
+    # Request Size Limits (security)
+    max_request_body_size: int = 10 * 1024 * 1024  # 10MB
+    max_protobuf_size: int = 10 * 1024 * 1024  # 10MB
+    max_json_size: int = 10 * 1024 * 1024  # 10MB
+
     @field_validator('allow_origins', mode='before')
     @classmethod
     def parse_origins(cls, v):
