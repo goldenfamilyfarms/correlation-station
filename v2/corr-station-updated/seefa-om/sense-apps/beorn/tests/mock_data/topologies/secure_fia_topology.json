@@ -1,0 +1,356 @@
+{
+  "customerName": "BELU LLC",
+  "serviceName": "91.L1XX.017448..CHTR",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "FIA",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "RLGINCZU1CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "RLGINCZU1CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "24.199.192.117"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "3430 TARHEEL DR 27609"
+              },
+              {
+                "name": "fqdn",
+                "value": "RLGINCZU1CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "RLGINCZU1CW-ET-5/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-5/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE40L.RLGINCZU1CW.RLGINCZU0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "RLGINCZU1CW-ET-7/3/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-7/3/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE40L.RLGINCZU1CW.RLGINCZU0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "RLGINCZU0QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "RLGINCZU0QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.20.114.125"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "3430 TARHEEL DR 27609"
+              },
+              {
+                "name": "fqdn",
+                "value": "RLGINCZU0QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "RLGINCZU0QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE40L.RLGINCZU1CW.RLGINCZU0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "RLGINCZU0QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE40L.RLGINCZU1CW.RLGINCZU0QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "RLGINCZU0QW-GE-0/0/37",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "GE-0/0/37"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE1.RLGINCZU0QW.RLGRNCGW1ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "RLGRNCGW1ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "RLGRNCGW1ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "RAD"
+              },
+              {
+                "name": "model",
+                "value": "ETX203AX/2SFP/2UTP2SFP"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.20.242.249"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "123 GLENWOOD AVE 27603"
+              },
+              {
+                "name": "fqdn",
+                "value": "RLGRNCGW1ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "RLGRNCGW1ZW-ETH PORT 1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH PORT 1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91001.GE1.RLGINCZU0QW.RLGRNCGW1ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "RLGRNCGW1ZW-ETH PORT 3",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH PORT 3"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "91.L1XX.017448..CHTR"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "RLGINCZU1CW-ET-5/3/0",
+              "RLGINCZU0QW-ET-0/0/96"
+            ],
+            "uuid": "RLGINCZU1CW-ET-5/3/0_RLGINCZU0QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "RLGINCZU1CW-ET-7/3/0",
+              "RLGINCZU0QW-ET-1/0/96"
+            ],
+            "uuid": "RLGINCZU1CW-ET-7/3/0_RLGINCZU0QW-ET-1/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "RLGINCZU0QW-GE-0/0/37",
+              "RLGRNCGW1ZW-ETH PORT 1"
+            ],
+            "uuid": "RLGINCZU0QW-GE-0/0/37_RLGRNCGW1ZW-ETH PORT 1"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "BRONZE"
+              }
+            ],
+            "evc-ingress-bwp": "100m",
+            "evc-egress-bwp": "100m",
+            "adminState": true,
+            "userLabel": "91.L1XX.017448..CHTR",
+            "maxNumOfEvcEndPoint": 1,
+            "serviceType": "IP",
+            "connectionType": "Point to Point",
+            "sVlan": "1125",
+            "endPoints": [
+              {
+                "uniId": "RLGRNCGW1ZW-ETH PORT 3",
+                "adminState": true,
+                "address": "123 GLENWOOD AVE 27603",
+                "sVlan": "1125",
+                "sVlanOperation": "PUSH"
+              }
+            ]
+          }
+        ],
+        "fia": [
+          {
+            "type": "DIRECT",
+            "endPoints": [
+              {
+                "uniId": "RLGINCZU1CW-ET-5/3/0",
+                "lanIpv4Addresses": [
+                  "173.95.17.72/29"
+                ],
+                "lanIpv6Addresses": [
+                  "2600:5800:2463::/48"
+                ],
+                "wanIpv6Address": "2600:5800:2D98:167::/64"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

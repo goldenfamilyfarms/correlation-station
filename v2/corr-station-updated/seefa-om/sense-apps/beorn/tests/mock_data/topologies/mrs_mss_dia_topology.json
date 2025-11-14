@@ -1,0 +1,353 @@
+{
+  "customerName": "AUTHORIZED SERVICE",
+  "serviceName": "86.L1XX.802115..TWCC",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "FIA",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "SSVLSCNE1CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "SSVLSCNE1CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "150.181.6.27"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "103 HUNTER RD @ LOT 31 29681"
+              },
+              {
+                "name": "fqdn",
+                "value": "SSVLSCNE1CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "SSVLSCNE1CW-ET-10/3/1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-10/3/1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE40L.SSVLSCNE1CW.SSVLSCNE2QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE19"
+                  }
+                ]
+              },
+              {
+                "uuid": "SSVLSCNE1CW-ET-1/3/1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/3/1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE40L.SSVLSCNE1CW.SSVLSCNE2QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE19"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "SSVLSCNE2QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "SSVLSCNE2QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.27.126.2"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "103 HUNTER RD @ LOT 31 29681"
+              },
+              {
+                "name": "fqdn",
+                "value": "SSVLSCNE2QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "SSVLSCNE2QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE40L.SSVLSCNE1CW.SSVLSCNE2QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE19"
+                  }
+                ]
+              },
+              {
+                "uuid": "SSVLSCNE2QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE40L.SSVLSCNE1CW.SSVLSCNE2QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE19"
+                  }
+                ]
+              },
+              {
+                "uuid": "SSVLSCNE2QW-GE-1/0/45",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "GE-1/0/45"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE1.SSVLSCNE2QW.GRERSCYY1ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "GRERSCYY1ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "GRERSCYY1ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "CISCO"
+              },
+              {
+                "name": "model",
+                "value": "ME-3400-2CS"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.27.220.238"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "3919 JORDAN RD 29651"
+              },
+              {
+                "name": "fqdn",
+                "value": "GRERSCYY1ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "GRERSCYY1ZW-GI0/4",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "GI0/4"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86001.GE1.SSVLSCNE2QW.GRERSCYY1ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "GRERSCYY1ZW-GI0/1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "GI0/1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "86.L1XX.802115..TWCC"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "SSVLSCNE1CW-ET-10/3/1",
+              "SSVLSCNE2QW-ET-1/0/96"
+            ],
+            "uuid": "SSVLSCNE1CW-ET-10/3/1_SSVLSCNE2QW-ET-1/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "SSVLSCNE1CW-ET-1/3/1",
+              "SSVLSCNE2QW-ET-0/0/96"
+            ],
+            "uuid": "SSVLSCNE1CW-ET-1/3/1_SSVLSCNE2QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "SSVLSCNE2QW-GE-1/0/45",
+              "GRERSCYY1ZW-GI0/4"
+            ],
+            "uuid": "SSVLSCNE2QW-GE-1/0/45_GRERSCYY1ZW-GI0/4"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "BRONZE"
+              }
+            ],
+            "evc-ingress-bwp": "100m",
+            "evc-egress-bwp": "100m",
+            "adminState": true,
+            "userLabel": "86.L1XX.802115..TWCC",
+            "maxNumOfEvcEndPoint": 1,
+            "serviceType": "IP",
+            "connectionType": "Point to Point",
+            "sVlan": "926",
+            "endPoints": [
+              {
+                "uniId": "GRERSCYY1ZW-GI0/1",
+                "adminState": true,
+                "address": "3919 JORDAN RD 29651",
+                "sVlan": "926",
+                "sVlanOperation": "PUSH"
+              }
+            ]
+          }
+        ],
+        "fia": [
+          {
+            "type": "DIRECT",
+            "endPoints": [
+              {
+                "uniId": "SSVLSCNE1CW-ET-10/3/1",
+                "lanIpv4Addresses": [
+                  "68.119.184.72/29"
+                ],
+                "lanIpv6Addresses": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+line-length = 121
+exclude = [
+    "common_sense"
+]
+
+[format]
+skip-magic-trailing-comma = true
+
+[lint]
+ignore = ["E402"]

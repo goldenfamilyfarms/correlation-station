@@ -1,0 +1,6 @@
+[run]
+omit = *env*/*
+    *arda_app/prod_config.py*
+    *arda_app/ci_config.py*
+    *arda_app/test_config.py*
+    *arda_app/apis/v2/topologies.py*

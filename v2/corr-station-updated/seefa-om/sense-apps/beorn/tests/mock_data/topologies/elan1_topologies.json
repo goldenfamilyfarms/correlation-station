@@ -1,0 +1,215 @@
+{
+  "customerName": "TWC",
+  "serviceName": "51.L1XX.802226..TWCC",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "ELAN",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "AUSDTXIR6CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AUSDTXIR6CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX240"
+              },
+              {
+                "name": "managementIP",
+                "value": "71.42.150.82"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "11921 N MOPAC EXPY 78759"
+              },
+              {
+                "name": "fqdn",
+                "value": "AUSDTXIR6CW.DEV.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AUSDTXIR6CW-XE-1/2/0",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "XE-1/2/0"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "51001.GE10.AUSDTXIR6CW.AUSLTXABAAW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "AUSLTXABAAW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "AUSLTXABAAW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "MTU"
+              },
+              {
+                "name": "vendor",
+                "value": "ADVA"
+              },
+              {
+                "name": "model",
+                "value": "FSP 150-XG116PRO"
+              },
+              {
+                "name": "managementIP",
+                "value": "97.77.67.50"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "11921 N MOPAC EXPY 78739"
+              },
+              {
+                "name": "fqdn",
+                "value": "AUSLTXABAAW.DEV.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "ON-HOLD"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "AUSLTXABAAW-ETH_PORT-1-1-1-8",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH_PORT-1-1-1-8"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "51001.GE10.AUSDTXIR6CW.AUSLTXABAAW"
+                  }
+                ]
+              },
+              {
+                "uuid": "AUSLTXABAAW-ETH_PORT-1-1-1-4",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH_PORT-1-1-1-4"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "51.L1XX.802226..TWCC"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "AUSDTXIR6CW-XE-1/2/0",
+              "AUSLTXABAAW-ETH_PORT-1-1-1-8"
+            ],
+            "uuid": "AUSDTXIR6CW-XE-1/2/0_AUSLTXABAAW-ETH_PORT-1-1-1-8"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "SILVER"
+              }
+            ],
+            "evc-ingress-bwp": "75m",
+            "evc-egress-bwp": "75m",
+            "adminState": true,
+            "userLabel": "51.L1XX.802226..TWCC",
+            "maxNumOfEvcEndPoint": 1,
+            "serviceType": "EP-LAN",
+            "connectionType": "Point to Point",
+            "sVlan": "1201",
+            "endPoints": [
+              {
+                "uniId": "AUSLTXABAAW-ETH_PORT-1-1-1-4",
+                "adminState": true,
+                "address": "11921 N MOPAC EXPY 78739",
+                "sVlan": "1201",
+                "sVlanOperation": "PUSH"
+              }
+            ],
+            "perfTier": [
+              {
+                "name": "NATIONAL"
+              }
+            ],
+            "evcId": "427442",
+            "vplsNetworkId": "CHTRSE.VRFID.427442.TWC_INTERNAL_TESTING",
+            "vplsVlanId": "400",
+            "elanSlm": [
+              {
+                "sourceCid": "51.L1XX.802226..TWCC",
+                "sourceMepId": "427442::18",
+                "destinationMepId": "427442::10",
+                "destinationCid": "51.L1XX.802235..TWCC",
+                "sourceId": "51.L1XX.802226..TWCC"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

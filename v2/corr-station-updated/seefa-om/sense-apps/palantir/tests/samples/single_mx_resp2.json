@@ -1,0 +1,21 @@
+[
+    {
+        "transactionID": "345",
+        "zSide":
+            {
+                "hostname": "AUSDTXIR2CW",
+                "description": "CUST:DIA:ESB_DEMO@Aut-lab-remote:00.DIA2.ESB..CHTR:",
+                "operStatus": "up",
+                "adminStatus": "up",
+                "last": false
+            },
+        "aSide":
+            {
+                "hostname": null,
+                "description": null,
+                "operStatus": null,
+                "adminStatus": null,
+                "last": null
+            }
+    }
+]

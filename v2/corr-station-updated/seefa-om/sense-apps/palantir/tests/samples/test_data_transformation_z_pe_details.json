@@ -1,0 +1,9 @@
+[{
+	"test_circ_inst": 1432150,
+	"test_tid": "CHRLNCRLS4W",
+	"test_fqdn": "CHRLNCRLS4W.CHTRSE.COM",
+	"test_circ_status": "Live",
+	"test_equip_status": "Live",
+	"test_equip_vendor": "JUNIPER",
+	"test_equip_model": "NFX250-S1"
+}]

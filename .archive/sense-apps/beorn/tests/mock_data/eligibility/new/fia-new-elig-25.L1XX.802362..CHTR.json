@@ -1,0 +1,385 @@
+{
+    "customerName": "BEST WESTERN INN & SUITES",
+    "serviceName": "25.L1XX.802362..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "FIA",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CPCVTX161CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CPCVTX161CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.73.243.8"
+                            },
+                            {
+                                "name": "address",
+                                "value": "100 TANK ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CPCVTX161CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CPCVTX161CW-XE-0/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX161CW-XE-0/3/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/3/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX161CW-XE-5/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-5/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX161CW-XE-5/3/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-5/3/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CPCVTX160QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CPCVTX160QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.4.51.3"
+                            },
+                            {
+                                "name": "address",
+                                "value": "100 TANK ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CPCVTX160QW.SW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CPCVTX160QW-XE-0/0/94",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/94"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX160QW-XE-0/0/95",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/95"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX160QW-XE-1/0/94",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/0/94"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX160QW-XE-1/0/95",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/0/95"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTX160QW-GE-0/0/13",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-0/0/13"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CPCVTXDL1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CPCVTXDL1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "ADVA"
+                            },
+                            {
+                                "name": "model",
+                                "value": "FSP 150-GE114PRO-C"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "321 CONSTITUTION DRIVE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CPCVTXDL1ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CPCVTXDL1ZW-NETWORK-1-1-1-1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "NETWORK-1-1-1-1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CPCVTXDL1ZW-ACCESS-1-1-1-3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ACCESS-1-1-1-3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "CPCVTX161CW-XE-0/3/0",
+                            "CPCVTX160QW-XE-0/0/94"
+                        ],
+                        "uuid": "CPCVTX161CW-XE-0/3/0_CPCVTX160QW-XE-0/0/94"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CPCVTX161CW-XE-0/3/1",
+                            "CPCVTX160QW-XE-0/0/95"
+                        ],
+                        "uuid": "CPCVTX161CW-XE-0/3/1_CPCVTX160QW-XE-0/0/95"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CPCVTX161CW-XE-5/3/0",
+                            "CPCVTX160QW-XE-1/0/94"
+                        ],
+                        "uuid": "CPCVTX161CW-XE-5/3/0_CPCVTX160QW-XE-1/0/94"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CPCVTX161CW-XE-5/3/1",
+                            "CPCVTX160QW-XE-1/0/95"
+                        ],
+                        "uuid": "CPCVTX161CW-XE-5/3/1_CPCVTX160QW-XE-1/0/95"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CPCVTX160QW-GE-0/0/13",
+                            "CPCVTXDL1ZW-NETWORK-1-1-1-1"
+                        ],
+                        "uuid": "CPCVTX160QW-GE-0/0/13_CPCVTXDL1ZW-NETWORK-1-1-1-1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "evc-ingress-bwp": "50m",
+                        "evc-egress-bwp": "50m",
+                        "adminState": true,
+                        "userLabel": "25.L1XX.802362..CHTR",
+                        "maxNumOfEvcEndPoint": 1,
+                        "serviceType": "IP",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1105",
+                        "endPoints": [
+                            {
+                                "uniId": "CPCVTXDL1ZW-ACCESS-1-1-1-3",
+                                "adminState": true,
+                                "address": "321 CONSTITUTION DRIVE",
+                                "sVlan": "1105",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ],
+                "fia": [
+                    {
+                        "type": "DIRECT",
+                        "endPoints": [
+                            {
+                                "uniId": "CPCVTX161CW-XE-0/3/0",
+                                "lanIpv4Addresses": [
+                                    "71.40.17.240/29"
+                                ],
+                                "lanIpv6Addresses": [
+                                    "2605:ED00:63CA::/48"
+                                ],
+                                "wanIpv6Address": "2605:ED00:1113::28A/127"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

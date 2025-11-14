@@ -1,0 +1,43 @@
+// TEST 2: Loki Components Pipeline
+// MDSO Dev → Loki components → OTel Gateway
+
+// Discover syslog files
+local.file_match "syslog_files" {
+  path_targets = [
+    {"__path__" = "/var/log/ciena/blueplanet.log"},
+  ]
+}
+
+// Tail syslog files
+loki.source.file "syslog" {
+  targets    = local.file_match.syslog_files.targets
+  forward_to = [loki.process.add_labels.receiver]
+}
+
+// Add labels and parse syslog
+loki.process "add_labels" {
+  forward_to = [otelcol.receiver.loki.default.receiver]
+
+  // Add low-cardinality labels
+  stage.static_labels {
+    values = {
+      service = "mdso",
+      env     = "dev",
+    }
+  }
+}
+
+// Convert Loki logs to OTLP
+otelcol.receiver.loki "default" {
+  output {
+    logs = [otelcol.exporter.otlphttp.gateway.input]
+  }
+}
+
+// Export to OTel Gateway on Meta
+otelcol.exporter.otlphttp "gateway" {
+  client {
+    endpoint = "http://159.56.4.94:55681"
+    timeout  = "10s"
+  }
+}
