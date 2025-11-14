@@ -1,9 +1,0 @@
-{
-  "name": "dv_spirent_test_port_lookup",
-  "errors": [
-    {
-      "message": "port not found"
-    }
-  ],
-  "elements": []
-}
