@@ -13,3 +13,6 @@ structlog==23.2.0
 # Optional: Performance instrumentation
 opentelemetry-instrumentation-requests==0.41b0
 opentelemetry-instrumentation-urllib3==0.41b0
+
+# Pyroscope continuous profiling
+pyroscope-io>=0.8.7
