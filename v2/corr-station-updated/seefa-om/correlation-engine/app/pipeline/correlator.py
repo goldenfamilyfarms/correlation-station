@@ -16,6 +16,7 @@ from app.pipeline.exporters import ExporterManager
 from app.correlation.trace_synthesizer import TraceSynthesizer, TraceSegment
 from app.correlation.link_resolver import LinkResolver, TraceLink
 from app.config import settings
+from app.profiling import profile_function
 from prometheus_client import Counter, Gauge
 
 # Metrics
@@ -73,6 +74,7 @@ class CorrelationWindow:
         elapsed = (datetime.now(timezone.utc) - self.window_start).total_seconds()
         return elapsed >= self.window_seconds
 
+    @profile_function(tags={"operation": "create_correlations"})
     def create_correlations(self) -> List[CorrelationEvent]:
         """Create correlation events for all trace_ids in window"""
         correlations = []
@@ -350,6 +352,7 @@ class CorrelationEngine:
 
         return correlation
 
+    @profile_function(tags={"operation": "normalize_trace"})
     def _normalize_trace(self, trace_batch: dict) -> List[dict]:
         """Normalize OTLP trace batch to internal format"""
         normalized = []
@@ -397,6 +400,7 @@ class CorrelationEngine:
 
         return normalized
 
+    @profile_function(tags={"operation": "correlation_loop"})
     async def run(self):
         """Main correlation loop"""
         self.running = True

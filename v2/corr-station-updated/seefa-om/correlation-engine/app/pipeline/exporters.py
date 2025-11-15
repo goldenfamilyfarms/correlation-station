@@ -10,6 +10,7 @@ from prometheus_client import Counter, Histogram, Gauge
 
 from app.models import LogBatch, CorrelationEvent
 from app.config import settings
+from app.profiling import profile_function
 
 logger = structlog.get_logger()
 
@@ -118,6 +119,7 @@ class LokiExporter:
             recovery_timeout=settings.circuit_breaker_recovery_timeout
         ) if settings.enable_circuit_breaker else None
 
+    @profile_function(tags={"backend": "loki", "operation": "export_logs"})
     async def export_logs(self, batch: LogBatch):
         """Export log batch to Loki with retry and circuit breaker"""
         # Check circuit breaker
@@ -238,6 +240,7 @@ class TempoExporter:
             recovery_timeout=settings.circuit_breaker_recovery_timeout
         ) if settings.enable_circuit_breaker else None
 
+    @profile_function(tags={"backend": "tempo", "operation": "export_correlation_span"})
     async def export_correlation_span(self, correlation: CorrelationEvent):
         """Export a synthetic correlation span to Tempo"""
         start_time = time.time()
@@ -352,6 +355,7 @@ class TempoExporter:
             }]
         }
 
+    @profile_function(tags={"backend": "tempo", "operation": "export_traces"})
     async def export_traces(self, trace_batch: Dict[str, Any]):
         """Export OTLP traces to Tempo"""
         # Check circuit breaker
@@ -392,6 +396,7 @@ class TempoExporter:
         finally:
             EXPORT_DURATION.labels(backend="tempo").observe(time.time() - start_time)
 
+    @profile_function(tags={"backend": "tempo", "operation": "export_bridge_span"})
     async def export_bridge_span(self, bridge_span: Dict[str, Any]):
         """Export synthetic bridge span to Tempo"""
         # Check circuit breaker

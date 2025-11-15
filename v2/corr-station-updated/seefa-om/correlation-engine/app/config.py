@@ -56,6 +56,14 @@ class Settings(BaseSettings):
     self_observability_datadog_enabled: bool = False
     self_observability_metric_interval_ms: int = 60000
 
+    # Pyroscope Profiling
+    enable_pyroscope: bool = True
+    pyroscope_server_address: str = "http://pyroscope:4040"
+    pyroscope_application_name: str = "correlation-engine"
+    pyroscope_sample_rate: int = 100  # Hz (samples per second)
+    pyroscope_detect_subprocesses: bool = True
+    pyroscope_log_level: str = "info"
+
     # MDSO Client Settings
     mdso_base_url: Optional[str] = None
     mdso_username: Optional[str] = None

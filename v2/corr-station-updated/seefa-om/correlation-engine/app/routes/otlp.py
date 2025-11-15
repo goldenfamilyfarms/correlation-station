@@ -10,6 +10,7 @@ from google.protobuf.message import DecodeError
 
 from app.routes.auth import verify_basic_auth
 from app.config import settings
+from app.profiling import profile_function
 
 router = APIRouter()
 logger = structlog.get_logger()
@@ -32,6 +33,7 @@ async def validate_request_size(request: Request):
 
 
 @router.post("/logs", status_code=202)
+@profile_function(tags={"endpoint": "otlp_logs", "operation": "ingest"})
 async def ingest_otlp_logs(
     request: Request,
     authenticated: bool = Depends(verify_basic_auth),
@@ -188,6 +190,7 @@ async def ingest_otlp_logs(
 
 
 @router.post("/traces", status_code=202)
+@profile_function(tags={"endpoint": "otlp_traces", "operation": "ingest"})
 async def ingest_otlp_traces(
     request: Request,
     authenticated: bool = Depends(verify_basic_auth),
