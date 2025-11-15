@@ -1,9 +1,0 @@
-# Job to build pypi based on requirements files in model-definitions
-# Version.json must be specified for name & version of the pypi image
-# Builds standalone solution & app
-include:
-  - local: 'auto-build/.auto-build-pypi-master.yml'
-
-
-pypi-build:
-  extends: .pypi-build

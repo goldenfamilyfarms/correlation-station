@@ -1,8 +1,0 @@
---index-url http://blueplanet/vfirewall-templates-pypi/simple/
-#--extra-index-url http://127.0.0.1/plansdk-pypi/simple/
-jsonpath
-requests
-plansdk
-ipaddress
-jinja2
-

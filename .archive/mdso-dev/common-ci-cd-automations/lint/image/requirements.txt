@@ -1,5 +1,0 @@
-flake8
-hocon-validator
-pyhocon
-argparse
-python-gitlab

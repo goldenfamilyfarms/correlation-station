@@ -1,7 +1,0 @@
-#!/bin/sh
-input=$1
-while IFS= read -r line
-do
-  echo "docker pull $line"
-  docker pull $line
-done < "$input"
