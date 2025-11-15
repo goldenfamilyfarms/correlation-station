@@ -90,16 +90,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     await seed_sample_data()
 
     # Initialize Pyroscope profiling
-    if PYROSCOPE_AVAILABLE and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
-        pyroscope.configure(
-            application_name="correlation-engine",
-            server_address=os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040"),
-            tags={
-                "environment": settings.deployment_env,
-                "version": "1.0.0",
-            }
-        )
-        logger.info("Pyroscope profiling enabled")
+    if PYROSCOPE_AVAILABLE and settings.enable_pyroscope:
+        try:
+            pyroscope.configure(
+                application_name=settings.pyroscope_application_name,
+                server_address=settings.pyroscope_server_address,
+                sample_rate=settings.pyroscope_sample_rate,
+                detect_subprocesses=settings.pyroscope_detect_subprocesses,
+                log_level=settings.pyroscope_log_level,
+                tags={
+                    "environment": settings.deployment_env,
+                    "version": "1.0.0",
+                    "service": "correlation-engine",
+                }
+            )
+            logger.info(
+                "Pyroscope profiling enabled",
+                server=settings.pyroscope_server_address,
+                sample_rate=settings.pyroscope_sample_rate
+            )
+        except Exception as e:
+            logger.warning(f"Failed to configure Pyroscope: {e}")
 
     # Initialize exporters
     exporter_manager = ExporterManager(
