@@ -2,22 +2,39 @@
 import asyncio
 import structlog
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import pendulum
 from opentelemetry import trace, baggage
 
 from .client import MDSOClient
 from .models import MDSOResource, MDSOError
+from .repository import MDSORepository, HTTPMDSORepository
 
 logger = structlog.get_logger()
 tracer = trace.get_tracer(__name__)
 
 
 class MDSOLogCollector:
-    """Collects logs from MDSO with distributed tracing"""
-    
-    def __init__(self, mdso_client: MDSOClient):
-        self.mdso_client = mdso_client
+    """Collects logs from MDSO with distributed tracing
+
+    Now supports both MDSOClient (legacy) and MDSORepository (new pattern).
+    Using repository pattern enables better testing and abstraction.
+    """
+
+    def __init__(self, mdso_source: Union[MDSOClient, MDSORepository]):
+        """Initialize with either MDSOClient or MDSORepository
+
+        Args:
+            mdso_source: Either MDSOClient (legacy) or MDSORepository (preferred)
+        """
+        # Support both client and repository for backward compatibility
+        if isinstance(mdso_source, MDSORepository):
+            self.mdso_repo = mdso_source
+            self.mdso_client = None  # Deprecated
+        else:
+            # Wrap client in repository for consistent interface
+            self.mdso_repo = HTTPMDSORepository(mdso_source)
+            self.mdso_client = mdso_source  # Keep for backward compatibility
     
     async def collect_product_logs(
         self,
@@ -38,9 +55,9 @@ class MDSOLogCollector:
             date_start = now.subtract(hours=time_range_hours)
             
             span.set_attribute("mdso.date_start", date_start.to_iso8601_string())
-            
-            # Get resources from MDSO
-            resources = await self.mdso_client.get_resources(product_name)
+
+            # Get resources from MDSO via repository
+            resources = await self.mdso_repo.get_resources(product_name)
             
             # Filter by time range
             filtered = [
@@ -88,9 +105,9 @@ class MDSOLogCollector:
             }
         ) as span:
             logs = []
-            
-            # Get orchestration trace
-            orch_trace = await self.mdso_client.get_orch_trace(circuit_id, resource.id)
+
+            # Get orchestration trace via repository
+            orch_trace = await self.mdso_repo.get_orch_trace(circuit_id, resource.id)
             
             if orch_trace:
                 errors = orch_trace.get_errors()

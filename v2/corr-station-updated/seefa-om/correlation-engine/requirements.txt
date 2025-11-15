@@ -36,8 +36,14 @@ python-dotenv==1.0.0
 # Pyroscope continuous profiling
 pyroscope-io>=0.8.7
 
-# SQLite async database
+# SQLite async database (for SECA Reviews)
 aiosqlite>=0.19.0
+
+# Redis for state management (horizontal scaling)
+redis==5.0.1  # Async Redis client
+
+# DateTime handling
+pendulum==3.0.0  # Used by MDSO log collector
 
 # Testing dependencies
 pytest==7.4.3
