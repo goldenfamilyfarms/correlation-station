@@ -34,6 +34,16 @@ TRACE_SYNTHESIS = Counter(
     'Trace synthesis operations',
     ['status']
 )
+DROPPED_BATCHES = Counter(
+    'dropped_batches_total',
+    'Total batches dropped due to queue full',
+    ['type']
+)
+QUEUE_FULL_RETRIES = Counter(
+    'queue_full_retries_total',
+    'Total queue full retry attempts',
+    ['type']
+)
 
 logger = structlog.get_logger()
 
@@ -152,18 +162,98 @@ class CorrelationEngine:
         self.trace_queue: asyncio.Queue = asyncio.Queue(maxsize=settings.max_queue_size)
 
     async def add_logs(self, batch: LogBatch):
-        """Add log batch to processing queue"""
-        try:
-            await self.log_queue.put(batch)
-        except asyncio.QueueFull:
-            logger.warning("Log queue full, dropping batch", service=batch.resource.service)
+        """Add log batch to processing queue with backpressure retry"""
+        retry_count = 0
+        max_retries = settings.queue_retry_attempts
+        base_delay = settings.queue_retry_delay
+
+        while retry_count < max_retries:
+            try:
+                # Try to put with timeout to allow cancellation
+                await asyncio.wait_for(
+                    self.log_queue.put(batch),
+                    timeout=base_delay * (2 ** retry_count)
+                )
+                return
+            except asyncio.QueueFull:
+                retry_count += 1
+                QUEUE_FULL_RETRIES.labels(type="logs").inc()
+
+                if retry_count >= max_retries:
+                    # Exhausted retries - drop batch and alert
+                    DROPPED_BATCHES.labels(type="logs").inc()
+                    logger.error(
+                        "Log queue full after retries, dropping batch",
+                        service=batch.resource.service,
+                        retries=retry_count,
+                        queue_size=self.log_queue.qsize(),
+                        recommendation="Increase MAX_QUEUE_SIZE or add more consumers"
+                    )
+                    return
+
+                # Exponential backoff
+                delay = base_delay * (2 ** retry_count)
+                logger.warning(
+                    "Log queue full, retrying",
+                    service=batch.resource.service,
+                    retry=retry_count,
+                    max_retries=max_retries,
+                    delay=delay
+                )
+                await asyncio.sleep(delay)
+            except asyncio.TimeoutError:
+                # Timeout while waiting for queue space
+                retry_count += 1
+                if retry_count >= max_retries:
+                    DROPPED_BATCHES.labels(type="logs").inc()
+                    logger.error("Log queue timeout, dropping batch", service=batch.resource.service)
+                    return
 
     async def add_traces(self, trace_batch: dict):
-        """Add trace batch to processing queue"""
-        try:
-            await self.trace_queue.put(trace_batch)
-        except asyncio.QueueFull:
-            logger.warning("Trace queue full, dropping batch")
+        """Add trace batch to processing queue with backpressure retry"""
+        retry_count = 0
+        max_retries = settings.queue_retry_attempts
+        base_delay = settings.queue_retry_delay
+
+        while retry_count < max_retries:
+            try:
+                # Try to put with timeout
+                await asyncio.wait_for(
+                    self.trace_queue.put(trace_batch),
+                    timeout=base_delay * (2 ** retry_count)
+                )
+                return
+            except asyncio.QueueFull:
+                retry_count += 1
+                QUEUE_FULL_RETRIES.labels(type="traces").inc()
+
+                if retry_count >= max_retries:
+                    # Exhausted retries - drop batch and alert
+                    DROPPED_BATCHES.labels(type="traces").inc()
+                    logger.error(
+                        "Trace queue full after retries, dropping batch",
+                        retries=retry_count,
+                        queue_size=self.trace_queue.qsize(),
+                        recommendation="Increase MAX_QUEUE_SIZE or add more consumers"
+                    )
+                    return
+
+                # Exponential backoff
+                delay = base_delay * (2 ** retry_count)
+                logger.warning(
+                    "Trace queue full, retrying",
+                    retry=retry_count,
+                    max_retries=max_retries,
+                    delay=delay
+                )
+                await asyncio.sleep(delay)
+            except asyncio.TimeoutError:
+                # Timeout while waiting for queue space
+                retry_count += 1
+                if retry_count >= max_retries:
+                    DROPPED_BATCHES.labels(type="traces").inc()
+                    logger.error("Trace queue timeout, dropping batch")
+                    return
 
     def query_correlations(
         self,
@@ -214,9 +304,25 @@ class CorrelationEngine:
         if len(self.correlation_history) > self.max_history:
             # Remove oldest
             removed = self.correlation_history.pop(0)
-            # Remove from indices
-            self.correlation_index["by_trace_id"][removed.trace_id].remove(removed)
-            self.correlation_index["by_service"][removed.service].remove(removed)
+
+            # Remove from indices safely (filter by correlation_id to avoid removing wrong entries)
+            if removed.trace_id in self.correlation_index["by_trace_id"]:
+                self.correlation_index["by_trace_id"][removed.trace_id] = [
+                    c for c in self.correlation_index["by_trace_id"][removed.trace_id]
+                    if c.correlation_id != removed.correlation_id
+                ]
+                # Clean up empty index entries to prevent memory leaks
+                if not self.correlation_index["by_trace_id"][removed.trace_id]:
+                    del self.correlation_index["by_trace_id"][removed.trace_id]
+
+            if removed.service in self.correlation_index["by_service"]:
+                self.correlation_index["by_service"][removed.service] = [
+                    c for c in self.correlation_index["by_service"][removed.service]
+                    if c.correlation_id != removed.correlation_id
+                ]
+                # Clean up empty index entries
+                if not self.correlation_index["by_service"][removed.service]:
+                    del self.correlation_index["by_service"][removed.service]
 
     async def inject_synthetic_event(self, event: SyntheticEvent) -> CorrelationEvent:
         """Inject a synthetic correlation event"""

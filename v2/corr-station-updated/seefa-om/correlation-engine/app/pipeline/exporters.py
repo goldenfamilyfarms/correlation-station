@@ -262,11 +262,42 @@ class TempoExporter:
         finally:
             EXPORT_DURATION.labels(backend="tempo").observe(time.time() - start_time)
 
+    def _validate_trace_id(self, trace_id: str) -> str:
+        """Validate and normalize trace ID"""
+        if not trace_id:
+            raise ValueError("trace_id cannot be empty")
+
+        # Remove any whitespace
+        trace_id = trace_id.strip()
+
+        # Validate hex format
+        try:
+            int(trace_id, 16)
+        except ValueError:
+            raise ValueError(f"trace_id must be hexadecimal: {trace_id}")
+
+        # Normalize length (OTLP expects 32 hex chars for 128-bit trace ID)
+        if len(trace_id) > 32:
+            # Truncate to 32 chars
+            trace_id = trace_id[:32]
+            logger.warning("Truncating trace_id to 32 chars", original_length=len(trace_id))
+        elif len(trace_id) < 32:
+            # Pad with zeros
+            trace_id = trace_id.ljust(32, '0')
+
+        return trace_id
+
     def _create_otlp_trace(self, correlation: CorrelationEvent) -> Dict[str, Any]:
         """Create OTLP trace format for correlation span"""
-        # Convert trace_id to proper format
-        trace_id_bytes = correlation.trace_id.ljust(32, '0')[:32]  # Ensure 32 chars
-        span_id_bytes = correlation.correlation_id[:16].ljust(16, '0')[:16]  # Use first 16 chars of correlation_id
+        # Validate and convert trace_id to proper format
+        try:
+            trace_id_bytes = self._validate_trace_id(correlation.trace_id)
+        except ValueError as e:
+            logger.error("Invalid trace_id in correlation", error=str(e), correlation_id=correlation.correlation_id)
+            # Use correlation_id as fallback trace_id
+            trace_id_bytes = correlation.correlation_id.replace('-', '')[:32].ljust(32, '0')
+
+        span_id_bytes = correlation.correlation_id.replace('-', '')[:16].ljust(16, '0')
 
         # Create span attributes
         attributes = [
@@ -569,7 +600,29 @@ class ExporterManager:
         await self.tempo.export_bridge_span(bridge_span)
 
     async def close(self):
-        """Close all exporters"""
-        await self.loki.close()
-        await self.tempo.close()
-        await self.datadog.close()
+        """Close all exporters with proper error handling"""
+        errors = []
+
+        # Attempt to close all exporters even if some fail
+        try:
+            await self.loki.close()
+        except Exception as e:
+            errors.append(f"Loki close error: {e}")
+            logger.error("Failed to close Loki exporter", error=str(e))
+
+        try:
+            await self.tempo.close()
+        except Exception as e:
+            errors.append(f"Tempo close error: {e}")
+            logger.error("Failed to close Tempo exporter", error=str(e))
+
+        try:
+            await self.datadog.close()
+        except Exception as e:
+            errors.append(f"Datadog close error: {e}")
+            logger.error("Failed to close Datadog exporter", error=str(e))
+
+        if errors:
+            logger.warning("Some exporters failed to close cleanly", errors=errors)
+        else:
+            logger.info("All exporters closed successfully")
