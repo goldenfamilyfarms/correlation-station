@@ -17,6 +17,14 @@ import structlog
 
 logger = logging.getLogger(__name__)
 
+# Try importing Pyroscope
+try:
+    import pyroscope
+    PYROSCOPE_AVAILABLE = True
+except ImportError:
+    PYROSCOPE_AVAILABLE = False
+    logger.warning("Pyroscope not available")
+
 
 def setup_otel(
     service_name: str = "mdso-scriptplan",
@@ -334,3 +342,54 @@ class mdso_span:
                 self.span.set_status(trace.Status(trace.StatusCode.OK))
             self.span.end()
         return False  # Don't suppress exceptions
+
+
+def setup_pyroscope(
+    service_name: str = "mdso-scriptplan",
+    server_address: str = None,
+    environment: str = "dev",
+    version: str = "1.0.0",
+    tags: Optional[Dict[str, str]] = None
+) -> bool:
+    """
+    Setup Pyroscope continuous profiling for MDSO scripts
+
+    Args:
+        service_name: Application name for profiling
+        server_address: Pyroscope server URL (defaults to env var or local instance)
+        environment: Deployment environment (dev/staging/prod)
+        version: Service version
+        tags: Additional tags for profiling data
+
+    Returns:
+        True if Pyroscope was successfully configured, False otherwise
+
+    Example:
+        >>> from instrumentation import setup_pyroscope
+        >>> setup_pyroscope("mdso-circuit-provisioner", environment="prod", tags={"team": "network-ops"})
+        >>> # Script execution will now be profiled
+    """
+    if not PYROSCOPE_AVAILABLE:
+        logger.warning("Pyroscope not available - install with: pip install pyroscope-io")
+        return False
+
+    server_address = server_address or os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040")
+
+    # Merge default tags with provided tags
+    profiling_tags = {
+        "environment": environment,
+        "version": version,
+        **(tags or {})
+    }
+
+    try:
+        pyroscope.configure(
+            application_name=service_name,
+            server_address=server_address,
+            tags=profiling_tags
+        )
+        logger.info(f"Pyroscope profiling enabled: service={service_name}, server={server_address}, env={environment}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to configure Pyroscope: {e}")
+        return False

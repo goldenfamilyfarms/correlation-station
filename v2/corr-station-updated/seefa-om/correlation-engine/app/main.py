@@ -4,6 +4,7 @@ Accepts logs and OTLP telemetry, correlates by trace_id, exports to Loki/Tempo/P
 """
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional
 
@@ -14,9 +15,18 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations
+from app.routes import health, logs, otlp, correlations, seca_reviews
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
+from app.database import init_database, seed_sample_data
+
+# Pyroscope profiling
+try:
+    import pyroscope
+    PYROSCOPE_AVAILABLE = True
+except ImportError:
+    PYROSCOPE_AVAILABLE = False
+    logging.warning("Pyroscope profiling not available")
 
 # Import observability for self-monitoring
 try:
@@ -74,6 +84,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     global correlation_engine, exporter_manager
 
     logger.info("Starting Correlation Engine", config=settings.dict())
+
+    # Initialize SQLite database
+    await init_database()
+    await seed_sample_data()
+
+    # Initialize Pyroscope profiling
+    if PYROSCOPE_AVAILABLE and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
+        pyroscope.configure(
+            application_name="correlation-engine",
+            server_address=os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040"),
+            tags={
+                "environment": settings.deployment_env,
+                "version": "1.0.0",
+            }
+        )
+        logger.info("Pyroscope profiling enabled")
 
     # Initialize exporters
     exporter_manager = ExporterManager(
@@ -244,6 +270,7 @@ app.include_router(health.router, tags=["health"])
 app.include_router(logs.router, prefix="/api", tags=["logs"])
 app.include_router(otlp.router, prefix="/api/otlp/v1", tags=["otlp"])
 app.include_router(correlations.router, prefix="/api", tags=["correlations"])
+app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 
 
 # Prometheus metrics endpoint

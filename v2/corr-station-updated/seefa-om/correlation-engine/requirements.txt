@@ -33,6 +33,12 @@ opentelemetry-instrumentation-httpx>=0.41b0
 # Python standard library enhancements
 python-dotenv==1.0.0
 
+# Pyroscope continuous profiling
+pyroscope-io>=0.8.7
+
+# SQLite async database
+aiosqlite>=0.19.0
+
 # Testing dependencies
 pytest==7.4.3
 pytest-asyncio==0.21.1

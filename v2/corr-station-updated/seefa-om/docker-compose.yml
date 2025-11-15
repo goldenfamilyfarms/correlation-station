@@ -10,6 +10,8 @@ volumes:
   loki-data: {}
   tempo-data: {}
   prometheus-data: {}
+  pyroscope-data: {}
+  seca-db: {}
 services:
   grafana:
     image: grafana/grafana:10.2.0
@@ -95,6 +97,22 @@ services:
       timeout: 5s
       retries: 5
 
+  pyroscope:
+    image: grafana/pyroscope:latest
+    container_name: pyroscope
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    volumes:
+      - pyroscope-data:/var/lib/pyroscope
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4040/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   otel-gateway:
     image: otel/opentelemetry-collector-contrib:0.96.0
     container_name: gateway
@@ -126,6 +144,24 @@ services:
       timeout: 5s
       retries: 5
 
+  correlation-station-ui:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: correlation-station-ui
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - observability
+    depends_on:
+      - correlation-engine
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   correlation-engine:
     build:
       context: ./correlation-engine
@@ -149,13 +185,16 @@ services:
       - DATADOG_API_KEY=${DATADOG_API_KEY:-}
       - DATADOG_SITE=${DATADOG_SITE:-datadoghq.com}
       - DEPLOYMENT_ENV=dev
+      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
     volumes:
       - ./correlation-engine/app:/app/app
+      - seca-db:/app/data
     networks:
       - observability
     depends_on:
       - loki
       - tempo
+      - pyroscope
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
