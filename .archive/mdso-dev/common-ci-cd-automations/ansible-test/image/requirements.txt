@@ -1,2 +1,0 @@
-ansible==2.8.3
-python-pptx==0.6.18

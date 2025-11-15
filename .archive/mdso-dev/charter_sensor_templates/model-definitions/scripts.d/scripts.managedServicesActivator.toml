@@ -1,3 +1,0 @@
-[virtualenv]
-python = "py38"
-requirements = "requirements_managedServicesActivator.txt"
