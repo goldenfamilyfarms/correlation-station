@@ -21,6 +21,14 @@ except ImportError:
     OTEL_AVAILABLE = False
     print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
+# Pyroscope profiling
+try:
+    import pyroscope
+    PYROSCOPE_AVAILABLE = True
+except ImportError:
+    PYROSCOPE_AVAILABLE = False
+    print("Warning: Pyroscope profiling not available")
+
 from arda_app.api import (
     v1_cid_router,
     v4_cid_router,
@@ -77,6 +85,21 @@ if OTEL_AVAILABLE:
         logger.warning(f"Failed to initialize OTEL: {e}")
 else:
     logger.warning("OTEL not available - running without instrumentation")
+
+# Initialize Pyroscope profiling
+if PYROSCOPE_AVAILABLE and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
+    try:
+        pyroscope.configure(
+            application_name="arda",
+            server_address=os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040"),
+            tags={
+                "environment": os.getenv("DEPLOYMENT_ENV", "prod"),
+                "version": __VERSION__,
+            }
+        )
+        logger.info("Arda Pyroscope profiling enabled")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Pyroscope: {e}")
 
 
 # APIRouter: Prevent the 307 Temporary Redirect When There's a Missing Trailing Slash

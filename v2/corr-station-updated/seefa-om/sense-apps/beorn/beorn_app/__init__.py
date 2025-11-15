@@ -22,6 +22,14 @@ except ImportError:
     OTEL_AVAILABLE = False
     print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
+# Pyroscope profiling
+try:
+    import pyroscope
+    PYROSCOPE_AVAILABLE = True
+except ImportError:
+    PYROSCOPE_AVAILABLE = False
+    print("Warning: Pyroscope profiling not available")
+
 # quick and dirty check for empty str vs encrypted str of first env var
 env_vars_set = os.environ.get("ARIN_API_KEY")
 if not env_vars_set:
@@ -83,6 +91,21 @@ if OTEL_AVAILABLE:
         logger.info("Beorn OTEL observability initialized (traces + metrics)")
     except Exception as e:
         logger.warning(f"Failed to initialize OTEL: {e}")
+
+# Initialize Pyroscope profiling
+if PYROSCOPE_AVAILABLE and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
+    try:
+        pyroscope.configure(
+            application_name="beorn",
+            server_address=os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040"),
+            tags={
+                "environment": os.getenv("DEPLOYMENT_ENV", "prod"),
+                "version": version.strip(),
+            }
+        )
+        logger.info("Beorn Pyroscope profiling enabled")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Pyroscope: {e}")
 
 
 @app.errorhandler(Exception)

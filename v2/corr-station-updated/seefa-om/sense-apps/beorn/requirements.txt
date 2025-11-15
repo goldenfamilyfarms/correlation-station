@@ -101,3 +101,6 @@ wrapt==1.17.2
 xmltodict==0.13.0
 zeep==4.1.0
 zipp==3.6.0
+
+# Pyroscope continuous profiling
+pyroscope-io>=0.8.7
