@@ -1,0 +1,17 @@
+Nov 16 14:00:01 mdso-host CIENA[7777]: ServiceMapper: Received create request for circuit 80.L1XX.200001..CHTR
+Nov 16 14:00:02 mdso-host CIENA[7777]: OrchestrationEngine: State changed to CREATE_IN_PROGRESS for resource 888e8800-f88f-88f8-f888-888888880000
+Nov 16 14:00:03 mdso-host CIENA[7777]: ServiceMapper: Allocated product 999e9900-g99g-99g9-g999-999999990000 for circuit 80.L1XX.200001..CHTR
+Nov 16 14:00:04 mdso-host CIENA[7777]: ResourceAgent: Configuring device TESTDEVICE.CHTRSE.COM (vendor: juniper) at management IP 192.168.100.50
+Nov 16 14:00:05 mdso-host CIENA[7777]: ServiceMapper: Service type ELAN configured for circuit 80.L1XX.200001..CHTR
+Nov 16 14:00:06 mdso-host CIENA[7777]: ResourceAgent: INFO: Device TESTDEVICE.CHTRSE.COM configuration applied
+Nov 16 14:00:07 mdso-host CIENA[7777]: OrchestrationEngine: State changed to CREATE_COMPLETE for circuit 80.L1XX.200001..CHTR
+Nov 16 14:00:08 mdso-host CIENA[7777]: ServiceMapper: Circuit 80.L1XX.200001..CHTR is now active
+Nov 16 14:15:01 mdso-host CIENA[7777]: ServiceMapper: Received modify request for circuit 80.L1XX.200001..CHTR
+Nov 16 14:15:02 mdso-host CIENA[7777]: OrchestrationEngine: State changed to UPDATE_IN_PROGRESS for circuit 80.L1XX.200001..CHTR
+Nov 16 14:15:03 mdso-host CIENA[7777]: ResourceAgent: Updating configuration on device TESTDEVICE.CHTRSE.COM
+Nov 16 14:15:04 mdso-host CIENA[7777]: OrchestrationEngine: State changed to UPDATE_COMPLETE for circuit 80.L1XX.200001..CHTR
+Nov 16 14:30:01 mdso-host CIENA[7777]: ServiceMapper: Received delete request for circuit 80.L1XX.200001..CHTR
+Nov 16 14:30:02 mdso-host CIENA[7777]: OrchestrationEngine: State changed to DELETE_IN_PROGRESS for resource 888e8800-f88f-88f8-f888-888888880000
+Nov 16 14:30:03 mdso-host CIENA[7777]: ResourceAgent: Removing configuration from device TESTDEVICE.CHTRSE.COM
+Nov 16 14:30:04 mdso-host CIENA[7777]: OrchestrationEngine: State changed to DELETE_COMPLETE for circuit 80.L1XX.200001..CHTR
+Nov 16 14:30:05 mdso-host CIENA[7777]: ServiceMapper: Circuit 80.L1XX.200001..CHTR successfully deleted

@@ -1,0 +1,7 @@
+Nov 16 10:30:15 mdso-host CIENA[1234]: ServiceMapper: Creating circuit 80.L1XX.005054..CHTR with resource 550e8400-e29b-41d4-a716-446655440000
+Nov 16 10:30:16 mdso-host CIENA[1234]: ResourceAgent: Configuring device JFVLINBJ2CW.CHTRSE.COM (vendor: juniper)
+Nov 16 10:30:17 mdso-host CIENA[1234]: OrchestrationEngine: State changed to CREATE_IN_PROGRESS for circuit 80.L1XX.005054..CHTR
+Nov 16 10:30:18 mdso-host CIENA[1234]: ServiceMapper: Service type ELAN configured for product 450e7500-d19b-31c4-b716-336644330000
+Nov 16 10:30:19 mdso-host CIENA[1234]: ResourceAgent: INFO: Configuration applied successfully to device JFVLINBJ2CW.CHTRSE.COM
+Nov 16 10:30:20 mdso-host CIENA[1234]: OrchestrationEngine: State changed to CREATE_COMPLETE for circuit 80.L1XX.005054..CHTR
+Nov 16 10:30:21 mdso-host CIENA[1234]: ServiceMapper: Circuit 80.L1XX.005054..CHTR activation complete

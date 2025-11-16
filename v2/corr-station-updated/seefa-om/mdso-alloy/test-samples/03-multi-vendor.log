@@ -1,0 +1,9 @@
+Nov 16 12:00:01 mdso-host CIENA[9999]: ResourceAgent: Provisioning circuit 80.L1XX.001111..CHTR on device CISCO12345.CHTRSE.COM (vendor: cisco)
+Nov 16 12:00:02 mdso-host CIENA[9999]: ResourceAgent: INFO: Cisco device CISCO12345.CHTRSE.COM configuration started
+Nov 16 12:00:03 mdso-host CIENA[9999]: ResourceAgent: Provisioning circuit 80.L1XX.002222..CHTR on device JUNIPER789.CHTRSE.COM (vendor: juniper)
+Nov 16 12:00:04 mdso-host CIENA[9999]: ResourceAgent: INFO: Juniper device JUNIPER789.CHTRSE.COM configuration started
+Nov 16 12:00:05 mdso-host CIENA[9999]: ResourceAgent: Provisioning circuit 80.L1XX.003333..CHTR on device ADVADEVICE.CHTRSE.COM (vendor: adva)
+Nov 16 12:00:06 mdso-host CIENA[9999]: ResourceAgent: INFO: ADVA device ADVADEVICE.CHTRSE.COM configuration started
+Nov 16 12:00:07 mdso-host CIENA[9999]: ResourceAgent: Provisioning circuit 80.L1XX.004444..CHTR on device RADNETWORK.CHTRSE.COM (vendor: rad)
+Nov 16 12:00:08 mdso-host CIENA[9999]: ResourceAgent: INFO: RAD device RADNETWORK.CHTRSE.COM configuration started
+Nov 16 12:00:09 mdso-host CIENA[9999]: ServiceMapper: Multi-vendor provisioning batch completed successfully
