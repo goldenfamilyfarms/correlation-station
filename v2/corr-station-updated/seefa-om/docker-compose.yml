@@ -12,6 +12,7 @@ volumes:
   prometheus-data: {}
   pyroscope-data: {}
   seca-db: {}
+  redis-data: {}
 services:
   grafana:
     image: grafana/grafana:10.2.0
@@ -201,83 +202,118 @@ services:
       timeout: 5s
       retries: 5
 
-  # # ============================================
-  # # Sense Apps (OTel Instrumented)
-  # # ============================================
-  # beorn:
-  #   build:
-  #     context: ./sense-apps/beorn
-  #     dockerfile: Dockerfile
-  #   container_name: beorn
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5001:5001"
-  #   environment:
-  #     - SERVICE_NAME=beorn
-  #     - SERVICE_PORT=5001
-  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
-  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-  #     - OTEL_SERVICE_NAME=beorn
-  #     - DEPLOYMENT_ENV=dev
-  #     - LOG_LEVEL=info
-  #   networks:
-  #     - observability
-  #   depends_on:
-  #     - otel-gateway
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-  #     interval: 15s
-  #     timeout: 5s
-  #     retries: 3
+  # ============================================
+  # Sense Apps (OTel Instrumented)
+  # ============================================
+  beorn:
+    build:
+      context: ./sense-apps/beorn
+      dockerfile: Dockerfile
+    container_name: beorn
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - SERVICE_NAME=beorn
+      - SERVICE_PORT=5001
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=beorn
+      - DEPLOYMENT_ENV=dev
+      - LOG_LEVEL=info
+    networks:
+      - observability
+    depends_on:
+      - otel-gateway
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
-  # palantir:
-  #   build:
-  #     context: ./sense-apps/palantir
-  #     dockerfile: Dockerfile
-  #   container_name: palantir
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5002:5002"
-  #   environment:
-  #     - SERVICE_NAME=palantir
-  #     - SERVICE_PORT=5002
-  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
-  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-  #     - OTEL_SERVICE_NAME=palantir
-  #     - DEPLOYMENT_ENV=dev
-  #     - LOG_LEVEL=info
-  #   networks:
-  #     - observability
-  #   depends_on:
-  #     - otel-gateway
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
-  #     interval: 15s
-  #     timeout: 5s
-  #     retries: 3
+  palantir:
+    build:
+      context: ./sense-apps/palantir
+      dockerfile: Dockerfile
+    container_name: palantir
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVICE_NAME=palantir
+      - SERVICE_PORT=5002
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=palantir
+      - DEPLOYMENT_ENV=dev
+      - LOG_LEVEL=info
+    networks:
+      - observability
+    depends_on:
+      - otel-gateway
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
-  # arda:
-  #   build:
-  #     context: ./sense-apps/arda
-  #     dockerfile: Dockerfile
-  #   container_name: arda
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5003:5003"
-  #   environment:
-  #     - SERVICE_NAME=arda
-  #     - SERVICE_PORT=5003
-  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
-  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-  #     - OTEL_SERVICE_NAME=arda
-  #     - DEPLOYMENT_ENV=dev
-  #     - LOG_LEVEL=info
-  #   networks:
-  #     - observability
-  #   depends_on:
-  #     - otel-gateway
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
-  #     interval: 15s
-  #     timeout: 5s
-  #     retries: 3
+  arda:
+    build:
+      context: ./sense-apps/arda
+      dockerfile: Dockerfile
+    container_name: arda
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - SERVICE_NAME=arda
+      - SERVICE_PORT=5003
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=arda
+      - DEPLOYMENT_ENV=dev
+      - LOG_LEVEL=info
+    networks:
+      - observability
+    depends_on:
+      - otel-gateway
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ============================================
+  # Redis (for horizontal scaling)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # K6 Load Testing
+  # ============================================
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    networks:
+      - observability
+    volumes:
+      - ./k6:/scripts
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+    profiles:
+      - testing
