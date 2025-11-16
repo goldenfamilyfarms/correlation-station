@@ -151,7 +151,7 @@ services:
     container_name: correlation-station-ui
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "8001:80"
     networks:
       - observability
     depends_on:

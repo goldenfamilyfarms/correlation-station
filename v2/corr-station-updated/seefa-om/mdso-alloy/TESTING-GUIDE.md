@@ -12,7 +12,7 @@ Progressive testing approach to validate the full observability pipeline:
 
 ### Test 1: Pure OTel
 ```
-MDSO Dev                           Meta
+MDSO (Multi-Domain Service Orchestrator) Dev                           Meta
 ┌─────────────────┐               ┌──────────────┐
 │ Alloy           │               │ OTel Gateway │
 │ • filelog       │─────OTLP─────▶│ • Receives   │
@@ -214,7 +214,7 @@ curl -G 'http://localhost:3100/loki/api/v1/query' \
 #### 4. Grafana
 ```bash
 # Open browser
-http://159.56.4.94:3000
+http://159.56.4.94:8443
 
 # Navigate to Explore → Loki
 # Query: {service="mdso"}

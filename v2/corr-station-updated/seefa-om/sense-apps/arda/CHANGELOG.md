@@ -76,7 +76,7 @@
 
 ### Fix
 
-- trigger pipeline for MDSO url change
+- trigger pipeline for MDSO (Multi-Domain Service Orchestrator) url change
 
 ## 2.50.1.34079572 (2025-09-15)
 

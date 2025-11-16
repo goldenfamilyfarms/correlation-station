@@ -1,4 +1,4 @@
-# ADR-004: Repository Pattern for MDSO Access
+# ADR-004: Repository Pattern for MDSO (Multi-Domain Service Orchestrator) Access
 
 **Status**: Accepted
 **Date**: 2025-11-14

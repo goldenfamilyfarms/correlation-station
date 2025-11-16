@@ -6,7 +6,7 @@ This guide covers deploying the **enhanced** Alloy configuration with comprehens
 
 ## What's New in Enhanced Config
 
-The enhanced `config.alloy` now extracts **13 structured fields** from MDSO log messages:
+The enhanced `config.alloy` now extracts **13 structured fields** from MDSO (Multi-Domain Service Orchestrator) log messages:
 
 ### Business Identifiers
 - **circuit_id** - Circuit IDs like `80.L1XX.005054..CHTR`
@@ -250,7 +250,7 @@ curl http://localhost:8080/health | jq
 
 #### 4. Verify in Grafana
 
-1. Open browser: `http://159.56.4.94:3000`
+1. Open browser: `http://159.56.4.94:8443`
 2. Login (default: admin/admin)
 3. Go to **Explore** → **Loki**
 4. Query: `{service="mdso"}`

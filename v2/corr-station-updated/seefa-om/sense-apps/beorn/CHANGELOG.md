@@ -46,7 +46,7 @@
 
 ### Fix
 
-- MDSO URL CICD vars
+- MDSO (Multi-Domain Service Orchestrator) URL CICD vars
 
 ## 1.58.12 (2025-09-29)
 

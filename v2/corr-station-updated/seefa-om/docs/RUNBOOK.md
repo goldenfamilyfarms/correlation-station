@@ -16,7 +16,7 @@
 
 | Component | Purpose | Port | Health Check |
 |-----------|---------|------|--------------|
-| Grafana | Visualization & dashboards | 3000 | `http://localhost:3000/api/health` |
+| Grafana | Visualization & dashboards | 3000 | `http://localhost:8443/api/health` |
 | Loki | Log aggregation | 3100 | `http://localhost:3100/ready` |
 | Tempo | Distributed tracing | 3200 | `http://localhost:3200/ready` |
 | Prometheus | Metrics storage | 9090 | `http://localhost:9090/-/healthy` |
@@ -29,7 +29,7 @@
 ### Data Flow
 
 ```
-MDSO Alloy → OTel Gateway → Correlation Engine → Loki/Tempo
+MDSO (Multi-Domain Service Orchestrator) Alloy → OTel Gateway → Correlation Engine → Loki/Tempo
 Sense Apps → OTel Gateway → Correlation Engine → Loki/Tempo
 ```
 
@@ -323,7 +323,7 @@ docker-compose exec correlation-engine env | grep CORR_WINDOW
 sudo systemctl status alloy
 sudo journalctl -u alloy -f
 
-# Check connectivity to Server-124
+# Check connectivity to Meta Server
 curl -X POST http://159.56.4.94:4318/v1/logs \
   -H "Content-Type: application/json" \
   -d '{"resourceLogs":[]}'
@@ -524,7 +524,7 @@ docker-compose images
 
 **Recovery Steps:**
 
-1. **Verify Server-124 is accessible:**
+1. **Verify Meta Server is accessible:**
    ```bash
    ssh user@159.56.4.94
    ```
@@ -568,7 +568,7 @@ docker-compose images
 ### Network Partition
 
 **Symptoms:**
-- Alloy can't reach Server-124
+- Alloy can't reach Meta Server
 - Sense apps can't reach Gateway
 
 **Response:**
@@ -612,5 +612,5 @@ docker-compose logs --no-color > debug.log
 
 - [Architecture Overview](../README.md)
 - [API Documentation](http://159.56.4.94:8080/docs)
-- [Grafana Dashboards](http://159.56.4.94:3000)
+- [Grafana Dashboards](http://159.56.4.94:8443)
 - [OpenTelemetry Docs](https://opentelemetry.io/docs/)

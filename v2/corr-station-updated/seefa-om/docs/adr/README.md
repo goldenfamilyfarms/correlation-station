@@ -24,7 +24,7 @@ Each ADR follows this structure:
 - [ADR-003: Queue Backpressure Strategy](003-queue-backpressure.md)
 
 ### Architecture & Patterns
-- [ADR-004: Repository Pattern for MDSO Access](004-repository-pattern-mdso.md)
+- [ADR-004: Repository Pattern for MDSO (Multi-Domain Service Orchestrator) Access](004-repository-pattern-mdso.md)
 - [ADR-005: Redis State Externalization](005-redis-state-externalization.md)
 - [ADR-006: Dependency Injection Container](006-dependency-injection.md)
 

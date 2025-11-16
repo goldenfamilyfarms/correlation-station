@@ -21,7 +21,7 @@
 
 This observability platform provides:
 
-- **Real-time log streaming** from MDSO Dev via Grafana Alloy
+- **Real-time log streaming** from MDSO (Multi-Domain Service Orchestrator) Dev via Grafana Alloy
 - **Distributed tracing** for Sense applications (Beorn, Palantir, Arda)
 - **Windowed correlation** of logs and traces by `trace_id`
 - **Multi-backend export** to Loki, Tempo, Prometheus, and optional Datadog
@@ -51,13 +51,13 @@ This observability platform provides:
 │  │  Grafana Alloy                                                    │  │
 │  │  • Tails: /var/log/ciena/blueplanet.log, /bp2/log/*.log         │  │
 │  │  • Normalizes syslog → structured logs                           │  │
-│  │  • Exports: OTLP/HTTP → Server-124:4318                          │  │
+│  │  • Exports: OTLP/HTTP → Meta Server:4318                          │  │
 │  └─────────────────────────────┬─────────────────────────────────────┘  │
 └────────────────────────────────┼────────────────────────────────────────┘
                                  │ TLS/BasicAuth (optional)
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                      Server-124 (159.56.4.94)                         │
+│                      Meta Server (159.56.4.94)                         │
 │                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
 │  │  OTel Collector Gateway (:4317, :4318, :55680, :55681)           │ │
@@ -79,7 +79,7 @@ This observability platform provides:
 │             └──────────────────┴────────────┴──────────────┘          │
 │                                      │                                 │
 │                            ┌─────────▼─────────┐                       │
-│                            │  Grafana :3000    │                       │
+│                            │  Grafana :8443    │                       │
 │                            │  • Dashboards     │                       │
 │                            │  • Trace → Logs   │                       │
 │                            │  • Correlation UI │                       │
@@ -131,7 +131,7 @@ This observability platform provides:
 - Docker 20.10+ and Docker Compose
 - Python 3.11+ (for local development)
 - 100GB+ disk space
-- Network access between MDSO Dev and Server-124
+- Network access between MDSO Dev and Meta Server
 
 ### 1. Clone and Configure
 
@@ -147,7 +147,7 @@ cp .env.example .env
 vim .env
 ```
 
-### 2. Deploy on Server-124
+### 2. Deploy on Meta Server
 
 ```bash
 # Build all images
@@ -195,7 +195,7 @@ sudo journalctl -u alloy -f
 
 ```bash
 # Open browser
-open http://159.56.4.94:3000
+open http://159.56.4.94:8443
 
 # Login credentials
 Username: admin

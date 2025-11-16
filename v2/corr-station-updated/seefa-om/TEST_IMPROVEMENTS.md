@@ -36,7 +36,7 @@ This document summarizes the comprehensive test suite additions and architectura
 
 ## 🧪 Test Details
 
-### 1. MDSO Client Tests (`test_mdso_client.py`)
+### 1. MDSO (Multi-Domain Service Orchestrator) Client Tests (`test_mdso_client.py`)
 
 **Purpose:** Validate SSL verification and token expiry fixes
 

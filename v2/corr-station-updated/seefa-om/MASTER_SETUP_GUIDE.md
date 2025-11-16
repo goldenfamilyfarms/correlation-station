@@ -206,7 +206,7 @@ docker-compose ps
 
 ```bash
 # Grafana
-curl -s http://localhost:3000/api/health | jq
+curl -s http://localhost:8443/api/health | jq
 # Expected: {"commit": "...", "database": "ok", "version": "..."}
 
 # Loki
@@ -1203,7 +1203,7 @@ EOF
 curl -X POST \
   -H "Content-Type: application/json" \
   -d @correlation-dashboard.json \
-  http://admin:admin@localhost:3000/api/dashboards/db
+  http://admin:admin@localhost:8443/api/dashboards/db
 ```
 
 ### ✅ Phase 5 Complete Checklist
@@ -1222,7 +1222,7 @@ curl -X POST \
 
 ```bash
 # Grafana
-open http://localhost:3000
+open http://localhost:8443
 # Default login: admin / admin
 
 # Pyroscope
@@ -1651,10 +1651,10 @@ tar -czf config-backup-$(date +%Y%m%d).tar.gz \
 
 # Backup Grafana dashboards
 curl -H "Authorization: Bearer <admin-api-key>" \
-  http://localhost:3000/api/search?type=dash-db | \
+  http://localhost:8443/api/search?type=dash-db | \
   jq -r '.[].uid' | \
   xargs -I {} curl -H "Authorization: Bearer <admin-api-key>" \
-    http://localhost:3000/api/dashboards/uid/{} > dashboards-backup.json
+    http://localhost:8443/api/dashboards/uid/{} > dashboards-backup.json
 ```
 
 ### Upgrade Procedure
@@ -1725,7 +1725,7 @@ docker-compose down -v && docker system prune -af
 - API docs: http://localhost:8080/docs
 
 **Monitoring:**
-- Grafana: http://localhost:3000 (admin/admin)
+- Grafana: http://localhost:8443 (admin/admin)
 - Pyroscope: http://localhost:4040
 - Prometheus: http://localhost:9090
 

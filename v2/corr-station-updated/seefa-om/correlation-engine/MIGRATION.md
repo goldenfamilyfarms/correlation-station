@@ -2,7 +2,7 @@
 
 ## Overview
 
-Version 2.0 adds MDSO integration while maintaining full backward compatibility with v1.0. Existing deployments will continue to work without changes.
+Version 2.0 adds MDSO (Multi-Domain Service Orchestrator) integration while maintaining full backward compatibility with v1.0. Existing deployments will continue to work without changes.
 
 ## What's New
 

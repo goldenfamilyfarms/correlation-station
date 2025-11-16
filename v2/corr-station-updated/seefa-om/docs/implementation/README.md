@@ -1,6 +1,6 @@
 # SEEFA Observability Implementation
 
-This folder contains the enhanced implementation for end-to-end tracing across SENSE apps and MDSO.
+This folder contains the enhanced implementation for end-to-end tracing across SENSE apps and MDSO (Multi-Domain Service Orchestrator).
 
 ## Structure
 

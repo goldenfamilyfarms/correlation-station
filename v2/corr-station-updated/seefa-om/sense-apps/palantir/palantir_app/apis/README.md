@@ -4,7 +4,7 @@ This is a README to document our apis. Yay!
 #PORT
 #### PUT
 Parameters required are tid, port_id, and timer, as well as a JSON payload body containing {'activate': 'true' / 'false'}  
-1. Create MDSO token
+1. Create MDSO (Multi-Domain Service Orchestrator) token
 2. Call granite to get target (full fqdn) and vendor
 3. Call MDSO passing the token, port_id, and target to see if a resource id exists
 4. If no resource id exists, one must be created in MDSO using headers, tid, target, vendor, timer, 

@@ -230,7 +230,7 @@ OTLP logs endpoint was incomplete (TODO) - logs were tracked but not processed o
 7. Datadog Integration
 8. Deployment
 9. Self-Observability
-10. MDSO Client Settings
+10. MDSO (Multi-Domain Service Orchestrator) Client Settings
 11. HTTP Client Settings
 12. Queue Settings
 13. Security/Size Limits

@@ -74,7 +74,7 @@ The Sense platform consists of multiple components with different scaling charac
 - ✅ Stateless design (ready for horizontal scaling)
 - ✅ Gunicorn multi-worker support
 - ⚠️ Shared database connections (needs pooling optimization)
-- ⚠️ External service rate limiting (MDSO, ODIN, etc.)
+- ⚠️ External service rate limiting (MDSO (Multi-Domain Service Orchestrator), ODIN, etc.)
 
 ---
 

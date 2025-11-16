@@ -23,7 +23,7 @@ Successfully implemented lightweight OpenTelemetry (OTEL) instrumentation across
    - Added 10KB payload size limit for safety
    - Maintained request ID generation for structlog compatibility
 
-3. ✅ **Added MDSO-Specific Correlation**
+3. ✅ **Added MDSO (Multi-Domain Service Orchestrator)-Specific Correlation**
    - Implemented circuit_id → fqdn → provider_resource_id correlation chain
    - Added baggage propagation for cross-service tracing
    - Extracted 70+ regex patterns from META tool

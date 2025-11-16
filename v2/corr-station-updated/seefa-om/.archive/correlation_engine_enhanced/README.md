@@ -1,6 +1,6 @@
 # Correlation Engine Enhanced
 
-Enhanced version of the Correlation Engine with MDSO integration for automated log collection and error analysis.
+Enhanced version of the Correlation Engine with MDSO (Multi-Domain Service Orchestrator) integration for automated log collection and error analysis.
 
 ## New Features
 

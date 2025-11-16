@@ -336,7 +336,7 @@
 
 ### Fix
 
-- MDSO swap to Austin 3/10
+- MDSO (Multi-Domain Service Orchestrator) swap to Austin 3/10
 
 ## 1.53.1 (2025-03-10)
 

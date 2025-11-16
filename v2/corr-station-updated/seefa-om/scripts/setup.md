@@ -13,7 +13,7 @@ This pre-setup script performs all the tasks that would normally run in a CI/CD 
 7. ✅ Creates required directories
 8. ✅ Installs Python dependencies
 9. ✅ Creates Docker network
-10. ✅ Tests MDSO API connection
+10. ✅ Tests MDSO (Multi-Domain Service Orchestrator) API connection
 
 ## Why You Need This
 
@@ -225,7 +225,7 @@ sudo mkdir -p /opt/mdso-poller
 ## When to Run This
 
 ### ✅ Run Pre-Setup If:
-- First time setting up on Server-124
+- First time setting up on Meta Server
 - Added new credentials to .env
 - Changed proxy settings
 - Pulled fresh copy of repo
@@ -432,7 +432,7 @@ make start-all
 make health-check
 
 # 3. Access services
-open http://159.56.4.94:3000  # Grafana
+open http://159.56.4.94:8443  # Grafana
 open http://159.56.4.94:8080  # Correlation API
 ```
 
@@ -480,7 +480,7 @@ This gives you the same benefits as CI/CD without needing a pipeline!
 
 ######################
 
-# Setup Checklist - Server-124
+# Setup Checklist - Meta Server
 
 ## ✅ Complete Setup Process (First Time)
 
@@ -597,7 +597,7 @@ Checking Gateway Metrics... ✓ OK (HTTP 200)
 Open these URLs in your browser:
 
 **Grafana:**
-- URL: http://159.56.4.94:3000
+- URL: http://159.56.4.94:8443
 - Login: `admin` / `admin`
 - Action: Change password on first login
 
@@ -635,7 +635,7 @@ Sending test trace (trace_id=abc123...)...
 
 ### 7️⃣ Verify in Grafana
 
-1. Open Grafana: http://159.56.4.94:3000
+1. Open Grafana: http://159.56.4.94:8443
 2. Go to **Explore** → Select **Tempo**
 3. Click **Search**
 4. Should see recent traces
@@ -760,7 +760,7 @@ make restart-all
 
 **Check individual services:**
 ```bash
-curl http://localhost:3000/api/health
+curl http://localhost:8443/api/health
 curl http://localhost:3100/ready
 curl http://localhost:3200/ready
 curl http://localhost:8080/health
@@ -1081,8 +1081,8 @@ make health-check
 
 ### 4. Check Grafana
 ```bash
-curl http://localhost:3000/api/health
-open http://159.56.4.94:3000
+curl http://localhost:8443/api/health
+open http://159.56.4.94:8443
 ```
 
 ### 5. Check Correlation API
@@ -1136,7 +1136,7 @@ open http://159.56.4.94:8080/docs
                  ▼
 ┌─────────────────────────────────────────────┐
 │ 5. Access Services                          │
-│    → Grafana: http://159.56.4.94:3000    │
+│    → Grafana: http://159.56.4.94:8443    │
 │    → Correlation: http://159.56.4.94:8080│
 └─────────────────────────────────────────────┘
 ```
@@ -1176,7 +1176,7 @@ After completing all steps, you should have:
 2. **Verify it works:**
    ```bash
    make health-check
-   open http://159.56.4.94:3000
+   open http://159.56.4.94:8443
    ```
 
 3. **Send test data:**

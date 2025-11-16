@@ -363,7 +363,7 @@ Open these URLs in your browser:
 
 | Service | URL | Login |
 |---------|-----|-------|
-| **Frontend UI** | http://localhost:3000 | None |
+| **Frontend UI** | http://localhost:8443 | None |
 | **Grafana** | http://159.56.4.94:8443 | admin / admin |
 | **Prometheus** | http://159.56.4.94:9090 | None |
 | **Pyroscope** | http://localhost:4040 | None |
@@ -376,7 +376,7 @@ make open-grafana
 
 ### Frontend UI Features
 
-The UI at `http://localhost:3000` provides:
+The UI at `http://localhost:8443` provides:
 
 1. **Homepage**
    - Quick links to all observability tools
@@ -577,7 +577,7 @@ make start-all
 ### Issue: Frontend UI Not Loading
 
 **Symptoms:**
-- http://localhost:3000 shows error
+- http://localhost:8443 shows error
 - 404 or connection refused
 
 **Solution:**
@@ -761,7 +761,7 @@ make purge                  # Remove everything including images
 
 ```bash
 # Open in browser
-open http://localhost:3000              # Frontend UI
+open http://localhost:8443              # Frontend UI
 open http://159.56.4.94:8443            # Grafana
 open http://localhost:4040              # Pyroscope
 open http://159.56.4.94:9090            # Prometheus
@@ -789,7 +789,7 @@ make health
 make test-traffic
 
 # 5. View in browser
-open http://localhost:3000
+open http://localhost:8443
 open http://159.56.4.94:8443
 
 # 6. Check correlations
@@ -862,7 +862,7 @@ docker-compose stop correlation-station-ui
 
 After completing this setup:
 
-1. **Explore the Frontend UI** at http://localhost:3000
+1. **Explore the Frontend UI** at http://localhost:8443
    - Read documentation on TraceQL and PromQL
    - Review system architecture
    - Check SECA error reviews
@@ -899,7 +899,7 @@ After completing this setup:
 - API Documentation: http://localhost:8080/docs
 
 **Monitoring:**
-- Frontend UI: http://localhost:3000
+- Frontend UI: http://localhost:8443
 - Grafana: http://159.56.4.94:8443 (admin/admin)
 - Pyroscope: http://localhost:4040
 - Prometheus: http://159.56.4.94:9090

@@ -9,7 +9,7 @@
 ## Executive Summary
 
 The Correlation Station is a sophisticated real-time observability platform that:
-1. Collects logs from MDSO (Microsoft Defender Security Operations) via Grafana Alloy
+1. Collects logs from MDSO (Multi-Domain Service Orchestrator) via Grafana Alloy
 2. Instruments Sense applications (Beorn, Palantir, Arda) with OpenTelemetry
 3. Correlates logs and traces in a custom FastAPI correlation engine
 4. Exports enriched data to Loki (logs), Tempo (traces), Prometheus (metrics), and optional Datadog
@@ -49,7 +49,7 @@ MDSO Dev Host (159.56.4.37)
 │   ├── otelcol.receiver.loki → converts Loki logs to OTLP
 │   └── otelcol.exporter.otlphttp → sends to gateway
 │
-└── Export to Server-124 (159.56.4.94)
+└── Export to Meta Server (159.56.4.94)
     └── HTTP endpoint: http://159.56.4.94:55681
         ├── Retry policy: initial 5s, max 30s, total 300s
         └── Timeout: 10s

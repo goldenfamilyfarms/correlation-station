@@ -1,4 +1,4 @@
-# MDSO Repository Pattern
+# MDSO (Multi-Domain Service Orchestrator) Repository Pattern
 
 ## Overview
 
