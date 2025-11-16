@@ -1,0 +1,197 @@
+variables:
+    CI_VARIABLES: "--build-arg SNMP_COMMUNITY_STRING=$SNMP_COMMUNITY_STRING \
+        --build-arg SNMP_COMMUNITY_STRING_SKELLY=$SNMP_COMMUNITY_STRING_SKELLY \
+        --build-arg SNMP_PUBLIC_STRING=$SNMP_PUBLIC_STRING \
+        --build-arg SNMP_PUBLIC_STRING_SKELLY=$SNMP_PUBLIC_STRING_SKELLY \
+        --build-arg ODIN_USER=$ODIN_USER \
+        --build-arg ODIN_PASS=$ODIN_PASS \
+        --build-arg ODIN_PASS_SKELLY=$ODIN_PASS_SKELLY \
+        --build-arg ODIN_TOKEN=$ODIN_TOKEN \
+        --build-arg ODIN_TOKEN_SKELLY=$ODIN_TOKEN_SKELLY \
+        --build-arg ARIN_API_KEY=$ARIN_API_KEY \
+        --build-arg ARIN_API_KEY_SKELLY=$ARIN_API_KEY_SKELLY \
+        --build-arg IPC_USER=$IPC_USER \
+        --build-arg IPC_PASS=$IPC_PASS \
+        --build-arg IPC_PASS_SKELLY=$IPC_PASS_SKELLY \
+        --build-arg NETWORK_LOGIN_USER=$NETWORK_LOGIN_USER \
+        --build-arg NETWORK_LOGIN_PASS=$NETWORK_LOGIN_PASS \
+        --build-arg NETWORK_LOGIN_PASS_SKELLY=$NETWORK_LOGIN_PASS_SKELLY \
+        --build-arg SENSE_SWAGGER_USER=$SENSE_SWAGGER_USER \
+        --build-arg SENSE_SWAGGER_PASS=$SENSE_SWAGGER_PASS \
+        --build-arg SENSE_SWAGGER_PASS_SKELLY=$SENSE_SWAGGER_PASS_SKELLY \
+        --build-arg SALESFORCE_BASE_URL=$SALESFORCE_BASE_URL \
+        --build-arg SALESFORCE_EMAIL=$SALESFORCE_EMAIL \
+        --build-arg SALESFORCE_PASS=$SALESFORCE_PASS \
+        --build-arg SALESFORCE_PASS_SKELLY=$SALESFORCE_PASS_SKELLY \
+        --build-arg SALESFORCE_TOKEN=$SALESFORCE_TOKEN \
+        --build-arg SALESFORCE_TOKEN_SKELLY=$SALESFORCE_TOKEN_SKELLY \
+        --build-arg TACACS_USER=$TACACS_USER \
+        --build-arg TACACS_PASS=$TACACS_PASS \
+        --build-arg TACACS_PASS_SKELLY=$TACACS_PASS_SKELLY \
+        --build-arg ESET_USER=$ESET_USER \
+        --build-arg ESET_PASS=$ESET_PASS \
+        --build-arg ESET_PASS_SKELLY=$ESET_PASS_SKELLY \
+        --build-arg ISE_USER=$ISE_USER \
+        --build-arg ISE_PASS=$ISE_PASS \
+        --build-arg ISE_PASS_SKELLY=$ISE_PASS_SKELLY \
+        --build-arg ISE_STATIC_KEY=$ISE_STATIC_KEY \
+        --build-arg ISE_STATIC_KEY_SKELLY=$ISE_STATIC_KEY_SKELLY \
+        --build-arg ISE_STATIC_KEY_ADVA=$ISE_STATIC_KEY_ADVA \
+        --build-arg ISE_STATIC_KEY_ADVA_SKELLY=$ISE_STATIC_KEY_ADVA_SKELLY \
+        --build-arg ISE_STATIC_KEY_RAD=$ISE_STATIC_KEY_RAD \
+        --build-arg ISE_STATIC_KEY_RAD_SKELLY=$ISE_STATIC_KEY_RAD_SKELLY \
+        --build-arg ISE_STATIC_KEY_JUNIPER=$ISE_STATIC_KEY_JUNIPER \
+        --build-arg ISE_STATIC_KEY_JUNIPER_SKELLY=$ISE_STATIC_KEY_JUNIPER_SKELLY \
+        --build-arg ISE_STATIC_KEY_ALCATEL=$ISE_STATIC_KEY_ALCATEL \
+        --build-arg ISE_STATIC_KEY_ALCATEL_SKELLY=$ISE_STATIC_KEY_ALCATEL_SKELLY \
+        --build-arg ISE_STATIC_KEY_CIENA=$ISE_STATIC_KEY_CIENA \
+        --build-arg ISE_STATIC_KEY_CIENA_SKELLY=$ISE_STATIC_KEY_CIENA_SKELLY \
+        --build-arg ISE_STATIC_KEY_CISCO=$ISE_STATIC_KEY_CISCO \
+        --build-arg ISE_STATIC_KEY_CISCO_SKELLY=$ISE_STATIC_KEY_CISCO_SKELLY \
+        --build-arg ISE_STATIC_KEY_NOKIA=$ISE_STATIC_KEY_NOKIA \
+        --build-arg ISE_STATIC_KEY_NOKIA_SKELLY=$ISE_STATIC_KEY_NOKIA_SKELLY \
+        --build-arg SENSE_EMAIL_NAME=$SENSE_EMAIL_NAME \
+        --build-arg SENSE_EMAIL_PASS=$SENSE_EMAIL_PASS \
+        --build-arg SENSE_EMAIL_PASS_SKELLY=$SENSE_EMAIL_PASS_SKELLY \
+        --build-arg SENSE_EMAIL_SERVER=$SENSE_EMAIL_SERVER \
+        --build-arg SENSE_EMAIL_PORT=$SENSE_EMAIL_PORT \
+        --build-arg MDSO_PROD_URL=$MDSO_PROD_URL \
+        --build-arg MDSO_USER_PROD=$MDSO_USER_PROD \
+        --build-arg MDSO_PASS_PROD=$MDSO_PASS_PROD \
+        --build-arg MDSO_PASS_PROD_SKELLY=$MDSO_PASS_PROD_SKELLY \
+        --build-arg DENODO_BASE_URL=$DENODO_BASE_URL \
+        --build-arg HYDRA_BASE_URL=$HYDRA_BASE_URL \
+        --build-arg IPC_BASE_URL=$IPC_BASE_URL \
+        --build-arg NICE_BASE_URL=$NICE_BASE_URL \
+        --build-arg ODIN_BASE_URL=$ODIN_BASE_URL \
+        --build-arg LIGHT_TEST_URL=$LIGHT_TEST_URL \
+        --build-arg BLACKLIST_IP_SERVICE_URL=$BLACKLIST_IP_SERVICE_URL \
+        --build-arg ESET_BASE_URL=$ESET_BASE_URL \
+        --build-arg ISE_EAST_URL_PAN11=$ISE_EAST_URL_PAN11 \
+        --build-arg ISE_EAST_URL_PAN21=$ISE_EAST_URL_PAN21 \
+        --build-arg ISE_WEST_URL_PAN11=$ISE_WEST_URL_PAN11 \
+        --build-arg ISE_WEST_URL_PAN21=$ISE_WEST_URL_PAN21 \
+        --build-arg ISE_SOUTH_URL_PAN11=$ISE_SOUTH_URL_PAN11 \
+        --build-arg ISE_SOUTH_URL_PAN21=$ISE_SOUTH_URL_PAN21 \
+        --build-arg NDOS_BASE_URL=$NDOS_BASE_URL \
+        --build-arg SEEK_BASE_URL=$SEEK_BASE_URL \
+        --build-arg ARDA_HYDRA_KEY=$ARDA_HYDRA_KEY \
+        --build-arg ARDA_HYDRA_KEY_SKELLY=$ARDA_HYDRA_KEY_SKELLY \
+        --build-arg ARDA_ADVA_RAD_HYDRA_KEY=$ARDA_ADVA_RAD_HYDRA_KEY \
+        --build-arg ARDA_ADVA_RAD_HYDRA_KEY_SKELLY=$ARDA_ADVA_RAD_HYDRA_KEY_SKELLY \
+        --build-arg ARDA_NOC_HYDRA_KEY=$ARDA_NOC_HYDRA_KEY \
+        --build-arg ARDA_NOC_HYDRA_KEY_SKELLY=$ARDA_NOC_HYDRA_KEY_SKELLY \
+        --build-arg PALANTIR_MNE_HYDRA_KEY=$PALANTIR_MNE_HYDRA_KEY \
+        --build-arg PALANTIR_MNE_HYDRA_KEY_SKELLY=$PALANTIR_MNE_HYDRA_KEY_SKELLY \
+        --build-arg PALANTIR_TID_HYDRA_KEY=$PALANTIR_TID_HYDRA_KEY \
+        --build-arg PALANTIR_TID_HYDRA_KEY_SKELLY=$PALANTIR_TID_HYDRA_KEY_SKELLY \
+        --build-arg PALANTIR_IPC_HYDRA_KEY=$PALANTIR_IPC_HYDRA_KEY \
+        --build-arg PALANTIR_IPC_HYDRA_KEY_SKELLY=$PALANTIR_IPC_HYDRA_KEY_SKELLY \
+        --build-arg GONDOR_GATEKEEPER_HYDRA_KEY=$GONDOR_GATEKEEPER_HYDRA_KEY \
+        --build-arg GONDOR_GATEKEEPER_HYDRA_KEY_SKELLY=$GONDOR_GATEKEEPER_HYDRA_KEY_SKELLY \
+        --build-arg DATAGUARD_USER=$DATAGUARD_USER \
+        --build-arg DATAGUARD_PASS=$DATAGUARD_PASS \
+        --build-arg DATAGUARD_HOSTNAME=$DATAGUARD_HOSTNAME \
+        --build-arg DATAGUARD_DBNAME=$DATAGUARD_DBNAME \
+        --build-arg IDR_DB_USER=$IDR_DB_USER \
+        --build-arg IDR_DB_PAS=$IDR_DB_PAS \
+        --build-arg IDR_DB_HOSTNAME=$IDR_DB_HOSTNAME \
+        --build-arg SENSE_TEST_SWAGGER_USER=$SENSE_TEST_SWAGGER_USER \
+        --build-arg SENSE_TEST_SWAGGER_PASS=$SENSE_TEST_SWAGGER_PASS \
+        --build-arg SENSE_TEST_SWAGGER_PASS_SKELLY=$SENSE_TEST_SWAGGER_PASS_SKELLY \
+        --build-arg ARDA_HYDRA_STAGIUS_KEY=$ARDA_HYDRA_STAGIUS_KEY \
+        --build-arg ARDA_HYDRA_STAGIUS_KEY_SKELLY=$ARDA_HYDRA_STAGIUS_KEY_SKELLY \
+        --build-arg BEORN_HYDRA_STAGIUS_KEY=$BEORN_HYDRA_STAGIUS_KEY \
+        --build-arg BEORN_HYDRA_STAGIUS_KEY_SKELLY=$BEORN_HYDRA_STAGIUS_KEY_SKELLY \
+        --build-arg PALANTIR_HYDRA_STAGIUS_KEY=$PALANTIR_HYDRA_STAGIUS_KEY \
+        --build-arg PALANTIR_HYDRA_STAGIUS_KEY_SKELLY=$PALANTIR_HYDRA_STAGIUS_KEY_SKELLY \
+        --build-arg GONDOR_HYDRA_STAGIUS_KEY=$GONDOR_HYDRA_STAGIUS_KEY \
+        --build-arg GONDOR_HYDRA_STAGIUS_KEY_SKELLY=$GONDOR_HYDRA_STAGIUS_KEY_SKELLY"
+    CI_VARIABLES_PROD: "--build-arg MDSO_USER=$MDSO_USER_PROD \
+        --build-arg MDSO_PASS=$MDSO_PASS_PROD \
+        --build-arg MDSO_PASS_SKELLY=$MDSO_PASS_PROD_SKELLY \
+        --build-arg GRANITE_BASE_URL=$GRANITE_BASE_URL_PROD \
+        --build-arg ARIN_CREATE_BASE_URL=$ARIN_CREATE_BASE_URL_PROD \
+        --build-arg SENSE_BASE_URL=$SENSE_BASE_URL_PROD \
+        --build-arg WHOIS_BASE_URL=$WHOIS_BASE_URL_PROD \
+        --build-arg MDSO_BASE_URL=$MDSO_BASE_URL_PROD \
+        --build-arg USAGE_DESIGNATION=$USAGE_DESIGNATION_PROD \
+        --build-arg BEORN_HYDRA_KEY=$BEORN_HYDRA_KEY_PROD \
+        --build-arg BEORN_HYDRA_KEY_SKELLY=$BEORN_HYDRA_KEY_PROD_SKELLY \
+        --build-arg PALANTIR_GENERAL_HYDRA_KEY=$PALANTIR_GENERAL_HYDRA_KEY_PROD \
+        --build-arg PALANTIR_GENERAL_HYDRA_KEY_SKELLY=$PALANTIR_GENERAL_HYDRA_KEY_PROD_SKELLY \
+        --build-arg PALANTIR_SPIRENT_HYDRA_KEY=$PALANTIR_SPIRENT_HYDRA_KEY_PROD \
+        --build-arg PALANTIR_SPIRENT_HYDRA_KEY_SKELLY=$PALANTIR_SPIRENT_HYDRA_KEY_PROD_SKELLY \
+        --build-arg GONDOR_HYDRA_KEY=$GONDOR_HYDRA_KEY_PROD \
+        --build-arg GONDOR_HYDRA_KEY_SKELLY=$GONDOR_HYDRA_KEY_PROD_SKELLY \
+        --build-arg REMEDY_USER=$REMEDY_USER_PROD \
+        --build-arg REMEDY_PASS=$REMEDY_PASS_PROD \
+        --build-arg REMEDY_PASS_SKELLY=$REMEDY_PASS_PROD_SKELLY \
+        --build-arg REMEDY_BASE_URL=$REMEDY_BASE_URL_PROD \
+        --build-arg REMEDY_SERVER=$REMEDY_SERVER_PROD"
+    CI_VARIABLES_DEV: "--build-arg MDSO_USER=$MDSO_USER_DEV \
+        --build-arg MDSO_PASS=$MDSO_PASS_DEV \
+        --build-arg MDSO_PASS_SKELLY=$MDSO_PASS_DEV_SKELLY \
+        --build-arg GRANITE_BASE_URL=$GRANITE_BASE_URL_DEV \
+        --build-arg ARIN_CREATE_BASE_URL=$ARIN_CREATE_BASE_URL_DEV \
+        --build-arg SENSE_BASE_URL=$SENSE_BASE_URL_DEV \
+        --build-arg WHOIS_BASE_URL=$WHOIS_BASE_URL_DEV \
+        --build-arg MDSO_BASE_URL=$MDSO_BASE_URL_DEV \
+        --build-arg USAGE_DESIGNATION=$USAGE_DESIGNATION_DEV \
+        --build-arg BEORN_HYDRA_KEY=$BEORN_HYDRA_KEY_DEV \
+        --build-arg BEORN_HYDRA_KEY_SKELLY=$BEORN_HYDRA_KEY_DEV_SKELLY \
+        --build-arg PALANTIR_GENERAL_HYDRA_KEY=$PALANTIR_GENERAL_HYDRA_KEY_DEV \
+        --build-arg PALANTIR_GENERAL_HYDRA_KEY_SKELLY=$PALANTIR_GENERAL_HYDRA_KEY_DEV_SKELLY \
+        --build-arg PALANTIR_SPIRENT_HYDRA_KEY=$PALANTIR_SPIRENT_HYDRA_KEY_DEV \
+        --build-arg PALANTIR_SPIRENT_HYDRA_KEY_SKELLY=$PALANTIR_SPIRENT_HYDRA_KEY_DEV_SKELLY \
+        --build-arg GONDOR_HYDRA_KEY=$GONDOR_HYDRA_KEY_DEV \
+        --build-arg GONDOR_HYDRA_KEY_SKELLY=$GONDOR_HYDRA_KEY_DEV_SKELLY \
+        --build-arg REMEDY_USER=$REMEDY_USER_DEV \
+        --build-arg REMEDY_PASS=$REMEDY_PASS_DEV \
+        --build-arg REMEDY_PASS_SKELLY=$REMEDY_PASS_DEV_SKELLY \
+        --build-arg REMEDY_BASE_URL=$REMEDY_BASE_URL_DEV \
+        --build-arg REMEDY_SERVER=$REMEDY_SERVER_DEV"
+
+include:
+  - project: service-engineering-automation/sense/common_sense
+    ref: develop
+    file: /cicd/bump_version.yml
+
+build_image_dev:
+  stage: build
+  tags:
+    - build
+  image: $ARTIFACTORY_REGISTRY/docker/docker:20.10.8
+  script:
+    - docker login -u $CI_PROJECT_ROOT_NAMESPACE -p $SEA_ARTIFACTORY_TOKEN $ARTIFACTORY_REGISTRY
+    # Debug — print what args will actually get passed into docker
+    - echo "USAGE_DESIGNATION=${USAGE_DESIGNATION:-<not set>}"
+    - echo "CI_VARIABLES:"
+    - echo "$CI_VARIABLES"
+    - echo "CI_VARIABLES_DEV:"
+    - echo "$CI_VARIABLES_DEV"
+    - echo "CI_VARIABLES_PROD:"
+    - echo "$CI_VARIABLES_PROD"
+    - docker build -t $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)"-develop.$CI_COMMIT_SHORT_SHA $CI_VARIABLES $CI_VARIABLES_DEV .
+    - docker push $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)"-develop.$CI_COMMIT_SHORT_SHA
+    - docker rmi $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)"-develop.$CI_COMMIT_SHORT_SHA
+  only:
+    - develop
+
+build_image_master:
+  stage: build
+  tags:
+    - build
+  image: $ARTIFACTORY_REGISTRY/docker/docker:20.10.8
+  extends: .bump_version
+  script:
+    - docker login -u $CI_PROJECT_ROOT_NAMESPACE -p $SEA_ARTIFACTORY_TOKEN $ARTIFACTORY_REGISTRY
+    - docker build -t $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)".$CI_COMMIT_SHORT_SHA $CI_VARIABLES $CI_VARIABLES_PROD .
+    - docker push $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)".$CI_COMMIT_SHORT_SHA
+    - docker rmi $ARTIFACTORY_REGISTRY/docker/service-engineering-automation/sense/$CI_PROJECT_NAME":$(cat VERSION)".$CI_COMMIT_SHORT_SHA
+  artifacts:
+    expire_in: 30 mins
+    paths:
+      - VERSION
+  only:
+    - master

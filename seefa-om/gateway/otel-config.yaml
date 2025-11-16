@@ -1,0 +1,124 @@
+extensions:
+  health_check:
+    endpoint: "0.0.0.0:13133"     # fixed (was 113133, invalid)
+  pprof:
+    endpoint: "0.0.0.0:1777"      # exposed only if you open port in Compose
+  zpages:
+    endpoint: "0.0.0.0:55680"     # exposed only if you open port in Compose
+
+receivers:
+  otlp:
+    protocols:
+      grpc: { endpoint: "0.0.0.0:4317" }
+      http: { endpoint: "0.0.0.0:4318" }
+
+  # Remove if not needed; host mapping now handles alt ports
+  # otlp/legacy:
+  #   protocols:
+  #     grpc: { endpoint: "0.0.0.0:14317" }
+  #     http: { endpoint: "0.0.0.0:14318" }
+
+  filelog:
+    include:
+      - /var/log/mdso/*.ndjson
+    start_at: end
+    operators:
+      - type: json_parser
+        parse_from: body
+        timestamp:
+          parse_from: attributes.timestamp
+          layout: '%Y-%m-%dT%H:%M:%S.%fZ'
+      - type: move
+        from: attributes.service
+        to: resource["service.name"]
+      - type: move
+        from: attributes.env
+        to: resource["deployment.environment"]
+      - type: move
+        from: attributes.trace_id
+        to: attributes["trace_id"]
+      - type: move
+        from: attributes.product_uuid
+        to: attributes["product_uuid"]
+      - type: move
+        from: attributes.mdso_request_id
+        to: attributes["mdso_request_id"]
+      - type: move
+        from: attributes.message
+        to: body
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: "${DEPLOYMENT_ENV}"
+        action: upsert
+      - key: host.name
+        value: "server-124"
+        action: upsert
+  attributes/logs:
+    actions:
+      - key: trace_id
+        action: upsert
+        from_attribute: trace_id
+      - key: span_id
+        action: upsert
+        from_attribute: span_id
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+exporters:
+  otlp/tempo:
+    endpoint: "tempo:4317"
+    tls: { insecure: true }
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+
+  otlphttp/correlation:
+    endpoint: "http://correlation-engine:8080/api/otlp"
+    headers: { Authorization: "Bearer ${CORRELATION_API_AUTH_TOKEN}" }
+    compression: none  # Disable compression - correlation engine can't handle gzip
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 5m
+    sending_queue:
+      enabled: true
+      num_consumers: 10
+      queue_size: 1000
+
+  logging:
+    verbosity: basic
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  extensions: [health_check, pprof, zpages]
+  telemetry:
+    metrics:
+      address: "0.0.0.0:8888"
+  pipelines:
+    traces:
+      receivers:  [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters:  [otlp/tempo, otlphttp/correlation, logging]
+    logs:
+      receivers:  [otlp, filelog]
+      processors: [memory_limiter, resource, attributes/logs, batch]
+      exporters:  [loki, logging]  # Correlation engine disabled - needs code fixes
+    metrics:
+      receivers:  [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters:  [otlphttp/correlation, logging]

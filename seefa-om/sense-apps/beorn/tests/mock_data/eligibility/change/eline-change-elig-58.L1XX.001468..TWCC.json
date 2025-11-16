@@ -1,0 +1,233 @@
+{
+    "customerName": "PAETEC/WINDSTREAM EAST",
+    "serviceName": "58.L1XX.001468..TWCC",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "ROCHNY011CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "ROCHNY011CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.58.26.229"
+                            },
+                            {
+                                "name": "address",
+                                "value": "3500 WINTON PL"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "ROCHNY011CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "ROCHNY011CW-XE-5/2/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-5/2/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": []
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "OLENNYEQ1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "OLENNYEQ1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.58.26.81"
+                            },
+                            {
+                                "name": "address",
+                                "value": "2532 NEWBURY LN"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "OLENNYEQ1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "OLENNYEQ1CW-GE-2/1/3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-2/1/3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CUBANYBB1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CUBANYBB1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.12.96.225"
+                            },
+                            {
+                                "name": "address",
+                                "value": "5374 COUNTY RD 7D"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CUBANYBB1ZW.NE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CUBANYBB1ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CUBANYBB1ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "OLENNYEQ1CW-GE-2/1/3",
+                            "CUBANYBB1ZW-ETH PORT 1"
+                        ],
+                        "uuid": "OLENNYEQ1CW-GE-2/1/3_CUBANYBB1ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "GOLD"
+                            }
+                        ],
+                        "evc-ingress-bwp": "100m",
+                        "evc-egress-bwp": "100m",
+                        "evcId": "425182",
+                        "adminState": true,
+                        "userLabel": "58.L1XX.001468..TWCC",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1245",
+                        "endPoints": [
+                            {
+                                "uniId": "ROCHNY011CW-XE-5/2/1",
+                                "adminState": true,
+                                "address": "3500 WINTON PL",
+                                "sVlan": "1245"
+                            },
+                            {
+                                "uniId": "CUBANYBB1ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "5374 COUNTY RD 7D",
+                                "sVlan": "1245",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

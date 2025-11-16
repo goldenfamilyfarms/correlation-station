@@ -1,0 +1,137 @@
+
+server {
+    listen 80;
+    server_name _;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    # Increase timeouts for long-running requests
+    proxy_connect_timeout 600;
+    proxy_send_timeout 600;
+    proxy_read_timeout 600;
+    send_timeout 600;
+
+    # Proxy Grafana UI at /grafana
+    location /grafana/ {
+        proxy_pass http://localhost:8443/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy Loki (log aggregation backend)
+    location /loki/ {
+        proxy_pass http://localhost:3100/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy Tempo (tracing backend)
+    location /tempo/ {
+        proxy_pass http://localhost:9000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy Prometheus (metrics backend)
+    location /prometheus/ {
+        proxy_pass http://localhost:9090/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy Correlation Engine
+    location /correlation-engine/ {
+        proxy_pass http://localhost:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;;
+    }
+
+    # OTLP HTTP endpoints - for receiving telemetry from Alloy/collectors
+    # This is now the ONLY way to send telemetry to the gateway
+    location /v1/logs {
+        proxy_pass http://localhost:55681/v1/logs;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Content-Type application/json;
+
+        # Optional: Add rate limiting
+        # limit_req zone=otlp_limit burst=20 nodelay;
+    }
+
+    location /v1/metrics {
+        proxy_pass http://localhost:55681/v1/metrics;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Content-Type application/json;
+
+        # Optional: Add rate limiting
+        # limit_req zone=otlp_limit burst=20 nodelay;
+    }
+
+    location /v1/traces {
+        proxy_pass http://localhost:55681/v1/traces;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Content-Type application/json;
+
+        # Optional: Add rate limiting
+        # limit_req zone=otlp_limit burst=20 nodelay;
+    }
+
+    # Expose OTEL Gateway metrics through nginx (useful for monitoring)
+    location /otel/metrics {
+        proxy_pass http://localhost:8888/metrics;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Expose OTEL Gateway health check through nginx
+    location /otel/health {
+        proxy_pass http://localhost:13133/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Nginx health check endpoint
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+
+    # Root location
+    location / {
+        root /usr/share/nginx/html/;
+        index index.html;
+        try_files $uri $uri/ =404;
+    }
+}
+
+# Optional: Rate limiting configuration (uncomment to enable)
+# http {
+#     limit_req_zone $binary_remote_addr zone=otlp_limit:10m rate=100r/s;
+# }

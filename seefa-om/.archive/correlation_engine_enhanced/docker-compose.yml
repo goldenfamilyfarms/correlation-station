@@ -1,0 +1,71 @@
+# Docker Compose for Correlation Engine Enhanced with MDSO Integration
+
+networks:
+  observability:
+    external: true
+    name: observability
+  correlation-net:
+    driver: bridge
+
+services:
+  correlation-engine-enhanced:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: correlation-engine-enhanced
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Server
+      - PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+      # Correlation settings
+      - CORR_WINDOW_SECONDS=${CORR_WINDOW_SECONDS:-60}
+      - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-5000}
+      - MAX_QUEUE_SIZE=${MAX_QUEUE_SIZE:-10000}
+      - MAX_CORRELATION_HISTORY=${MAX_CORRELATION_HISTORY:-10000}
+
+      # Backend URLs
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - TEMPO_GRPC_ENDPOINT=tempo:4317
+      - TEMPO_HTTP_ENDPOINT=http://tempo:4318
+      - PROMETHEUS_PUSHGATEWAY=
+
+      # Export settings
+      - EXPORT_RETRY_ATTEMPTS=${EXPORT_RETRY_ATTEMPTS:-3}
+      - EXPORT_RETRY_DELAY=${EXPORT_RETRY_DELAY:-1.0}
+      - EXPORT_TIMEOUT=${EXPORT_TIMEOUT:-10.0}
+      - ENABLE_CIRCUIT_BREAKER=${ENABLE_CIRCUIT_BREAKER:-true}
+
+      # Auth
+      - ENABLE_BASIC_AUTH=${ENABLE_BASIC_AUTH:-false}
+      - BASIC_AUTH_USER=${BASIC_AUTH_USER:-}
+      - BASIC_AUTH_PASS=${BASIC_AUTH_PASS:-}
+      - ALLOW_ORIGINS=${ALLOW_ORIGINS:-*}
+
+      # MDSO Integration
+      - MDSO_ENABLED=${MDSO_ENABLED:-false}
+      - MDSO_URL=${MDSO_URL:-}
+      - MDSO_USER=${MDSO_USER:-}
+      - MDSO_PASS=${MDSO_PASS:-}
+      - MDSO_COLLECTION_INTERVAL=${MDSO_COLLECTION_INTERVAL:-3600}
+      - MDSO_TIME_RANGE_HOURS=${MDSO_TIME_RANGE_HOURS:-3}
+
+      # Deployment
+      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-dev}
+
+    networks:
+      - observability
+      - correlation-net
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    volumes:
+      - ./app:/app/app:ro

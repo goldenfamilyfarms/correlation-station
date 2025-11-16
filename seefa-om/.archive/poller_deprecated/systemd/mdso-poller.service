@@ -1,0 +1,31 @@
+[Unit]
+Description=MDSO Syslog Poller
+Documentation=https://github.com/yourorg/observability-poc-124
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/mdso-poller
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/python3 /opt/mdso-poller/poller.py
+EnvironmentFile=/opt/mdso-poller/.env
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mdso-poller
+
+# Security (minimal for dev)
+ReadWritePaths=/var/log/mdso /var/log/mdso-poller.log /opt/mdso-poller
+
+[Install]
+WantedBy=multi-user.target

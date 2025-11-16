@@ -1,0 +1,354 @@
+{
+    "customerName": "SUPER 8",
+    "serviceName": "58.HNXN.000294..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "VOICE",
+    "serviceMedia": "FIBER",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "STFRNYAC1CW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "STFRNYAC1CW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "MX480"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "24.58.26.73"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "5617 SWEETLAND RD 14143"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "STFRNYAC1CW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "STFRNYAC1CW-ET-3/2/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-3/2/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE40L.STFRNYAC1CW.STFRNYAC0QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE17"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "STFRNYAC1CW-ET-1/2/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-1/2/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE40L.STFRNYAC1CW.STFRNYAC0QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE17"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "STFRNYAC0QW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "STFRNYAC0QW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "AGG"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "QFX5100-96S"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "10.12.88.11"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "5617 SWEETLAND RD 14143"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "STFRNYAC0QW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "STFRNYAC0QW-ET-0/0/96",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-0/0/96"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE40L.STFRNYAC1CW.STFRNYAC0QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE17"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "STFRNYAC0QW-ET-1/0/96",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-1/0/96"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE40L.STFRNYAC1CW.STFRNYAC0QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE17"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "STFRNYAC0QW-XE-1/0/80",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "XE-1/0/80"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE10.STFRNYAC0QW.BATVNYKF1ZW"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "BATVNYKF1ZW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "BATVNYKF1ZW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "ADVA"
+                },
+                {
+                  "name": "model",
+                  "value": "FSP 150-XG108"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "10.12.222.81"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },  
+                {
+                  "name": "address",
+                  "value": "202 OAK ST 14020"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "BATVNYKF1ZW.CML.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "BATVNYKF1ZW-NETWORK-1-1-1-1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "NETWORK-1-1-1-1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE10.STFRNYAC0QW.BATVNYKF1ZW"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "BATVNYKF1ZW-ACCESS-1-1-1-4",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ACCESS-1-1-1-4"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "58001.GE1.BATVNYKF1ZW.BATVNYKF01W"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "STFRNYAC1CW-ET-3/2/0",
+                "STFRNYAC0QW-ET-0/0/96"
+              ],
+              "uuid": "STFRNYAC1CW-ET-3/2/0_STFRNYAC0QW-ET-0/0/96"
+            },
+            {
+              "nodeEdgePoint": [
+                "STFRNYAC1CW-ET-1/2/0",
+                "STFRNYAC0QW-ET-1/0/96"
+              ],
+              "uuid": "STFRNYAC1CW-ET-1/2/0_STFRNYAC0QW-ET-1/0/96"
+            },
+            {
+              "nodeEdgePoint": [
+                "STFRNYAC0QW-XE-1/0/80",
+                "BATVNYKF1ZW-NETWORK-1-1-1-1"
+              ],
+              "uuid": "STFRNYAC0QW-XE-1/0/80_BATVNYKF1ZW-NETWORK-1-1-1-1"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "BRONZE"
+                }
+              ],
+              "evc-ingress-bwp": "5m",
+              "evc-egress-bwp": "5m",
+              "adminState": true,
+              "userLabel": "58.HNXN.000294..CHTR",
+              "maxNumOfEvcEndPoint": 1,
+              "serviceType": "IP",
+              "connectionType": "Point to Point",
+              "sVlan": "1330",
+              "msVlan": "88",
+              "endPoints": [
+                {
+                  "uniId": "BATVNYKF1ZW-ACCESS-1-1-1-4",
+                  "adminState": true,
+                  "address": "202 OAK ST 14020",
+                  "msVlan": "88",
+                  "ceVlans": ["1330", "88"]
+                }
+              ]
+            }
+          ],
+          "fia": [
+            {
+              "type": "DIRECT",
+              "endPoints": [
+                {
+                  "uniId": "STFRNYAC1CW-ET-3/2/0",
+                  "lanIpv4Addresses": [
+                    "198.179.102.72/30"
+                  ],
+                  "lanIpv6Addresses": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }

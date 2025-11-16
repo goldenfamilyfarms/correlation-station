@@ -1,0 +1,143 @@
+.deploy-stage: &deploy-stage
+  - dev_img_tag=$(cat VERSION)-develop.$CI_COMMIT_SHORT_SHA
+  - ssh sreadmin@$PROD_ANSIBLE_CONTROLLER_IP 'cd '$plays_dir' ; '$playbook_path' '$playbook' -e "target='$CI_ENVIRONMENT_NAME' microservice='$CI_PROJECT_NAME' config_file='$TEST_CONFIG' new_image_tag='$dev_img_tag'" -vvv'
+
+.deploy-prod: &deploy-prod
+  - prod_img_tag=$(cat VERSION).$CI_COMMIT_SHORT_SHA
+  - ssh sreadmin@$PROD_ANSIBLE_CONTROLLER_IP 'cd '$plays_dir' ; '$playbook_path' '$playbook' -e "target='$CI_ENVIRONMENT_NAME' microservice='$CI_PROJECT_NAME' config_file='$PROD_CONFIG' new_image_tag='$prod_img_tag'" -vvv'
+
+include:
+  - project: service-engineering-automation/sense/common_sense
+    ref: master
+    file:
+      - /cicd/ssh_keyscan.yml
+
+variables:
+  plays_dir: /home/sreadmin/sre-plays
+  playbook_path: venv_plays/bin/ansible-playbook
+  playbook: plays/deploy-sense-containers.yml
+  GIT_SUBMODULE_STRATEGY: normal
+
+#####################################################################################################################################
+## - START - Stage Servers ##
+
+deploy-stage-01:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: sense-stage-01
+    url: http://$SENSE_STAGE_01_IP:5001/arda
+    deployment_tier: staging
+  extends: .ssh_keyscan
+  script:
+    - *deploy-stage
+  only:
+    - develop
+
+deploy-stage-02:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: sense-stage-02
+    url: http://$SENSE_STAGE_02_IP:5001/arda
+    deployment_tier: staging
+  extends: .ssh_keyscan
+  script:
+    - *deploy-stage
+  only:
+    - develop
+
+##  - END - Stage Servers  ##
+#####################################################################################################################################
+
+#####################################################################################################################################
+#####  - START - PRODUCTION Servers  #####
+
+os-deploy-prod-austx01:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-austx-sense-microsvc-01
+    url: http://$OS_AUSTX_SENSE_01_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+os-deploy-prod-austx02:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-austx-sense-microsvc-02
+    url: http://$OS_AUSTX_SENSE_02_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+os-deploy-prod-austx03:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-austx-sense-microsvc-03
+    url: http://$OS_AUSTX_SENSE_03_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+os-deploy-prod-clboh01:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-clboh-sense-microsvc-01
+    url: http://$OS_CLBOH_SENSE_01_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+os-deploy-prod-clboh02:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-clboh-sense-microsvc-02
+    url: http://$OS_CLBOH_SENSE_02_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+os-deploy-prod-clboh03:
+  stage: deploy
+  tags:
+    - deploy
+  environment:
+    name: os-clboh-sense-microsvc-03
+    url: http://$OS_CLBOH_SENSE_03_IP:5001/arda
+    deployment_tier: production
+  extends: .ssh_keyscan
+  script:
+    - *deploy-prod
+  only:
+    - master
+
+#####  - END - PRODUCTION Servers  #####
+#####################################################################################################################################

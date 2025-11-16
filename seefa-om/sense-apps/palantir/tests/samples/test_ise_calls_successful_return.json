@@ -1,0 +1,18 @@
+{
+    "SearchResult": {
+      "total": 1,
+      "resources": [
+        {
+          "id": "79d41620-d934-11e9-beb2-62c9a4cad2c2",
+          "name": "CLMDOH441CW",
+          "description": "CLMDOH441CW",
+          "link": {
+            "rel": "self",
+            "href": "https://clboh-ise-pan-e01.chtrse.com:9060/ers/config/networkdevice/79d41620-d934-11e9-beb2-62c9a4cad2c2",
+            "type": "application/json"
+          }
+        }
+      ]
+    }
+  }
+  
