@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import structlog
 
 from app.models import LogBatch, LogRecord
+from app.mdso_patterns import MDSOPatterns, ErrorCategorizer
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,10 @@ class LogNormalizer:
 
         # Trace ID patterns (hex strings)
         self.trace_id_pattern = re.compile(r'\b([0-9a-f]{32}|[0-9a-f]{16})\b', re.IGNORECASE)
+
+        # MDSO pattern extractors
+        self.mdso_patterns = MDSOPatterns()
+        self.error_categorizer = ErrorCategorizer()
 
     def normalize_log_batch(self, batch: LogBatch) -> List[Dict[str, Any]]:
         """Normalize a log batch to internal format"""
@@ -66,7 +71,7 @@ class LogNormalizer:
         if record.span_id:
             normalized["span_id"] = record.span_id
 
-        # Add custom attributes
+        # Add custom attributes from record
         if record.circuit_id:
             normalized["circuit_id"] = record.circuit_id
         if record.product_id:
@@ -78,7 +83,70 @@ class LogNormalizer:
         if record.request_id:
             normalized["request_id"] = record.request_id
 
+        # Extract MDSO identifiers from message text if not already present
+        mdso_enrichment = self._extract_mdso_fields(record.message, normalized)
+        normalized.update(mdso_enrichment)
+
         return normalized
+
+    def _extract_mdso_fields(self, message: str, existing: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract MDSO-specific fields from log message using regex patterns
+
+        Args:
+            message: Log message text
+            existing: Existing normalized fields (to avoid overwriting)
+
+        Returns:
+            Dictionary with extracted MDSO fields
+        """
+        enrichment = {}
+
+        # Only extract if not already present in existing record
+        if not existing.get("circuit_id"):
+            circuit_id = self.mdso_patterns.extract_circuit_id(message)
+            if circuit_id:
+                enrichment["circuit_id"] = circuit_id
+
+        if not existing.get("resource_id"):
+            resource_id = self.mdso_patterns.extract_resource_id(message)
+            if resource_id:
+                enrichment["resource_id"] = resource_id
+
+        # Always extract additional MDSO fields (may not be in OTLP attributes)
+        fqdn = self.mdso_patterns.extract_fqdn(message)
+        if fqdn:
+            enrichment["fqdn"] = fqdn
+            # Extract TID from FQDN (first 10 chars)
+            enrichment["tid"] = fqdn[:10] if len(fqdn) >= 10 else None
+
+        service_type = self.mdso_patterns.extract_service_type(message)
+        if service_type:
+            enrichment["service_type"] = service_type
+
+        product_type = self.mdso_patterns.extract_product_type(message)
+        if product_type:
+            enrichment["product_type"] = product_type
+
+        orch_state = self.mdso_patterns.extract_orch_state(message)
+        if orch_state:
+            enrichment["orch_state"] = orch_state
+
+        error_code = self.mdso_patterns.extract_error_code(message)
+        if error_code:
+            enrichment["error_code"] = error_code
+
+        # Categorize errors if severity indicates error
+        if existing.get("severity") in ["ERROR", "FATAL", "CRITICAL"]:
+            error_context = self.error_categorizer.categorize(message)
+            enrichment["error_category"] = error_context.get("category")
+            enrichment["error_type"] = error_context.get("type")
+            # Don't override severity from categorizer unless it's higher priority
+            categorized_severity = error_context.get("severity")
+            if categorized_severity == "CRITICAL" and existing.get("severity") != "FATAL":
+                enrichment["severity"] = "FATAL"
+
+        return enrichment
 
     def normalize_syslog_line(self, line: str, service: str = "syslog") -> Dict[str, Any]:
         """Parse and normalize a raw syslog line"""
