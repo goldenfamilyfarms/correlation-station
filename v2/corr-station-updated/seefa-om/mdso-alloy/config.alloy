@@ -1,4 +1,5 @@
 // MDSO Dev → Meta (159.56.4.94) Log Streaming Configuration
+// Enhanced with structured field extraction for correlation engine
 // Tails syslog files and exports via OTLP HTTP to Meta server
 
 // Discover syslog files to tail
@@ -15,16 +16,111 @@ loki.source.file "syslog" {
   forward_to = [loki.process.normalize.receiver]
 }
 
-// Parse and normalize syslog format
+// Parse and normalize syslog format with enhanced field extraction
 loki.process "normalize" {
   forward_to = [otelcol.receiver.loki.default.receiver]
 
-  // Parse syslog: "Nov 10 05:07:25 hostname message"
+  // Stage 1: Parse syslog base format
+  // Input: "Nov 10 05:07:25 hostname message"
   stage.regex {
     expression = "^(?P<timestamp>\\S+\\s+\\S+\\s+\\S+)\\s+(?P<host>\\S+)\\s+(?P<message>.*)$"
   }
 
-  // Add labels (low-cardinality only)
+  // Stage 2: Extract Circuit ID
+  // Pattern: 80.L1XX.005054..CHTR or similar circuit identifiers
+  stage.regex {
+    source     = "message"
+    expression = "(?i)circuit[:\\s]+(?P<circuit_id>\\d+\\.\\S+)"
+  }
+
+  // Stage 3: Extract Resource ID (UUID format)
+  // Pattern: 550e8400-e29b-41d4-a716-446655440000
+  stage.regex {
+    source     = "message"
+    expression = "(?i)resource[:\\s]+(?P<resource_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+  }
+
+  // Stage 4: Extract Product ID (UUID format)
+  stage.regex {
+    source     = "message"
+    expression = "(?i)product[:\\s]+(?P<product_id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+  }
+
+  // Stage 5: Extract Device FQDN
+  // Pattern: JFVLINBJ2CW.CHTRSE.COM (10-char TID + domain)
+  stage.regex {
+    source     = "message"
+    expression = "(?i)(?:device|on)\\s+(?P<device_fqdn>[A-Z0-9]{10}\\.[A-Z0-9\\.]+)"
+  }
+
+  // Stage 6: Extract Device TID from FQDN if present
+  // Pattern: Extract first 10 chars from FQDN
+  stage.regex {
+    source     = "device_fqdn"
+    expression = "^(?P<device_tid>[A-Z0-9]{10})"
+  }
+
+  // Stage 7: Extract Vendor
+  // Pattern: vendor: juniper, adva, cisco, rad
+  stage.regex {
+    source     = "message"
+    expression = "(?i)vendor[:\\s]+(?P<vendor>juniper|adva|cisco|rad)"
+  }
+
+  // Stage 8: Extract Orchestration State
+  // Pattern: CREATE_IN_PROGRESS, DELETE_IN_PROGRESS, UPDATE_IN_PROGRESS, etc.
+  stage.regex {
+    source     = "message"
+    expression = "(?P<orch_state>(?:CREATE|DELETE|UPDATE|ACTIVATE|DEACTIVATE)_IN_PROGRESS|(?:CREATE|DELETE|UPDATE)_COMPLETE|(?:CREATE|DELETE|UPDATE)_FAILED)"
+  }
+
+  // Stage 9: Extract Service Type
+  // Pattern: ELAN, ELINE, FIA, VOICE, VIDEO
+  stage.regex {
+    source     = "message"
+    expression = "(?i)(?:service[:\\s]+|type[:\\s]+)(?P<service_type>ELAN|ELINE|FIA|VOICE|VIDEO)"
+  }
+
+  // Stage 10: Extract Product Type
+  // Pattern: service_mapper, network_service, etc.
+  stage.regex {
+    source     = "message"
+    expression = "(?i)(?P<product_type>service_mapper|network_service|resource_agent|orchestration_engine)"
+  }
+
+  // Stage 11: Extract Error/Defect Code
+  // Pattern: DE-1000, DE-1001, DEF-123, etc.
+  stage.regex {
+    source     = "message"
+    expression = "(?P<error_code>DE-\\d+|DEF-\\d+|ERR-\\d+)"
+  }
+
+  // Stage 12: Detect Severity Level from message content
+  // Map common error patterns to severity
+  stage.regex {
+    source     = "message"
+    expression = "(?i)(?P<log_level>ERROR|FATAL|CRITICAL|WARNING|WARN|INFO|DEBUG|TRACE)"
+  }
+
+  // Stage 13: Normalize severity to standard levels
+  stage.template {
+    source   = "log_level"
+    template = "{{ if .Value }}{{ .Value | ToUpper }}{{ else }}INFO{{ end }}"
+  }
+
+  stage.template {
+    source   = "severity"
+    template = `{{ if eq .log_level "FATAL" }}FATAL{{ else if eq .log_level "CRITICAL" }}FATAL{{ else if eq .log_level "ERROR" }}ERROR{{ else if eq .log_level "WARNING" }}WARN{{ else if eq .log_level "WARN" }}WARN{{ else if eq .log_level "DEBUG" }}DEBUG{{ else if eq .log_level "TRACE" }}DEBUG{{ else }}INFO{{ end }}`
+  }
+
+  // Stage 14: Extract Management IP if present
+  // Pattern: standard IPv4 addresses
+  stage.regex {
+    source     = "message"
+    expression = "(?i)(?:management[:\\s]+|mgmt[:\\s]+|ip[:\\s]+)(?P<management_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})"
+  }
+
+  // Stage 15: Add low-cardinality labels (for grouping/filtering)
   stage.labels {
     values = {
       service = "mdso",
@@ -32,10 +128,23 @@ loki.process "normalize" {
     }
   }
 
-  // Extract host as structured field
+  // Stage 16: Add high-cardinality data as structured metadata (OTLP attributes)
+  // These become attributes in the OTLP log record for correlation
   stage.structured_metadata {
     values = {
-      host = "",
+      host           = "",
+      circuit_id     = "",
+      resource_id    = "",
+      product_id     = "",
+      device_fqdn    = "",
+      device_tid     = "",
+      vendor         = "",
+      orch_state     = "",
+      service_type   = "",
+      product_type   = "",
+      error_code     = "",
+      severity       = "",
+      management_ip  = "",
     }
   }
 }
@@ -51,7 +160,7 @@ otelcol.receiver.loki "default" {
 otelcol.exporter.otlphttp "meta" {
   client {
     endpoint = "http://159.56.4.94:55681"
-    
+
     // Retry configuration for reliability
     retry_on_failure {
       enabled         = true
@@ -59,7 +168,7 @@ otelcol.exporter.otlphttp "meta" {
       max_interval    = "30s"
       max_elapsed_time = "300s"
     }
-    
+
     // Timeout settings
     timeout = "10s"
   }

@@ -1,0 +1,7 @@
+Nov 16 11:00:01 mdso-host CIENA[5678]: ServiceMapper: ERROR: Failed to create circuit 80.L1XX.006789..CHTR - DE-1000
+Nov 16 11:00:02 mdso-host CIENA[5678]: ResourceAgent: FATAL: Cannot connect to device ABCDEFGH01.CHTRSE.COM (vendor: adva) at management IP 10.20.30.40
+Nov 16 11:00:03 mdso-host CIENA[5678]: OrchestrationEngine: WARNING: State changed to CREATE_FAILED for resource 660e8500-f29c-41e4-c826-556755550000
+Nov 16 11:00:04 mdso-host CIENA[5678]: ResourceAgent: Device validation error DEF-456 on circuit 80.L1XX.006789..CHTR
+Nov 16 11:00:05 mdso-host CIENA[5678]: ServiceMapper: DEBUG: Retrying ELINE service configuration
+Nov 16 11:00:06 mdso-host CIENA[5678]: ResourceAgent: ERROR: Configuration rollback initiated for circuit 80.L1XX.006789..CHTR - ERR-2000
+Nov 16 11:00:07 mdso-host CIENA[5678]: OrchestrationEngine: CRITICAL: Multiple failures detected for product 770e9600-g39d-42f5-d937-667866660000

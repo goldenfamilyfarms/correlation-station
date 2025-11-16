@@ -1,0 +1,10 @@
+Nov 16 13:00:01 mdso-host CIENA[1111]: ServiceMapper: Configuring service ELAN for circuit 80.L1XX.100001..CHTR
+Nov 16 13:00:02 mdso-host CIENA[1111]: ServiceMapper: ELAN service provisioned for resource 111e1100-a11a-11a1-a111-111111110000
+Nov 16 13:00:03 mdso-host CIENA[1111]: ServiceMapper: Configuring service ELINE for circuit 80.L1XX.100002..CHTR
+Nov 16 13:00:04 mdso-host CIENA[1111]: ServiceMapper: ELINE service provisioned for resource 222e2200-b22b-22b2-b222-222222220000
+Nov 16 13:00:05 mdso-host CIENA[1111]: ServiceMapper: Configuring service FIA for circuit 80.L1XX.100003..CHTR
+Nov 16 13:00:06 mdso-host CIENA[1111]: ServiceMapper: FIA service provisioned for resource 333e3300-c33c-33c3-c333-333333330000
+Nov 16 13:00:07 mdso-host CIENA[1111]: ServiceMapper: Configuring service VOICE for circuit 80.L1XX.100004..CHTR
+Nov 16 13:00:08 mdso-host CIENA[1111]: ServiceMapper: VOICE service provisioned for resource 444e4400-d44d-44d4-d444-444444440000
+Nov 16 13:00:09 mdso-host CIENA[1111]: ServiceMapper: Configuring service VIDEO for circuit 80.L1XX.100005..CHTR
+Nov 16 13:00:10 mdso-host CIENA[1111]: ServiceMapper: VIDEO service provisioned for resource 555e5500-e55e-55e5-e555-555555550000
