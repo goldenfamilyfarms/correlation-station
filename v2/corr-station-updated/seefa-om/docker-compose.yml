@@ -209,39 +209,13 @@ services:
     container_name: beorn
     restart: unless-stopped
     ports:
-      - "5001:5001"
-    environment:
-      - SERVICE_NAME=beorn
-      - SERVICE_PORT=5001
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_SERVICE_NAME=beorn
-      - DEPLOYMENT_ENV=dev
-      - LOG_LEVEL=info
-    networks:
-      - observability
-    depends_on:
-      - otel-gateway
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-
-  palantir:
-    build:
-      context: ./sense-apps/palantir
-      dockerfile: Dockerfile
-    container_name: palantir
-    restart: unless-stopped
-    ports:
       - "5002:5002"
     environment:
-      - SERVICE_NAME=palantir
+      - SERVICE_NAME=beorn
       - SERVICE_PORT=5002
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_SERVICE_NAME=palantir
+      - OTEL_SERVICE_NAME=beorn
       - DEPLOYMENT_ENV=dev
       - LOG_LEVEL=info
     networks:
@@ -254,6 +228,32 @@ services:
       timeout: 5s
       retries: 3
 
+  palantir:
+    build:
+      context: ./sense-apps/palantir
+      dockerfile: Dockerfile
+    container_name: palantir
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    environment:
+      - SERVICE_NAME=palantir
+      - SERVICE_PORT=5003
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_SERVICE_NAME=palantir
+      - DEPLOYMENT_ENV=dev
+      - LOG_LEVEL=info
+    networks:
+      - observability
+    depends_on:
+      - otel-gateway
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
   arda:
     build:
       context: ./sense-apps/arda
@@ -261,10 +261,10 @@ services:
     container_name: arda
     restart: unless-stopped
     ports:
-      - "5003:5003"
+      - "5001:5001"
     environment:
       - SERVICE_NAME=arda
-      - SERVICE_PORT=5003
+      - SERVICE_PORT=5001
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
       - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
       - OTEL_SERVICE_NAME=arda
@@ -275,7 +275,7 @@ services:
     depends_on:
       - otel-gateway
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 15s
       timeout: 5s
       retries: 3

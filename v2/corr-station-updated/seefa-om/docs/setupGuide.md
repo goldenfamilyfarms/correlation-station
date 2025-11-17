@@ -464,9 +464,9 @@ cd ../gateway && docker-compose restart
 │                                    ▼                            │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  Sense Apps (OTel SDK instrumented)                      │  │
-│  │  ├── beorn:5001 (Flask) ─┬─► Gateway:4318               │  │
-│  │  ├── palantir:5002 (Flask)─┤                             │  │
-│  │  └── arda:5003 (FastAPI)──┘                              │  │
+│  │  ├── arda:5001 (FastAPI)─┬─► Gateway:4318               │  │
+│  │  ├── beorn:5002 (Flask)──┤                               │  │
+│  │  └── palantir:5003 (Flask)──┘                            │  │
 │  │  Custom Attributes: circuit_id, product_id, resource_id, │  │
 │  │                     resource_type_id, request_id         │  │
 │  └──────────────────────────────────────────────────────────┘  │

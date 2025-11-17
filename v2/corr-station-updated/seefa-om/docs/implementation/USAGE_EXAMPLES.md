@@ -61,7 +61,7 @@ async def call_beorn(circuit_id: str):
         # httpx is auto-instrumented, trace context propagated automatically
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"http://beorn:5001/api/circuit/{circuit_id}"
+                f"http://beorn:5002/api/circuit/{circuit_id}"
             )
             span.set_attribute("beorn.response_code", response.status_code)
             return response.json()

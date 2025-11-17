@@ -87,7 +87,7 @@ This observability platform provides:
 │                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
 │  │  Sense Apps (OTel Instrumented)                                  │ │
-│  │  • beorn:5001 (Flask)  • palantir:5002 (Flask)  • arda:5003     │ │
+│  │  • arda:5001 (FastAPI)  • beorn:5002 (Flask)  • palantir:5003   │ │
 │  │  • Custom attributes: circuit_id, product_id, resource_id, etc.  │ │
 │  │  • Export traces/logs → Gateway:4318                             │ │
 │  └───────────────────────────────────────────────────────────────────┘ │

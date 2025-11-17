@@ -1,2 +1,12 @@
-Complete the enhanced version - Copy missing files from base to enhanced
- then merge enhanced with original and removing redundant logic then Fix/review specific functionality - Address particular issues then Create deployment configs - Docker, compose files for enhanced versi
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
