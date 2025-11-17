@@ -1,10 +1,7 @@
 networks:
   observability:
+    external: true
     name: observability
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/23
 volumes:
   grafana-data: {}
   loki-data: {}
