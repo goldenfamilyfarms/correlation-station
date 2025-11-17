@@ -272,7 +272,7 @@ setup-redis: setup-network ## Setup Redis for horizontal scaling
 	@echo "  4. Run: make corr-restart"
 
 .PHONY: setup-sense-apps
-setup-sense-apps: setup-gateway ## Setup Sense applications (Beorn, Palantir, Arda)
+setup-sense-apps: #setup-gateway ## Setup Sense applications (Beorn, Palantir, Arda)
 	@echo "$(BLUE)========================================$(NC)"
 	@echo "$(GREEN)Setting Up Sense Applications$(NC)"
 	@echo "$(BLUE)========================================$(NC)"
