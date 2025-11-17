@@ -284,7 +284,7 @@ create_file "sense-apps/beorn/app.py" "# Beorn Flask app with OTel - see artifac
 create_file "sense-apps/beorn/middleware.py" "# Flask middleware - see artifacts"
 create_file "sense-apps/beorn/requirements.txt" "# Python dependencies"
 create_file "sense-apps/beorn/Dockerfile" "# Multi-stage Dockerfile"
-create_file "sense-apps/beorn/.env.example" "SERVICE_NAME=beorn\nSERVICE_PORT=5001"
+create_file "sense-apps/beorn/.env.example" "SERVICE_NAME=beorn\nSERVICE_PORT=5002"
 create_file "sense-apps/beorn/README.md" "# Beorn - Authentication & Identity Service"
 
 # Palantir
@@ -294,7 +294,7 @@ create_file "sense-apps/palantir/app.py" "# Palantir Flask app with OTel - see a
 create_file "sense-apps/palantir/middleware.py" "# Flask middleware - see artifacts"
 create_file "sense-apps/palantir/requirements.txt" "# Python dependencies"
 create_file "sense-apps/palantir/Dockerfile" "# Multi-stage Dockerfile"
-create_file "sense-apps/palantir/.env.example" "SERVICE_NAME=palantir\nSERVICE_PORT=5002"
+create_file "sense-apps/palantir/.env.example" "SERVICE_NAME=palantir\nSERVICE_PORT=5003"
 create_file "sense-apps/palantir/README.md" "# Palantir - Data Aggregation Service"
 
 # Arda
@@ -303,7 +303,7 @@ create_file "sense-apps/arda/common/otel_config.py" "# Link to ../common/otel_co
 create_file "sense-apps/arda/app.py" "# Arda FastAPI app with OTel - see artifacts"
 create_file "sense-apps/arda/requirements.txt" "# Python dependencies"
 create_file "sense-apps/arda/Dockerfile" "# Multi-stage Dockerfile"
-create_file "sense-apps/arda/.env.example" "SERVICE_NAME=arda\nSERVICE_PORT=5003"
+create_file "sense-apps/arda/.env.example" "SERVICE_NAME=arda\nSERVICE_PORT=5001"
 create_file "sense-apps/arda/uvicorn_disable_logging.json" "# Uvicorn logging config"
 create_file "sense-apps/arda/README.md" "# Arda - Inventory SEEFA Design Service"
 
