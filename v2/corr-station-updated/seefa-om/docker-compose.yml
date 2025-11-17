@@ -209,7 +209,7 @@ services:
     container_name: beorn
     restart: unless-stopped
     ports:
-      - "5002:5002"
+      - "5001:5002"
     environment:
       - SERVICE_NAME=beorn
       - SERVICE_PORT=5002
@@ -235,7 +235,7 @@ services:
     container_name: palantir
     restart: unless-stopped
     ports:
-      - "5003:5003"
+      - "5002:5003"
     environment:
       - SERVICE_NAME=palantir
       - SERVICE_PORT=5003
@@ -261,7 +261,7 @@ services:
     container_name: arda
     restart: unless-stopped
     ports:
-      - "5001:5001"
+      - "5003:5001"
     environment:
       - SERVICE_NAME=arda
       - SERVICE_PORT=5001

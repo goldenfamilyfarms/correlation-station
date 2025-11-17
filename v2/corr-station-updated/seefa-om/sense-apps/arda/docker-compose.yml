@@ -4,6 +4,6 @@ services:
     container_name: arda-fastapi
     restart: unless-stopped
     ports:
-      - "5001:5001"
+      - "5003:5001"
     env_file:
       - dev.env
