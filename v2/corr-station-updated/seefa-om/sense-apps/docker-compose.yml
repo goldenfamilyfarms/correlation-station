@@ -31,7 +31,7 @@ services:
     container_name: arda-fastapi
     restart: unless-stopped
     ports:
-      - "5001:5001"
+      - "5003:5001"
     environment:
       # OpenTelemetry Configuration
       OTEL_SERVICE_NAME: arda
@@ -72,7 +72,7 @@ services:
     container_name: beorn-flask
     restart: unless-stopped
     ports:
-      - "5002:5002"
+      - "5001:5002"
     environment:
       # OpenTelemetry Configuration
       OTEL_SERVICE_NAME: beorn
@@ -114,7 +114,7 @@ services:
     container_name: palantir-flask
     restart: unless-stopped
     ports:
-      - "5003:5003"
+      - "5002:5003"
     environment:
       # OpenTelemetry Configuration
       OTEL_SERVICE_NAME: palantir
