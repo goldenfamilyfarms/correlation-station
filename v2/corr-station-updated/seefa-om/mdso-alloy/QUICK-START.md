@@ -35,7 +35,7 @@ curl -G 'http://localhost:3100/loki/api/v1/query' \
   --data-urlencode 'limit=10' | jq
 
 # Grafana
-http://159.56.4.94:3000
+http://159.56.4.94:8443
 ```
 
 ## Stop Tests

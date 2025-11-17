@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation adds OpenTelemetry instrumentation to SENSE apps and integrates MDSO log collection into the correlation engine for unified observability.
+This implementation adds OpenTelemetry instrumentation to SENSE apps and integrates MDSO (Multi-Domain Service Orchestrator) log collection into the correlation engine for unified observability.
 
 ## Architecture
 
@@ -153,7 +153,7 @@ curl http://localhost:8080/api/mdso/status
 
 ### 3. View traces in Grafana
 
-1. Open Grafana: http://localhost:3000
+1. Open Grafana: http://localhost:8443
 2. Navigate to Explore → Tempo
 3. Search for traces with:
    - Service: `arda` or `correlation-engine`

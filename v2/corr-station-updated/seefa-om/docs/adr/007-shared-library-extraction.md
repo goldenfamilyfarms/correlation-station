@@ -20,7 +20,7 @@ Total Duplication: 9,300 lines (identical code copied 3x)
 
 ### Duplicated Components
 1. **Configuration Management**: Pydantic Settings setup
-2. **HTTP Client**: MDSO client with retry logic
+2. **HTTP Client**: MDSO (Multi-Domain Service Orchestrator) client with retry logic
 3. **OpenTelemetry Setup**: OTEL initialization boilerplate
 4. **Error Handling**: Common exception classes
 5. **Logging**: Structlog configuration

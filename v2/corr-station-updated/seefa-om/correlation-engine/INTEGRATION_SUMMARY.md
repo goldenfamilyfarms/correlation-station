@@ -5,7 +5,7 @@
 ### ✅ 1. Enhanced Version Completion
 - Copied all missing files from base to `correlation_engine_enhanced/`
 - Created complete file structure with all required modules
-- Added MDSO-specific components (client, collector, analyzer, correlator)
+- Added MDSO (Multi-Domain Service Orchestrator)-specific components (client, collector, analyzer, correlator)
 
 ### ✅ 2. Merged Enhanced with Original
 - Integrated MDSO modules into base correlation engine

@@ -7,7 +7,7 @@
 
 ## Context
 
-The MDSO client was configured with `verify=False`, which bypasses SSL certificate validation. This creates a critical security vulnerability:
+The MDSO (Multi-Domain Service Orchestrator) client was configured with `verify=False`, which bypasses SSL certificate validation. This creates a critical security vulnerability:
 
 - **Man-in-the-Middle (MITM) Attacks**: Without certificate verification, attackers can intercept and modify traffic between the correlation engine and MDSO
 - **Data Exposure**: Sensitive data (credentials, circuit information, traces) could be exposed

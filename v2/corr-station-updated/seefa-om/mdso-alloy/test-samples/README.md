@@ -1,6 +1,6 @@
 # Test Sample Logs
 
-This directory contains sample MDSO logs for testing the enhanced Alloy configuration.
+This directory contains sample MDSO (Multi-Domain Service Orchestrator) logs for testing the enhanced Alloy configuration.
 
 ## Sample Files
 

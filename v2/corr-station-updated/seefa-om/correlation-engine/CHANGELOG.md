@@ -3,7 +3,7 @@
 ## [2.0.0] - 2025-01-XX
 
 ### Added
-- **MDSO Integration**: Automated log collection from MDSO products
+- **MDSO (Multi-Domain Service Orchestrator) Integration**: Automated log collection from MDSO products
   - Scheduled collection with configurable intervals
   - Support for ServiceMapper, NetworkService, DisconnectMapper products
   - Orchestration trace retrieval and error extraction

@@ -62,7 +62,7 @@ Find your pipeline
 Click on the deploy:meta-server:staging or deploy:meta-server:production job
 Click the Play button to trigger deployment
 
-MDSO Server Deployment (Grafana Alloy)
+MDSO (Multi-Domain Service Orchestrator) Server Deployment (Grafana Alloy)
 For the MDSO Dev server (159.56.4.37), deploy Grafana Alloy:
 
 # SSH to MDSO Dev server

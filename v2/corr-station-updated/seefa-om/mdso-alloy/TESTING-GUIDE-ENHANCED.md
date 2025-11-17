@@ -7,7 +7,7 @@ This guide provides comprehensive testing procedures for the enhanced Alloy conf
 ## Testing Strategy
 
 1. **Unit Tests** - Test individual regex patterns
-2. **Sample Log Tests** - Test with realistic MDSO log samples
+2. **Sample Log Tests** - Test with realistic MDSO (Multi-Domain Service Orchestrator) log samples
 3. **Integration Tests** - Test full pipeline from MDSO to Loki
 4. **Validation Tests** - Verify field extraction accuracy
 5. **Performance Tests** - Ensure acceptable performance under load
@@ -216,7 +216,7 @@ Each query should return logs with the corresponding fields populated.
 
 ### Test 4: Grafana Visual Validation
 
-1. Open Grafana: `http://159.56.4.94:3000`
+1. Open Grafana: `http://159.56.4.94:8443`
 2. Navigate to **Explore**
 3. Select **Loki** data source
 4. Run query: `{service="mdso"}`

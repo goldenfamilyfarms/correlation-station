@@ -113,7 +113,7 @@ npm install
 # Start dev server (with hot reload)
 npm run dev
 
-# Access at http://localhost:3000
+# Access at http://localhost:8443
 # API requests proxied to http://correlation-engine:8080
 ```
 
@@ -134,7 +134,7 @@ npm run preview
 cd ..  # Back to seefa-om root
 docker-compose up -d correlation-station-ui
 
-# Access at http://localhost:3000
+# Access at http://localhost:8443
 ```
 
 ## 📁 Project Structure

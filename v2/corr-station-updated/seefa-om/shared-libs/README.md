@@ -45,7 +45,7 @@ class PalantirConfig(BaseServiceConfig):
 # Load from environment
 config = PalantirConfig()
 
-# Access MDSO config
+# Access MDSO (Multi-Domain Service Orchestrator) config
 mdso_config = config.get_mdso_config()
 print(mdso_config.mdso_base_url)
 

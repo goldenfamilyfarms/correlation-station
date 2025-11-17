@@ -1,4 +1,4 @@
-# Alloy Container Deployment on MDSO Dev
+# Alloy Container Deployment on MDSO (Multi-Domain Service Orchestrator) Dev
 
 ## Quick Start
 

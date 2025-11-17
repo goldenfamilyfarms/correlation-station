@@ -1,4 +1,4 @@
-# Test Guide: MDSO → OTel Collector Only
+# Test Guide: MDSO (Multi-Domain Service Orchestrator) → OTel Collector Only
 
 ## Overview
 

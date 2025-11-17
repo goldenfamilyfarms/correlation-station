@@ -1,4 +1,4 @@
-# MDSO OTEL Instrumentation Findings
+# MDSO (Multi-Domain Service Orchestrator) OTEL Instrumentation Findings
 
 ## Analysis Date: 2025-11-13
 ## Source Directories:

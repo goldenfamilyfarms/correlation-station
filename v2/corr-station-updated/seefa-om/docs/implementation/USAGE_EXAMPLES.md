@@ -26,7 +26,7 @@ async def create_design(request: DesignRequest):
             product_type="design"
         )
         
-        # Child span for MDSO call
+        # Child span for MDSO (Multi-Domain Service Orchestrator) call
         with tracer.start_as_current_span(
             "mdso.create_resource",
             context=ctx

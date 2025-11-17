@@ -6,7 +6,7 @@
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        DATA SOURCES                                         │
 │                                                                             │
-│  MDSO Dev (159.56.4.37)           Sense Apps (Server-124)                 │
+│  MDSO (Multi-Domain Service Orchestrator) Dev (159.56.4.37)           Sense Apps (Meta Server)                 │
 │  ├─ /var/log/ciena/blueplanet.log │ ├─ Beorn (port 5001)                │
 │  └─ /bp2/log/*.log                │ ├─ Palantir (port 5002)             │
 │                                    │ └─ Arda (port 5003)                 │
@@ -161,7 +161,7 @@
                    └─────────────┬───────────────┘
                                  │
                     ┌────────────▼──────────┐
-                    │  GRAFANA :3000        │
+                    │  GRAFANA :8443        │
                     │                       │
                     │  - Log queries        │
                     │  - Trace inspection   │
