@@ -97,8 +97,8 @@ Deploy each app separately:
 cd /opt/correlation-station/sense-apps/arda
 
 # Create environment file
-cp dev.env.example dev.env
-nano dev.env
+cp .env.example .env
+nano .env
 
 # Start service
 docker-compose up -d

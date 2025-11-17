@@ -27,7 +27,7 @@ def _create_token():
 
     headers = _generate_header()
     data = {
-        # Use MDSO_PASS with dev.env if dev MDSO is needed
+        # Use MDSO_PASS with .env if dev MDSO is needed
         "username": auth_config.MDSO_USER_PROD,
         "password": auth_config.MDSO_PASS_PROD,
         "tenant": "master",
