@@ -49,7 +49,7 @@ services:
       # Application Config
       LOG_LEVEL: ${LOG_LEVEL:-info}
     env_file:
-      - ./arda/dev.env
+      - .env
     networks:
       - sense-network
       - observability

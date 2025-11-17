@@ -201,22 +201,16 @@ ARIN_CREATE_BASE_URL="https://reg.ote.arin.net"
 GRANITE_BASE_URL="https://hydra-vip.chtrse.com/qa"
 # GRANITE_BASE_URL="https://hydra-vip.chtrse.com/prod"
 REMEDY_BASE_URL="https://carswebu-int.corp.chartercom.com"
-# SENSE_BASE_URL="https://sense-test.chtrse.com"
-SENSE_BASE_URL="http://127.0.0.1:5001"
+SENSE_BASE_URL="http://159.56.4.37"
+BEORN_BASE_URL="http://159.56.4.37:5001"
+PALANTIR_BASE_URL="http://159.56.4.37:5002"
+ARDA_BASE_URL="http://159.56.4.37:5003"
 WHOIS_BASE_URL="https://whois.ote.arin.net"
 # MDSO_BASE_URL for BEORN and PALANTIR
-MDSO_BASE_URL="https://47.43.111.79"
-#MDSO_BASE_URL=47.43.111.79
-# MDSO_AUTH_ENDPOINT=http://159.56.4.37/api/v1/tokens
-# MDSO_SYSLOG_ENDPOINT=http://159.56.4.37/logarchive/api/v1/logs
-# MDSO_POLL_INTERVAL=30  # seconds
-
-
-
-#MDSO_BASE_URL=47.43.111.189
+MDSO_BASE_URL="http://159.56.4.37"
 MDSO_AUTH_ENDPOINT=http://159.56.4.37/api/v1/tokens
 MDSO_SYSLOG_ENDPOINT=http://159.56.4.37/logarchive/api/v1/syslogs
-MDSO_POLL_INTERVAL=30  # seconds
+MDSO_POLL_INTERVAL=30
 ## Servers/Ports
 # Dev and Prod the same
 SENSE_EMAIL_SERVER="email-smtp.us-east-1.amazonaws.com"
@@ -225,9 +219,9 @@ SENSE_EMAIL_PORT="587"
 # Dev and Prod different
 REMEDY_SERVER="carsappu-int"
 #============================================
-# Server-124 Configuration
+# META Configuration
 #============================================
-SERVER_124_IP=159.56.4.94
+META=159.56.4.94
 DEPLOYMENT_ENV=dev
 
 #============================================
@@ -257,7 +251,7 @@ ARTIFACTORY_TOKEN="AKCpBwCnpmSNG3fGSpoZ22YNEo4uW2vCUuffXxQbX2TxBQCipxeMLFBVKR18D
 #============================================
 # Grafana
 #============================================
-GRAFANA_PORT=3000
+GRAFANA_PORT=8443
 GRAFANA_ADMIN_USER=admin
 GRAFANA_ADMIN_PASSWORD=admin
 # Change the password above in production!
@@ -288,6 +282,6 @@ POLLER_MAX_FILE_SIZE_MB=100
 #============================================
 # Log Enrichment Fields
 #============================================
-DEFAULT_PRODUCT_UUID=poc-server-124
+DEFAULT_PRODUCT_UUID=poc-server-37
 DEFAULT_SERVICE_NAME=mdso-syslog
 DEFAULT_ENVIRONMENT=dev
