@@ -311,6 +311,19 @@ setup-sense-apps: setup-gateway ## Setup Sense applications (Beorn, Palantir, Ar
 	@echo "  Palantir: http://localhost:5002"
 	@echo "  Arda:     http://localhost:5003"
 
+.PHONY: restart-sense-apps
+restart-sense-apps: ## Restart Sense apps (stops, removes old containers, and recreates)
+	@echo "$(BLUE)========================================$(NC)"
+	@echo "$(GREEN)Restarting Sense Applications$(NC)"
+	@echo "$(BLUE)========================================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)→ Stopping and removing old containers...$(NC)"
+	@$(DOCKER_COMPOSE) stop beorn palantir arda 2>/dev/null || true
+	@$(DOCKER_COMPOSE) rm -f beorn palantir arda 2>/dev/null || true
+	@echo "$(GREEN)✓ Old containers removed$(NC)"
+	@echo ""
+	@$(MAKE) setup-sense-apps
+
 .PHONY: setup-frontend
 setup-frontend: setup-correlation ## Setup Frontend UI
 	@echo "$(BLUE)========================================$(NC)"
