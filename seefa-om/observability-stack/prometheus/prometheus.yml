@@ -63,9 +63,9 @@ scrape_configs:
   # - job_name: 'sense-apps'
   #   static_configs:
   #     - targets:
-  #       - 'beorn:5001'
-  #       - 'palantir:5002'
-  #       - 'arda:5003'
+  #       - 'arda:5001'
+  #       - 'beorn:5002'
+  #       - 'palantir:5003'
   #   metrics_path: /metrics
   #   scrape_interval: 15s
 

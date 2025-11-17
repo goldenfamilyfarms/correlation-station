@@ -625,13 +625,13 @@ TEMPO_GRPC_ENDPOINT=tempo:4317
 TEMPO_HTTP_ENDPOINT=http://tempo:4318
 PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
 
-# === Authentication (optional) ===
-ENABLE_BASIC_AUTH=false
-BASIC_AUTH_USER=
-BASIC_AUTH_PASS=
-EOF
-	@echo "$(GREEN)✓ .env created$(NC)"
-	@echo "$(YELLOW)Edit if needed: vi correlation-engine/.env$(NC)"
+# # === Authentication (optional) ===
+# ENABLE_BASIC_AUTH=false
+# BASIC_AUTH_USER=
+# BASIC_AUTH_PASS=
+# EOF
+# 	@echo "$(GREEN)✓ .env created$(NC)"
+# 	@echo "$(YELLOW)Edit if needed: vi correlation-engine/.env$(NC)"
 
 .PHONY: scale-up
 scale-up: ## Scale correlation engine to N instances (usage: make scale-up N=3)

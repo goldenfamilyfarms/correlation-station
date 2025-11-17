@@ -88,9 +88,9 @@ check_services() {
     for service in "${SERVICES[@]}"; do
         local port
         case $service in
-            beorn) port=5001 ;;
-            palantir) port=5002 ;;
-            arda) port=5003 ;;
+            beorn) port=5002 ;;
+            palantir) port=5003 ;;
+            arda) port=5001 ;;
         esac
 
         if curl -sf "http://localhost:$port/health" &> /dev/null; then
