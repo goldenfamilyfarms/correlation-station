@@ -323,7 +323,7 @@ docker-compose exec correlation-engine env | grep CORR_WINDOW
 sudo systemctl status alloy
 sudo journalctl -u alloy -f
 
-# Check connectivity to Server-124
+# Check connectivity to META
 curl -X POST http://159.56.4.94:4318/v1/logs \
   -H "Content-Type: application/json" \
   -d '{"resourceLogs":[]}'
@@ -524,7 +524,7 @@ docker-compose images
 
 **Recovery Steps:**
 
-1. **Verify Server-124 is accessible:**
+1. **Verify META is accessible:**
    ```bash
    ssh user@159.56.4.94
    ```
@@ -568,7 +568,7 @@ docker-compose images
 ### Network Partition
 
 **Symptoms:**
-- Alloy can't reach Server-124
+- Alloy can't reach META
 - Sense apps can't reach Gateway
 
 **Response:**

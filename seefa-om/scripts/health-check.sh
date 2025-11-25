@@ -4,7 +4,7 @@
 set -e
 
 echo "============================================"
-echo "Health Check - Server-124 Observability PoC"
+echo "Health Check - META Observability PoC"
 echo "============================================"
 echo ""
 

@@ -346,7 +346,7 @@ fi
 print_section "Step 10: Creating Scripts Files"
 
 create_file "scripts/bootstrap.sh" "#!/bin/bash\n# Bootstrap script"
-create_file "scripts/setup-server-124.sh" "#!/bin/bash\n# Server-124 setup - see artifacts"
+create_file "scripts/setup-META.sh" "#!/bin/bash\n# META setup - see artifacts"
 create_file "scripts/cleanup.sh" "#!/bin/bash\n# Cleanup script"
 create_file "scripts/generate-certs.sh" "#!/bin/bash\n# mTLS cert generation"
 

@@ -58,7 +58,7 @@ processors:
         value: "${DEPLOYMENT_ENV}"
         action: upsert
       - key: host.name
-        value: "server-124"
+        value: "META"
         action: upsert
   attributes/logs:
     actions:

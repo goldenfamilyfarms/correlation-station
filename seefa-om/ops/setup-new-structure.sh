@@ -194,7 +194,7 @@ touch ops/logrotate.conf
 
 # Scripts
 touch scripts/bootstrap.sh
-touch scripts/setup-server-124.sh
+touch scripts/setup-META.sh
 touch scripts/cleanup.sh
 touch scripts/generate-certs.sh
 

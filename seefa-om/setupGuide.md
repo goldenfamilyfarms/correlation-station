@@ -13,7 +13,7 @@
 - **Dual-write ready**: Easy to add Datadog export without changing sources
 
 ### Key Assumptions
-- **Server-124** (159.56.4.94): Docker 20.10+, Python 3.11+, 100GB+ disk
+- **META** (159.56.4.94): Docker 20.10+, Python 3.11+, 100GB+ disk
 - **MDSO Dev** (159.56.4.37): Can install Grafana Alloy natively
 - **Ports**: All as specified in requirements (3000, 3100, 4317/4318, 8080, 5001-5003)
 - **Security**: BasicAuth optional (default OFF), mTLS documented but not enforced
@@ -120,7 +120,7 @@ observability-poc/
 │   └── test-traffic.sh
 ├── scripts/
 │   ├── bootstrap.sh
-│   ├── setup-server-124.sh
+│   ├── setup-META.sh
 │   ├── setup-mdso-alloy.sh
 │   └── cleanup.sh
 ├── docker-compose.yml (root orchestrator)
@@ -134,7 +134,7 @@ observability-poc/
 ## 3. QUICK START
 
 ```bash
-# On Server-124
+# On META
 git clone <repo> && cd observability-poc
 cp .env.example .env
 # Edit .env with your settings
@@ -151,7 +151,7 @@ open http://159.56.4.94:3000
 # Login: admin/admin
 
 # On MDSO Dev (159.56.4.37)
-# Install Alloy and configure to send to Server-124
+# Install Alloy and configure to send to META
 cd mdso-alloy && sudo ./install.sh
 ```
 
@@ -159,7 +159,7 @@ cd mdso-alloy && sudo ./install.sh
 
 ## 4. DETAILED SETUP INSTRUCTIONS
 
-### Phase 0: Server-124 Preparation
+### Phase 0: META Preparation
 
 ```bash
 # Verify ports are open (from security group rules)
@@ -244,7 +244,7 @@ curl http://localhost:8080/metrics | grep correlation
 curl -X POST http://localhost:8080/api/logs \
   -H "Content-Type: application/json" \
   -d '{
-    "resource": {"service": "test", "host": "server-124", "env": "dev"},
+    "resource": {"service": "test", "host": "META", "env": "dev"},
     "records": [{
       "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
       "severity": "INFO",
@@ -273,7 +273,7 @@ sudo chmod +x /usr/local/bin/alloy
 sudo mkdir -p /etc/alloy
 sudo cp mdso-alloy/config.alloy /etc/alloy/config.alloy
 
-# Edit config to point to Server-124
+# Edit config to point to META
 sudo vi /etc/alloy/config.alloy
 # Update endpoint to http://159.56.4.94:4318
 
@@ -428,7 +428,7 @@ cd ../gateway && docker-compose restart
                              │ OTLP over HTTPS (TLS/BasicAuth)
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              Server-124 (159.56.4.94)                         │
+│              META (159.56.4.94)                         │
 │                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  OTel Collector Gateway (:4317, :4318, :55680, :55681)  │  │
@@ -577,7 +577,7 @@ sudo journalctl -u alloy -f
 # Verify logs are being tailed
 sudo alloy run --config /etc/alloy/config.alloy --dry-run
 
-# Test connectivity to Server-124
+# Test connectivity to META
 curl -X POST http://159.56.4.94:4318/v1/logs \
   -H "Content-Type: application/json" \
   -d '{"resourceLogs":[]}'
@@ -753,11 +753,11 @@ For issues or questions:
 **Duration:** 30 minutes
 
 ```bash
-# On Server-124
+# On META
 cd /tmp
 git clone <repo-url>
 cd observability-poc
-sudo ./scripts/setup-server-124.sh
+sudo ./scripts/setup-META.sh
 ```
 
 **Acceptance Criteria:**
@@ -834,7 +834,7 @@ sudo journalctl -u alloy -f
 **Acceptance Criteria:**
 - ✅ Alloy service running and enabled
 - ✅ No errors in journalctl logs
-- ✅ Connectivity to Server-124:4318 verified
+- ✅ Connectivity to META:4318 verified
 
 ### Phase 5: Verify MDSO Logs in Loki
 **Duration:** 5 minutes
@@ -1098,7 +1098,7 @@ scp ca.crt client.crt client.key user@159.56.4.37:/etc/alloy/certs/
 
 # Restart services
 sudo systemctl restart alloy  # On MDSO
-docker-compose restart otel-gateway  # On Server-124
+docker-compose restart otel-gateway  # On META
 ```
 
 ---

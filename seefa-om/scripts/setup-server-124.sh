@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Server-124 Setup Script
-# Prepares Server-124 for Observability PoC deployment
+# META Setup Script
+# Prepares META for Observability PoC deployment
 #
 
 set -e
@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${GREEN}Server-124 Setup Script${NC}"
+echo -e "${GREEN}META Setup Script${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 

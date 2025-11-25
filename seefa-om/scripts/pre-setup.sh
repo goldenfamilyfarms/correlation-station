@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Pre-Setup Script for Server-124 Observability PoC
+# Pre-Setup Script for META Observability PoC
 # Run this BEFORE deploying containers
 # This would normally happen in CI/CD
 #

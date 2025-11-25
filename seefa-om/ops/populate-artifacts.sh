@@ -67,7 +67,7 @@ declare -A ARTIFACTS=(
     ["sense-apps/arda/app.py"]="arda_refactored"
 
     # Scripts
-    ["scripts/setup-server-124.sh"]="setup_server_124_script"
+    ["scripts/setup-META.sh"]="setup_server_124_script"
 
     # Ops
     ["ops/runbook.md"]="ops_runbook"

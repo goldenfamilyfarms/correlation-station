@@ -1,7 +1,7 @@
 ##!/bin/bash
 # #
 # # Grafana Alloy Installation Script for MDSO Dev
-# # Installs and configures Alloy to tail syslogs and send to Server-124
+# # Installs and configures Alloy to tail syslogs and send to META
 # #
 
 # set -e
@@ -83,7 +83,7 @@
 # if [ -f "$(dirname $0)/config.alloy" ]; then
 #     cp "$(dirname $0)/config.alloy" $ALLOY_CONFIG_DIR/config.alloy
 
-#     # Update Server-124 endpoint in config
+#     # Update META endpoint in config
 #     sed -i "s|endpoint = \"http://159.56.4.94:4318\"|endpoint = \"http://${SERVER_124_HOST}:${SERVER_124_PORT}\"|g" \
 #         $ALLOY_CONFIG_DIR/config.alloy
 
@@ -179,18 +179,18 @@
 # echo ""
 
 # # ============================================
-# # Step 5: Test Connectivity to Server-124
+# # Step 5: Test Connectivity to META
 # # ============================================
-# echo -e "${YELLOW}Step 5: Testing connectivity to Server-124...${NC}"
+# echo -e "${YELLOW}Step 5: Testing connectivity to META...${NC}"
 
 # if curl -f -s -X POST http://${SERVER_124_HOST}:${SERVER_124_PORT}/v1/logs \
 #     -H "Content-Type: application/json" \
 #     -d '{"resourceLogs":[]}' > /dev/null; then
-#     echo -e "${GREEN}✓ Server-124 is reachable at ${SERVER_124_HOST}:${SERVER_124_PORT}${NC}"
+#     echo -e "${GREEN}✓ META is reachable at ${SERVER_124_HOST}:${SERVER_124_PORT}${NC}"
 # else
-#     echo -e "${RED}✗ Cannot reach Server-124 at ${SERVER_124_HOST}:${SERVER_124_PORT}${NC}"
+#     echo -e "${RED}✗ Cannot reach META at ${SERVER_124_HOST}:${SERVER_124_PORT}${NC}"
 #     echo "  Please verify:"
-#     echo "  1. Server-124 is running"
+#     echo "  1. META is running"
 #     echo "  2. OTel Gateway is started (port ${SERVER_124_PORT})"
 #     echo "  3. Firewall allows outbound connections"
 #     echo ""
@@ -328,7 +328,7 @@
 # echo "  2. Verify logs in Grafana: http://${SERVER_124_HOST}:3000"
 # echo "  3. Query Loki for service 'blueplanet'"
 # echo ""
-# echo -e "${GREEN}Alloy is now tailing syslogs and sending to Server-124!${NC}"
+# echo -e "${GREEN}Alloy is now tailing syslogs and sending to META!${NC}"
 # echo ""
 
 #!/usr/bin/env bash
@@ -472,14 +472,14 @@ docker run --rm \
 }
 echo -e "${GREEN}✓ Configuration valid${NC}\n"
 
-# ─── Step 6: Check Server-124 Connectivity ────────────────
-echo -e "${YELLOW}Step 6: Checking connectivity to Server-124...${NC}"
+# ─── Step 6: Check META Connectivity ────────────────
+echo -e "${YELLOW}Step 6: Checking connectivity to META...${NC}"
 if curl -fs -X POST "http://${SERVER_124_HOST}:${SERVER_124_PORT}/v1/logs" \
   -H "Content-Type: application/json" \
   -d '{"resourceLogs":[]}' >/dev/null; then
-  echo -e "${GREEN}✓ Server-124 reachable${NC}"
+  echo -e "${GREEN}✓ META reachable${NC}"
 else
-  echo -e "${RED}⚠ Server-124 not reachable${NC}"
+  echo -e "${RED}⚠ META not reachable${NC}"
   read -p "Continue anyway? (y/n): " ans
   [[ "$ans" != "y" ]] && exit 1
 fi

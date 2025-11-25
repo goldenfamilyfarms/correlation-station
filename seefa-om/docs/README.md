@@ -51,13 +51,13 @@ This observability platform provides:
 │  │  Grafana Alloy                                                    │  │
 │  │  • Tails: /var/log/ciena/blueplanet.log, /bp2/log/*.log         │  │
 │  │  • Normalizes syslog → structured logs                           │  │
-│  │  • Exports: OTLP/HTTP → Server-124:4318                          │  │
+│  │  • Exports: OTLP/HTTP → META:4318                          │  │
 │  └─────────────────────────────┬─────────────────────────────────────┘  │
 └────────────────────────────────┼────────────────────────────────────────┘
                                  │ TLS/BasicAuth (optional)
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                      Server-124 (159.56.4.94)                         │
+│                      META (159.56.4.94)                         │
 │                                                                         │
 │  ┌───────────────────────────────────────────────────────────────────┐ │
 │  │  OTel Collector Gateway (:4317, :4318, :55680, :55681)           │ │
@@ -131,7 +131,7 @@ This observability platform provides:
 - Docker 20.10+ and Docker Compose
 - Python 3.11+ (for local development)
 - 100GB+ disk space
-- Network access between MDSO Dev and Server-124
+- Network access between MDSO Dev and META
 
 ### 1. Clone and Configure
 
@@ -147,7 +147,7 @@ cp .env.example .env
 vim .env
 ```
 
-### 2. Deploy on Server-124
+### 2. Deploy on META
 
 ```bash
 # Build all images

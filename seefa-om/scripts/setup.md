@@ -225,7 +225,7 @@ sudo mkdir -p /opt/mdso-poller
 ## When to Run This
 
 ### ✅ Run Pre-Setup If:
-- First time setting up on Server-124
+- First time setting up on META
 - Added new credentials to .env
 - Changed proxy settings
 - Pulled fresh copy of repo
@@ -480,7 +480,7 @@ This gives you the same benefits as CI/CD without needing a pipeline!
 
 ######################
 
-# Setup Checklist - Server-124
+# Setup Checklist - META
 
 ## ✅ Complete Setup Process (First Time)
 

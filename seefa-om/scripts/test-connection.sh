@@ -6,7 +6,7 @@ set -euo pipefail
 # ===========================
 SERVER_124_IP="${SERVER_124_IP:-159.56.4.94}"
 
-# If you have DNS names for services on Server-124, set them here (or via env).
+# If you have DNS names for services on META, set them here (or via env).
 # Leave blank to skip; the script will still test the raw IP.
 TEMPO_HOST="${TEMPO_HOST:-}"        # e.g. tempo.dev.chtrse.com
 LOKI_HOST="${LOKI_HOST:-}"          # e.g. loki.dev.chtrse.com
@@ -14,7 +14,7 @@ PROM_HOST="${PROM_HOST:-}"          # e.g. prometheus.dev.chtrse.com
 GRAFANA_HOST="${GRAFANA_HOST:-}"    # e.g. grafana.dev.chtrse.com
 OTLP_HOST="${OTLP_HOST:-}"          # e.g. otlp.dev.chtrse.com (if you terminate OTLP behind a name)
 
-# Ports to test on Server-124
+# Ports to test on META
 PORTS=(4317 4318 3100 3200 9090 3000)
 
 # Public endpoints to validate internet egress
@@ -44,7 +44,7 @@ need_cmd() {
 
 hr
 log "MDSO Dev Server → Connectivity Diagnostics"
-log "Target Server-124 IP: $SERVER_124_IP"
+log "Target META IP: $SERVER_124_IP"
 log "Hostnames (if set): TEMPO='${TEMPO_HOST:-<unset>}' LOKI='${LOKI_HOST:-<unset>}' PROM='${PROM_HOST:-<unset>}' GRAFANA='${GRAFANA_HOST:-<unset>}' OTLP='${OTLP_HOST:-<unset>}'"
 hr
 
@@ -77,10 +77,10 @@ ping -c 4 -W 2 "google.com"    >>"$OUT" 2>&1 || log "  ⚠️ Ping to google.com
 hr
 
 # ------------------------
-# TCP reachability to Server-124
+# TCP reachability to META
 # ------------------------
 need_cmd nc nmap-ncat
-log "Step 2: TCP port checks to Server-124 ($SERVER_124_IP)"
+log "Step 2: TCP port checks to META ($SERVER_124_IP)"
 for p in "${PORTS[@]}"; do
   if nc -zv "$SERVER_124_IP" "$p" >>"$OUT" 2>&1; then
     log "  ✅ $SERVER_124_IP:$p reachable"
@@ -155,11 +155,11 @@ hr
 # Traceroute & nmap (optional deeper look)
 # ------------------------
 need_cmd traceroute traceroute
-log "Step 6: Traceroute to Server-124"
+log "Step 6: Traceroute to META"
 traceroute -n "$SERVER_124_IP" >>"$OUT" 2>&1 || log "  ⚠️ Traceroute FAILED"
 
 need_cmd nmap nmap
-log "Step 7: nmap scan of key ports on Server-124"
+log "Step 7: nmap scan of key ports on META"
 nmap -Pn -p "$(IFS=,; echo "${PORTS[*]}")" "$SERVER_124_IP" >>"$OUT" 2>&1 || log "  ⚠️ nmap FAILED"
 hr
 

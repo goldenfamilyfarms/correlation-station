@@ -6,11 +6,11 @@
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                        DATA SOURCES                                         │
 │                                                                             │
-│  MDSO Dev (159.56.4.37)           Sense Apps (Server-124)                 │
-│  ├─ /var/log/ciena/blueplanet.log │ ├─ Beorn (port 5001)                │
-│  └─ /bp2/log/*.log                │ ├─ Palantir (port 5002)             │
-│                                    │ └─ Arda (port 5003)                 │
-└────────────┬──────────────────────┬────────────────────────────────────────┘
+│  MDSO Dev (159.56.4.37)           Sense Apps (META)                         │
+│  ├─ /var/log/ciena/blueplanet.log │ ├─ Beorn (port 5001)                    │
+│  └─ /bp2/log/*.log                │ ├─ Palantir (port 5002)                 │
+│                                    │ └─ Arda (port 5003)                    │
+└────────────┬──────────────────────┬──────────────────────────────────────── ┘
              │                      │
              │ Syslog files         │ Native OTLP instrumentation
              ▼                      ▼
@@ -174,14 +174,14 @@
 
 ```
 MDSO Raw Log
-├─ Input: "Nov 13 10:30:00 mdso-host CIENA[1234]: ServiceMapper: Creating 
+├─ Input: "Nov 13 10:30:00 mdso-host CIENA[1234]: ServiceMapper: Creating
 │           circuit 80.L1XX.005054..CHTR with resource uuid-xyz"
 │
 ├─ Step 1: Alloy Parsing
 │  └─ Output: {
 │      timestamp: "Nov 13 10:30:00",
 │      hostname: "mdso-host",
-│      message: "CIENA[1234]: ServiceMapper: Creating circuit 80.L1XX.005054..CHTR 
+│      message: "CIENA[1234]: ServiceMapper: Creating circuit 80.L1XX.005054..CHTR
 │               with resource uuid-xyz",
 │      service: "mdso",
 │      env: "dev"

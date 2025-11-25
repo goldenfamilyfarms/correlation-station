@@ -1,7 +1,7 @@
 # Correlation Station - Data Pipeline Architecture Analysis
 
-**Date:** November 16, 2025  
-**System:** SEEFA Observability Platform  
+**Date:** November 16, 2025
+**System:** SEEFA Observability Platform
 **Repository:** correlation-station (v2/corr-station-updated/seefa-om)
 
 ---
@@ -49,7 +49,7 @@ MDSO Dev Host (159.56.4.37)
 │   ├── otelcol.receiver.loki → converts Loki logs to OTLP
 │   └── otelcol.exporter.otlphttp → sends to gateway
 │
-└── Export to Server-124 (159.56.4.94)
+└── Export to META (159.56.4.94)
     └── HTTP endpoint: http://159.56.4.94:55681
         ├── Retry policy: initial 5s, max 30s, total 300s
         └── Timeout: 10s
@@ -112,19 +112,19 @@ MDSO Dev Host (159.56.4.37)
     "resource_id": "550e8400-e29b-41d4-a716-446655440000",
     "product_name": "NetworkService",
     "product_type": "service_mapper",
-    
+
     # Device Context
     "tid": "JFVLINBJ2CW",  # 10-char device identifier
     "fqdn": "JFVLINBJ2CW.CHTRSE.COM",
     "vendor": "juniper",  # or adva, cisco, rad
     "management_ip": "10.1.2.3",
-    
+
     # Operational Context
     "orch_state": "CREATE_IN_PROGRESS",
     "service_type": "ELAN",  # or FIA, ELINE, VOICE, VIDEO
     "created_at": "2025-11-13T10:30:00Z",
     "mdso_server": "159.56.4.37",
-    
+
     # Error Tracking
     "error_code": "DE-1000",
     "categorized_error": "IP validation failed",
@@ -206,18 +206,18 @@ MDSO Dev Host (159.56.4.37)
     "timestamp": "2025-11-13T10:30:00.000Z",
     "severity": "INFO|WARN|ERROR|FATAL",
     "message": "Operation started successfully",
-    
+
     # Trace Context (optional but critical)
     "trace_id": "abc123def456...",  # 32-hex string
     "span_id": "xyz789...",          # 16-hex string
-    
+
     # MDSO Custom Attributes (extracted from message or headers)
     "circuit_id": "80.L1XX.005054..CHTR",
     "product_id": "PROD-123",
     "resource_id": "550e8400-e29b-41d4-a716-446655440000",
     "resource_type_id": "tosca.resourceTypes.NetworkFunction",
     "request_id": "req-12345",
-    
+
     # Additional labels
     "labels": {
         "device_tid": "JFVLINBJ2CW",
@@ -240,7 +240,7 @@ MDSO Dev Host (159.56.4.37)
             "timestamp": "2025-11-13T10:30:00Z",
             "severity": "INFO",
             "message": "[CIENA] ServiceMapper: Creating service 80.L1XX.005054..CHTR...",
-            
+
             # CRITICAL: These need to be extracted from message or headers
             "circuit_id": None,  # Should be "80.L1XX.005054..CHTR"
             "resource_id": None,  # Should be extracted if present
@@ -263,7 +263,7 @@ MDSO Dev Host (159.56.4.37)
             "timestamp": "2025-11-13T10:30:00Z",
             "severity": "INFO",
             "message": "Topology lookup completed",
-            
+
             # These SHOULD be set by Sense apps via baggage/instrumentation
             "trace_id": "abc123def456...",
             "circuit_id": "80.L1XX.005054..CHTR",
@@ -574,11 +574,11 @@ def call_mdso_api(endpoint, **kwargs):
     # Extract current trace context
     carrier = {}
     trace.get_current_span().get_span_context().inject(carrier)
-    
+
     # Add circuit_id to baggage
     baggage.set_baggage("circuit_id", circuit_id)
     baggage.set_baggage("resource_id", resource_id)
-    
+
     # Make request with context
     return httpx.post(endpoint, headers=carrier, **kwargs)
 ```
@@ -711,7 +711,7 @@ async def collect_mdso_logs(product_type: str, time_range_hours: int = 3):
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 16, 2025  
-**Status:** Complete and Verified  
+**Document Version:** 1.0
+**Last Updated:** November 16, 2025
+**Status:** Complete and Verified
 

@@ -292,14 +292,13 @@ Each error includes:
 
 ```
 ┌─────────────────────────────────────┐
-│    Correlation Station UI (Nginx)  │
-│         Port 3000 → 80             │
+│    Correlation Station UI (Nginx)   │
+│                                     │
 └──────────┬──────────────────────────┘
            │ Proxy /api/* requests
            ▼
 ┌─────────────────────────────────────┐
-│    Correlation Engine (FastAPI)    │
-│           Port 8080                │
+│    Correlation Engine (FastAPI)     
 │  ┌───────────────────────────────┐  │
 │  │   SQLite Database             │  │
 │  │   /app/data/seca_reviews.db   │  │
