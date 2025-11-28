@@ -550,11 +550,11 @@ health-redis: ## Health check for Redis
 .PHONY: health-sense-apps
 health-sense-apps: ## Health check for Sense apps
 	@echo "$(YELLOW)Sense Apps:$(NC)"
-	@curl -sf http://localhost:5001/health >/dev/null 2>&1 && \
+	@curl -sf http://localhost:5001/v1/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Beorn$(NC)" || echo "$(RED)  ✗ Beorn$(NC)"
-	@curl -sf http://localhost:5002/health >/dev/null 2>&1 && \
+	@curl -sf http://localhost:5002/v1/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Palantir$(NC)" || echo "$(RED)  ✗ Palantir$(NC)"
-	@curl -sf http://localhost:5003/health >/dev/null 2>&1 && \
+	@curl -sf http://localhost:5003/arda/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Arda$(NC)" || echo "$(RED)  ✗ Arda$(NC)"
 
 .PHONY: health-frontend
