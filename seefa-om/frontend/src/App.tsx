@@ -7,7 +7,7 @@ import SecaReviewsPage from './pages/SecaReviewsPage'
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/correlation-station">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
