@@ -162,7 +162,7 @@ export default function HomePage() {
             {/* Tim Robinson "Are you sure about that?" Meme */}
             <div className="w-full bg-gray-100 rounded-lg p-4">
               <img
-                src="/tim5.png"
+                src="/correlation-station/tim5.png"
                 alt="Are you sure about that?"
                 className="w-full h-auto rounded"
                 onError={(e) => {
