@@ -20,7 +20,7 @@ export default function HomePage() {
       description: 'Access the Grafana UI for logs, traces, and metrics visualization',
       icon: BarChart3,
       color: 'grafana-orange',
-      href: 'http://localhost:8443',
+      href: 'http://austx-mdso-logs-02.chtrse.com/grafana/',
       external: true,
     },
     {
@@ -162,7 +162,7 @@ export default function HomePage() {
             {/* Tim Robinson "Are you sure about that?" Meme */}
             <div className="w-full bg-gray-100 rounded-lg p-4">
               <img
-                src="https://i.imgflip.com/95h951.jpg"
+                src="/tim5.png"
                 alt="Are you sure about that?"
                 className="w-full h-auto rounded"
                 onError={(e) => {

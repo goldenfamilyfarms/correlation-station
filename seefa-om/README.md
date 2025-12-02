@@ -46,51 +46,51 @@ This observability platform provides:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        MDSO Dev (159.56.4.37)                          │
+│                        MDSO Dev (159.56.4.37)                           │
 │  ┌───────────────────────────────────────────────────────────────────┐  │
 │  │  Grafana Alloy                                                    │  │
-│  │  • Tails: /var/log/ciena/blueplanet.log, /bp2/log/*.log         │  │
-│  │  • Normalizes syslog → structured logs                           │  │
-│  │  • Exports: OTLP/HTTP → META:4318                          │  │
+│  │  • Tails: /var/log/ciena/blueplanet.log, /bp2/log/*.log           │  │
+│  │  • Normalizes syslog → structured logs                            │  │
+│  │  • Exports: OTLP/HTTP → META:4318                                 │  │
 │  └─────────────────────────────┬─────────────────────────────────────┘  │
 └────────────────────────────────┼────────────────────────────────────────┘
                                  │ TLS/BasicAuth (optional)
                                  ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                      META (159.56.4.94)                         │
+│                      META (159.56.4.94)                                 │
 │                                                                         │
-│  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │  OTel Collector Gateway (:4317, :4318, :55680, :55681)           │ │
-│  │  • Receives: OTLP logs/traces/metrics from Alloy & Sense apps    │ │
-│  │  • Adds: Resource attributes (env, service, trace context)       │ │
-│  │  • Routes to: Correlation Engine, Loki, Tempo                    │ │
-│  └────────────┬──────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  OTel Collector Gateway (:4317, :4318, :55680, :55681)            │  │
+│  │  • Receives: OTLP logs/traces/metrics from Alloy & Sense apps     │  │
+│  │  • Adds: Resource attributes (env, service, trace context)        │  │
+│  │  • Routes to: Correlation Engine, Loki, Tempo                     │  │
+│  └────────────┬──────────────────────────────────────────────────────┘  │
 │               │                                                         │
-│               ├─────────────────┬──────────────────┬──────────────┐    │
-│               ▼                 ▼                  ▼              ▼    │
-│  ┌─────────────────────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐   │
-│  │ Correlation Engine  │  │  Loki   │  │  Tempo   │  │Prometheus│   │
-│  │ • Normalize logs    │  │  :3100  │  │  :3200   │  │  :9090   │   │
-│  │ • 60s windows       │  └─────────┘  └──────────┘  └──────────┘   │
-│  │ • Match by trace_id │       ▲            ▲              ▲          │
-│  │ • Export: Loki,     │       │            │              │          │
-│  │   Tempo, Prom, DD   │       │            │              │          │
-│  └──────────┬──────────┘       │            │              │          │
-│             └──────────────────┴────────────┴──────────────┘          │
-│                                      │                                 │
-│                            ┌─────────▼─────────┐                       │
-│                            │  Grafana :3000    │                       │
-│                            │  • Dashboards     │                       │
-│                            │  • Trace → Logs   │                       │
-│                            │  • Correlation UI │                       │
-│                            └───────────────────┘                       │
+│               ├─────────────────┬──────────────────┬──────────────┐     │
+│               ▼                 ▼                  ▼              ▼     │
+│  ┌─────────────────────┐  ┌─────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ Correlation Engine  │  │  Loki   │  │  Tempo   │  │Prometheus│       │
+│  │ • Normalize logs    │  │  :3100  │  │  :3200   │  │  :9090   │       │
+│  │ • 60s windows       │  └─────────┘  └──────────┘  └──────────┘       │
+│  │ • Match by trace_id │       ▲            ▲              ▲            │
+│  │ • Export: Loki,     │       │            │              │            │
+│  │   Tempo, Prom, DD   │       │            │              │            │
+│  └──────────┬──────────┘       │            │              │            │
+│             └──────────────────┴────────────┴──────────────┘            │
+│                                      │                                  │
+│                            ┌─────────▼─────────┐                        │
+│                            │  Grafana :3000    │                        │
+│                            │  • Dashboards     │                        │
+│                            │  • Trace → Logs   │                        │
+│                            │  • Correlation UI │                        │
+│                            └───────────────────┘                        │
 │                                                                         │
-│  ┌───────────────────────────────────────────────────────────────────┐ │
-│  │  Sense Apps (OTel Instrumented)                                  │ │
-│  │  • beorn:5001 (Flask)  • palantir:5002 (Flask)  • arda:5003     │ │
-│  │  • Custom attributes: circuit_id, product_id, resource_id, etc.  │ │
-│  │  • Export traces/logs → Gateway:4318                             │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  Sense Apps (OTel Instrumented)                                   │  │
+│  │  • beorn:5001 (Flask)  • palantir:5002 (Flask)  • arda:5003       │  │
+│  │  • Custom attributes: circuit_id, product_id, resource_id, etc.   │  │
+│  │  • Export traces/logs → Gateway:4318                              │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 

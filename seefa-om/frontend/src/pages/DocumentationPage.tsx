@@ -58,7 +58,7 @@ export default function DocumentationPage() {
                   </div>
 
                   <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Find slow traces (duration > 1s)</div>
+                    <div className="text-grafana-orange">// Find slow traces (duration {'>'} 1s)</div>
                     <div>{'{ duration > 1s }'}</div>
                   </div>
                 </div>

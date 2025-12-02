@@ -55,25 +55,25 @@ git --version
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| CPU | 4 cores | 8+ cores |
-| RAM | 8 GB | 16+ GB |
-| Disk | 20 GB | 50+ GB |
-| OS | Linux/macOS | Ubuntu 20.04+ |
+| CPU | 4 cores | 8+ cores          |
+| RAM | 8 GB | 16+ GB               |
+| Disk | 20 GB | 50+ GB             |
+| OS | Linux/macOS | Ubuntu 20.04+  |
 
 ### Network Ports
 
 Ensure these ports are available:
 
-| Port | Service | Purpose |
-|------|---------|---------|
-| 3000 | Grafana | Dashboards |
-| 3100 | Loki | Log aggregation |
-| 4040 | Pyroscope | Profiling UI |
+| Port | Service | Purpose              |
+|------|---------|----------------------|
+| 3000 | Grafana | Dashboards           |
+| 3100 | Loki    | Log aggregation      |
+| 4040 | Pyroscope| Profiling UI        |
 | 4317 | Tempo (gRPC) | Trace ingestion |
 | 4318 | Tempo (HTTP) | Trace ingestion |
-| 6379 | Redis | State management |
-| 8080 | Correlation Engine | API |
-| 9090 | Prometheus | Metrics |
+| 6379 | Redis | State management       |
+| 8080 | Correlation Engine | API       |
+| 9090 | Prometheus | Metrics           |
 
 **Check ports are free:**
 ```bash

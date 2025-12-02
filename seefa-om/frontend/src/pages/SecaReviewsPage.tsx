@@ -40,13 +40,80 @@ export default function SecaReviewsPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await fetch('/api/seca-reviews')
-      if (response.ok) {
-        const data = await response.json()
-        setReviews(data)
-        if (data.length > 0 && !selectedReview) {
-          setSelectedReview(data[0])
+      const mockData: ErrorReview[] = [
+        {
+          id: 1,
+          period: 'October 2025 - Week 1',
+          created_at: '2025-10-02T18:00:00Z',
+          updated_at: '2025-10-02T18:00:00Z',
+          summary: `# Tickets that need to be made\n\n- WIA Fallout\n- Service mapper fallout\n- Fabricator Fallout errors\n- Modeler Remote Script errors\n- Vlan swaps improperly linked devices\n- slm - circuits for carrier was mismatching\n- unexpected path status planned 615-620\n- 623-634\n- Missing ip4 data`,
+          errors: [
+            {
+              id: 'fab-timeout-1',
+              service: 'Fabricator',
+              error_type: 'Compliance Timeout',
+              count: 1,
+              severity: 'high',
+              description: 'Circuit 61.TGXX.000860..CHTR timed out during compliance check after 5 minutes',
+              root_cause: 'Onboarding circuit details resource creation exceeded timeout threshold',
+              resolution_status: 'investigating',
+              action_items: ['Investigate BPO resource creation delays', 'Review timeout configuration'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'juniper-layer2-1',
+              service: 'Config Modeler',
+              error_type: 'Layer 2 Policer KeyError',
+              count: 1,
+              severity: 'critical',
+              description: 'Circuit 63.L1XX.002736..CHTR failed with KeyError: layer2-policer on PTP interface',
+              root_cause: 'TPE requested on entire port instead of individual service. Layer 2 policer lookup attempted on PTP structure type',
+              resolution_status: 'in_progress',
+              action_items: ['Fix TPE configuration logic', 'Add validation for PTP vs CTP structure types', 'Update juniper.py error handling'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'disco-elan-1',
+              service: 'Disconnect Mapper',
+              error_type: 'ELAN SLM KeyError',
+              count: 1,
+              severity: 'high',
+              description: 'Circuit 51.L1XX.007640..TWCC failed with KeyError: elanSlm during origin site determination',
+              root_cause: 'Missing elanSlm data in circuit details service structure',
+              resolution_status: 'planned',
+              action_items: ['Add null checks for elanSlm', 'Validate circuit details structure before processing'],
+              responsible_team: 'Service Mapper Team'
+            },
+            {
+              id: 'disco-timeout-1',
+              service: 'Disconnect Mapper',
+              error_type: 'Timeout Errors',
+              count: 2,
+              severity: 'medium',
+              description: 'Circuits 91.L1XX.005430..TWCC and 26.IPXN.000384..TWCC experienced timeout errors',
+              root_cause: 'Network latency or device communication issues',
+              resolution_status: 'investigating',
+              action_items: ['Review network connectivity', 'Increase timeout thresholds if needed'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'disco-device-1',
+              service: 'Discovery',
+              error_type: 'Device Not Found',
+              count: 3,
+              severity: 'medium',
+              description: '1480 errors - could not find shelf, device not found in crosswalk',
+              root_cause: 'Missing device entries in crosswalk database',
+              resolution_status: 'planned',
+              action_items: ['Update crosswalk database', 'Add device discovery validation'],
+              responsible_team: 'Compliance Team'
+            }
+          ]
         }
+      ]
+      setReviews(mockData)
+      if (mockData.length > 0 && !selectedReview) {
+        setSelectedReview(mockData[0])
       }
     } catch (error) {
       console.error('Failed to fetch reviews:', error)

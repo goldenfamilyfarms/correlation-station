@@ -141,7 +141,7 @@ SENSE_BASE_URL = "https://sense-test.chtrse.com"
 # SENSE_BASE_URL = "http://127.0.0.1:5001"
 WHOIS_BASE_URL = "https://whois.ote.arin.net"
 # MDSO_BASE_URL for BEORN and PALANTIR
-MDSO_BASE_URL = "https://47.43.111.189"
+MDSO_BASE_URL = "https://159.56.4.37"
 
 ## Servers/Ports
 # Dev and Prod the same
@@ -191,7 +191,7 @@ SALESFORCE_BASE_URL="https://spectrum-enterprise.my.salesforce.com"
 SEEK_BASE_URL="https://seek.chtrse.com"
 # MDSO_PROD_URL for ARDA and on-demand locally in Palantir for testing
 # MDSO_PROD_URL="https://clboh-mdso-vip.chtrse.com"
-MDSO_PROD_URL="https://austx-mdso-vip.chtrse.com"
+# MDSO_PROD_URL="https://austx-mdso-vip.chtrse.com"
 # ODIN v1
 NICE_BASE_URL="https://austx-gsip-adonis-01.chtrse.com"
 # ODIN v2
@@ -201,10 +201,10 @@ ARIN_CREATE_BASE_URL="https://reg.ote.arin.net"
 GRANITE_BASE_URL="https://hydra-vip.chtrse.com/qa"
 # GRANITE_BASE_URL="https://hydra-vip.chtrse.com/prod"
 REMEDY_BASE_URL="https://carswebu-int.corp.chartercom.com"
-SENSE_BASE_URL="http://159.56.4.37"
-BEORN_BASE_URL="http://159.56.4.37:5001"
-PALANTIR_BASE_URL="http://159.56.4.37:5002"
-ARDA_BASE_URL="http://159.56.4.37:5003"
+SENSE_BASE_URL="http://159.56.4.94"
+BEORN_BASE_URL="http://159.56.4.94:5001"
+PALANTIR_BASE_URL="http://159.56.4.94:5002"
+ARDA_BASE_URL="http://159.56.4.94:5003"
 WHOIS_BASE_URL="https://whois.ote.arin.net"
 # MDSO_BASE_URL for BEORN and PALANTIR
 MDSO_BASE_URL="http://159.56.4.37"
