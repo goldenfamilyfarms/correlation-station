@@ -14,7 +14,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.21.0.0/24
+        - subnet: 172.22.0.0/24
   # Connect to observability stack
   observability:
     external: true
@@ -72,7 +72,7 @@ services:
     container_name: beorn-flask
     restart: unless-stopped
     ports:
-      - "5001:5002"
+      - "5004:5002"
     environment:
       # OpenTelemetry Configuration
       OTEL_SERVICE_NAME: beorn

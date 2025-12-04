@@ -188,7 +188,8 @@ EXPOSE 5002
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     apt-get update && \
-    apt-get install fping -y
+    apt-get install fping -y && \
+    mkdir -p /beorn/logs/gunicorn
 
 ENTRYPOINT ["gunicorn", "-c", "gunicorn.conf.py", "run:app"]
 
