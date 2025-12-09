@@ -377,9 +377,34 @@ setup-all: setup-validate ## Complete automated setup (all components)
 .PHONY: teardown-sense-apps
 teardown-sense-apps: ## Stop and remove Sense apps
 	@echo "$(YELLOW)→ Stopping Sense apps...$(NC)"
-	@$(DOCKER_COMPOSE) stop beorn palantir arda 2>/dev/null || true
-	@$(DOCKER_COMPOSE) rm -f beorn palantir arda 2>/dev/null || true
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) stop beorn palantir arda 2>/dev/null || true
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) rm -f beorn palantir arda 2>/dev/null || true
 	@echo "$(GREEN)✓ Sense apps removed$(NC)"
+
+.PHONY: setup-alloy
+setup-alloy: ## Setup Grafana Alloy for log collection
+	@echo "$(BLUE)========================================$(NC)"
+	@echo "$(GREEN)Setting Up Grafana Alloy$(NC)"
+	@echo "$(BLUE)========================================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)→ Starting Alloy...$(NC)"
+	@cd mdso-alloy && $(DOCKER_COMPOSE) up -d alloy
+	@sleep 5
+	@curl -sf http://localhost:12345/-/ready >/dev/null 2>&1 && \
+		echo "$(GREEN)  ✓ Alloy healthy on :12345$(NC)" || \
+		echo "$(YELLOW)  ⚠ Alloy starting...$(NC)"
+	@echo ""
+	@echo "$(GREEN)✓ Alloy setup complete$(NC)"
+	@echo ""
+
+.PHONY: teardown-alloy
+teardown-alloy: ## Stop and remove Alloy
+	@echo "$(YELLOW)→ Stopping Alloy...$(NC)"
+	@cd mdso-alloy && $(DOCKER_COMPOSE) down 2>/dev/null || true
+	@echo "$(GREEN)✓ Alloy removed$(NC)"
+
+.PHONY: restart-alloy
+restart-alloy: teardown-alloy setup-alloy ## Restart Alloy
 
 .PHONY: teardown-frontend
 teardown-frontend: ## Stop and remove Frontend UI

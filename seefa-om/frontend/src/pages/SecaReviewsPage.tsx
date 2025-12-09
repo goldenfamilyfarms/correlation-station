@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { AlertCircle, Calendar, TrendingDown, TrendingUp, Edit, Save, X } from 'lucide-react'
+import { AlertCircle, Calendar, TrendingDown, TrendingUp, Edit, Save, X, Upload, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface ErrorReview {
@@ -33,6 +33,12 @@ export default function SecaReviewsPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editedContent, setEditedContent] = useState('')
+  const [editingCardId, setEditingCardId] = useState<string | null>(null)
+  const [editedError, setEditedError] = useState<ErrorDetail | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadedData, setUploadedData] = useState<{summary: string, errors: ErrorDetail[]} | null>(null)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchReviews()
@@ -145,6 +151,130 @@ export default function SecaReviewsPage() {
     }
   }
 
+  const handleEditCard = (error: ErrorDetail) => {
+    setEditingCardId(error.id)
+    setEditedError({ ...error })
+  }
+
+  const handleCancelCardEdit = () => {
+    setEditingCardId(null)
+    setEditedError(null)
+  }
+
+  const handleSaveCard = async () => {
+    if (!selectedReview || !editedError) return
+
+    try {
+      const updatedErrors = selectedReview.errors.map(e =>
+        e.id === editedError.id ? editedError : e
+      )
+
+      const response = await fetch(`/api/seca-reviews/${selectedReview.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          summary: selectedReview.summary,
+          errors: updatedErrors,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchReviews()
+        setEditingCardId(null)
+        setEditedError(null)
+      }
+    } catch (error) {
+      console.error('Failed to save error card:', error)
+    }
+  }
+
+  const updateEditedError = (field: keyof ErrorDetail, value: any) => {
+    if (!editedError) return
+    setEditedError({ ...editedError, [field]: value })
+  }
+
+  const updateActionItem = (index: number, value: string) => {
+    if (!editedError) return
+    const newActionItems = [...editedError.action_items]
+    newActionItems[index] = value
+    setEditedError({ ...editedError, action_items: newActionItems })
+  }
+
+  const addActionItem = () => {
+    if (!editedError) return
+    setEditedError({ ...editedError, action_items: [...editedError.action_items, ''] })
+  }
+
+  const removeActionItem = (index: number) => {
+    if (!editedError) return
+    const newActionItems = editedError.action_items.filter((_, i) => i !== index)
+    setEditedError({ ...editedError, action_items: newActionItems })
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload-review', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUploadedData({
+          summary: data.summary,
+          errors: data.errors,
+        })
+        setShowUploadDialog(true)
+      } else {
+        alert('Failed to upload file. Please try again.')
+      }
+    } catch (error) {
+      console.error('Failed to upload file:', error)
+      alert('Failed to upload file. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleCreateFromUpload = async () => {
+    if (!uploadedData) return
+
+    try {
+      const period = `Manual Upload - ${format(new Date(), 'MMM d, yyyy')}`
+      const response = await fetch('/api/seca-reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          period,
+          summary: uploadedData.summary,
+          errors: uploadedData.errors,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchReviews()
+        setShowUploadDialog(false)
+        setUploadedData(null)
+      }
+    } catch (error) {
+      console.error('Failed to create review:', error)
+    }
+  }
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -209,12 +339,101 @@ export default function SecaReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">SECA Error Reviews</h1>
-        <p className="text-lg text-gray-600">
-          Bi-weekly error analysis and resolution tracking
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">SECA Error Reviews</h1>
+          <p className="text-lg text-gray-600">
+            Bi-weekly error analysis and resolution tracking
+          </p>
+        </div>
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.md,.markdown"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            variant="default"
+          >
+            {uploading ? (
+              <>
+                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload PDF/Markdown
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Upload Preview Dialog */}
+      {showUploadDialog && uploadedData && (
+        <Card className="border-2 border-grafana-orange bg-grafana-orange/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-grafana-orange" />
+                <CardTitle>Preview Uploaded Content</CardTitle>
+              </div>
+              <Button
+                onClick={() => {
+                  setShowUploadDialog(false)
+                  setUploadedData(null)
+                }}
+                variant="ghost"
+                size="sm"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <CardDescription>
+              Review the extracted summary and error cards before creating the review
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Extracted Summary</h3>
+              <div className="bg-white p-3 rounded border text-sm max-h-40 overflow-y-auto">
+                {uploadedData.summary}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Extracted Errors ({uploadedData.errors.length})</h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {uploadedData.errors.map((error, idx) => (
+                  <div key={idx} className="bg-white p-2 rounded border text-sm">
+                    <div className="font-semibold">{error.error_type}</div>
+                    <div className="text-gray-600 text-xs">{error.service} - {error.severity}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleCreateFromUpload} className="flex-1">
+                <Save className="h-4 w-4 mr-2" />
+                Create Review from Upload
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowUploadDialog(false)
+                  setUploadedData(null)
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Reviews List */}
@@ -324,64 +543,206 @@ export default function SecaReviewsPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Error Breakdown</h3>
                   <div className="space-y-4">
-                    {selectedReview.errors.map((error) => (
-                      <Card key={error.id} className="border-2">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className={`px-2 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(error.severity)}`}>
-                                  {error.severity.toUpperCase()}
-                                </span>
-                                <span className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(error.resolution_status)}`}>
-                                  {error.resolution_status.replace('_', ' ').toUpperCase()}
-                                </span>
+                    {selectedReview.errors.map((error) => {
+                      const isEditingCard = editingCardId === error.id
+                      const currentError = isEditingCard && editedError ? editedError : error
+
+                      return (
+                        <Card key={error.id} className="border-2">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                {isEditingCard ? (
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <select
+                                        value={currentError.severity}
+                                        onChange={(e) => updateEditedError('severity', e.target.value as any)}
+                                        className={`px-2 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(currentError.severity)}`}
+                                      >
+                                        <option value="critical">CRITICAL</option>
+                                        <option value="high">HIGH</option>
+                                        <option value="medium">MEDIUM</option>
+                                        <option value="low">LOW</option>
+                                      </select>
+                                      <select
+                                        value={currentError.resolution_status}
+                                        onChange={(e) => updateEditedError('resolution_status', e.target.value as any)}
+                                        className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(currentError.resolution_status)}`}
+                                      >
+                                        <option value="resolved">RESOLVED</option>
+                                        <option value="in_progress">IN PROGRESS</option>
+                                        <option value="planned">PLANNED</option>
+                                        <option value="investigating">INVESTIGATING</option>
+                                      </select>
+                                    </div>
+                                    <input
+                                      type="text"
+                                      value={currentError.error_type}
+                                      onChange={(e) => updateEditedError('error_type', e.target.value)}
+                                      className="w-full text-lg font-semibold border-2 border-gray-200 rounded px-2 py-1"
+                                      placeholder="Error Type"
+                                    />
+                                    <div className="flex gap-4">
+                                      <input
+                                        type="text"
+                                        value={currentError.service}
+                                        onChange={(e) => updateEditedError('service', e.target.value)}
+                                        className="flex-1 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder="Service"
+                                      />
+                                      <input
+                                        type="number"
+                                        value={currentError.count}
+                                        onChange={(e) => updateEditedError('count', parseInt(e.target.value) || 0)}
+                                        className="w-32 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder="Count"
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className={`px-2 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(error.severity)}`}>
+                                        {error.severity.toUpperCase()}
+                                      </span>
+                                      <span className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(error.resolution_status)}`}>
+                                        {error.resolution_status.replace('_', ' ').toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <CardTitle className="text-lg">{error.error_type}</CardTitle>
+                                    <CardDescription className="flex items-center gap-4 mt-1">
+                                      <span>Service: {error.service}</span>
+                                      <span>•</span>
+                                      <span>Occurrences: {error.count.toLocaleString()}</span>
+                                    </CardDescription>
+                                  </>
+                                )}
                               </div>
-                              <CardTitle className="text-lg">{error.error_type}</CardTitle>
-                              <CardDescription className="flex items-center gap-4 mt-1">
-                                <span>Service: {error.service}</span>
-                                <span>•</span>
-                                <span>Occurrences: {error.count.toLocaleString()}</span>
-                              </CardDescription>
+                              <div className="flex items-center gap-2">
+                                {!isEditingCard ? (
+                                  <>
+                                    {error.count > 1000 ? (
+                                      <TrendingUp className="h-5 w-5 text-red-500" />
+                                    ) : (
+                                      <TrendingDown className="h-5 w-5 text-green-500" />
+                                    )}
+                                    <Button
+                                      onClick={() => handleEditCard(error)}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button onClick={handleSaveCard} size="sm">
+                                      <Save className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      onClick={handleCancelCardEdit}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {error.count > 1000 ? (
-                                <TrendingUp className="h-5 w-5 text-red-500" />
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Description</h4>
+                              {isEditingCard ? (
+                                <textarea
+                                  value={currentError.description}
+                                  onChange={(e) => updateEditedError('description', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  rows={2}
+                                  placeholder="Description"
+                                />
                               ) : (
-                                <TrendingDown className="h-5 w-5 text-green-500" />
+                                <p className="text-sm text-gray-600">{error.description}</p>
                               )}
                             </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div>
-                            <h4 className="font-semibold text-sm mb-1">Description</h4>
-                            <p className="text-sm text-gray-600">{error.description}</p>
-                          </div>
 
-                          <div>
-                            <h4 className="font-semibold text-sm mb-1">Root Cause</h4>
-                            <p className="text-sm text-gray-600">{error.root_cause}</p>
-                          </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Root Cause</h4>
+                              {isEditingCard ? (
+                                <textarea
+                                  value={currentError.root_cause}
+                                  onChange={(e) => updateEditedError('root_cause', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  rows={2}
+                                  placeholder="Root Cause"
+                                />
+                              ) : (
+                                <p className="text-sm text-gray-600">{error.root_cause}</p>
+                              )}
+                            </div>
 
-                          <div>
-                            <h4 className="font-semibold text-sm mb-1">Action Items</h4>
-                            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                              {error.action_items.map((item, idx) => (
-                                <li key={idx}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Action Items</h4>
+                              {isEditingCard ? (
+                                <div className="space-y-2">
+                                  {currentError.action_items.map((item, idx) => (
+                                    <div key={idx} className="flex gap-2">
+                                      <input
+                                        type="text"
+                                        value={item}
+                                        onChange={(e) => updateActionItem(idx, e.target.value)}
+                                        className="flex-1 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder={`Action item ${idx + 1}`}
+                                      />
+                                      <Button
+                                        onClick={() => removeActionItem(idx)}
+                                        variant="outline"
+                                        size="sm"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  <Button
+                                    onClick={addActionItem}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                  >
+                                    + Add Action Item
+                                  </Button>
+                                </div>
+                              ) : (
+                                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                  {error.action_items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
 
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="font-semibold">Responsible Team:</span>
-                            <span className="px-2 py-1 bg-grafana-orange/10 text-grafana-orange rounded">
-                              {error.responsible_team}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Responsible Team</h4>
+                              {isEditingCard ? (
+                                <input
+                                  type="text"
+                                  value={currentError.responsible_team}
+                                  onChange={(e) => updateEditedError('responsible_team', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  placeholder="Responsible Team"
+                                />
+                              ) : (
+                                <span className="inline-block px-2 py-1 bg-grafana-orange/10 text-grafana-orange rounded text-sm">
+                                  {error.responsible_team}
+                                </span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
                 </div>
               </CardContent>

@@ -89,17 +89,29 @@ async def create_review(
         return await get_review_by_id(review_id)
 
 
-async def update_review(review_id: int, summary: str) -> Optional[Dict[str, Any]]:
+async def update_review(
+    review_id: int, summary: str, errors: Optional[List[Dict[str, Any]]] = None
+) -> Optional[Dict[str, Any]]:
     """Update an existing error review"""
     async with aiosqlite.connect(DATABASE_PATH) as db:
-        await db.execute(
-            """
-            UPDATE error_reviews
-            SET summary = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-            """,
-            (summary, review_id),
-        )
+        if errors is not None:
+            await db.execute(
+                """
+                UPDATE error_reviews
+                SET summary = ?, errors = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (summary, json.dumps(errors), review_id),
+            )
+        else:
+            await db.execute(
+                """
+                UPDATE error_reviews
+                SET summary = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (summary, review_id),
+            )
         await db.commit()
         return await get_review_by_id(review_id)
 
