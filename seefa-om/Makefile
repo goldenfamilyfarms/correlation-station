@@ -1018,6 +1018,24 @@ prune: ## Remove unused Docker resources
 	@docker system prune -f
 	@echo "$(GREEN)✓ Prune complete$(NC)"
 
+.PHONY: prune-all
+prune-all: ## Remove all unused Docker resources (images, containers, volumes, networks)
+	@echo "$(RED)⚠️  WARNING: This will remove all unused Docker resources$(NC)"
+	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "$(YELLOW)→ Pruning all Docker resources...$(NC)"
+	@docker system prune -a -f --volumes
+	@echo "$(GREEN)✓ Complete prune finished$(NC)"
+
+.PHONY: purge
+purge: teardown-all ## Complete purge (stop all, remove volumes and unused resources)
+	@echo "$(RED)⚠️  WARNING: This will remove all data and unused Docker resources$(NC)"
+	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "$(YELLOW)→ Removing volumes...$(NC)"
+	@docker volume rm $$(docker volume ls -q | grep -E 'grafana-data|loki-data|tempo-data|prometheus-data|pyroscope-data|redis-data|seca-db') 2>/dev/null || true
+	@echo "$(YELLOW)→ Pruning Docker system...$(NC)"
+	@docker system prune -a -f --volumes
+	@echo "$(GREEN)✓ Complete purge finished$(NC)"
+
 .PHONY: show-urls
 show-urls: ## Show all service URLs
 	@echo "$(BLUE)========================================$(NC)"
