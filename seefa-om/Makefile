@@ -377,9 +377,34 @@ setup-all: setup-validate ## Complete automated setup (all components)
 .PHONY: teardown-sense-apps
 teardown-sense-apps: ## Stop and remove Sense apps
 	@echo "$(YELLOW)→ Stopping Sense apps...$(NC)"
-	@$(DOCKER_COMPOSE) stop beorn palantir arda 2>/dev/null || true
-	@$(DOCKER_COMPOSE) rm -f beorn palantir arda 2>/dev/null || true
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) stop beorn palantir arda 2>/dev/null || true
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) rm -f beorn palantir arda 2>/dev/null || true
 	@echo "$(GREEN)✓ Sense apps removed$(NC)"
+
+.PHONY: setup-alloy
+setup-alloy: ## Setup Grafana Alloy for log collection
+	@echo "$(BLUE)========================================$(NC)"
+	@echo "$(GREEN)Setting Up Grafana Alloy$(NC)"
+	@echo "$(BLUE)========================================$(NC)"
+	@echo ""
+	@echo "$(YELLOW)→ Starting Alloy...$(NC)"
+	@cd mdso-alloy && $(DOCKER_COMPOSE) up -d alloy
+	@sleep 5
+	@curl -sf http://localhost:12345/-/ready >/dev/null 2>&1 && \
+		echo "$(GREEN)  ✓ Alloy healthy on :12345$(NC)" || \
+		echo "$(YELLOW)  ⚠ Alloy starting...$(NC)"
+	@echo ""
+	@echo "$(GREEN)✓ Alloy setup complete$(NC)"
+	@echo ""
+
+.PHONY: teardown-alloy
+teardown-alloy: ## Stop and remove Alloy
+	@echo "$(YELLOW)→ Stopping Alloy...$(NC)"
+	@cd mdso-alloy && $(DOCKER_COMPOSE) down 2>/dev/null || true
+	@echo "$(GREEN)✓ Alloy removed$(NC)"
+
+.PHONY: restart-alloy
+restart-alloy: teardown-alloy setup-alloy ## Restart Alloy
 
 .PHONY: teardown-frontend
 teardown-frontend: ## Stop and remove Frontend UI
@@ -1017,24 +1042,6 @@ prune: ## Remove unused Docker resources
 	@echo "$(YELLOW)→ Pruning Docker resources...$(NC)"
 	@docker system prune -f
 	@echo "$(GREEN)✓ Prune complete$(NC)"
-
-.PHONY: prune-all
-prune-all: ## Remove all unused Docker resources (images, containers, volumes, networks)
-	@echo "$(RED)⚠️  WARNING: This will remove all unused Docker resources$(NC)"
-	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
-	@echo "$(YELLOW)→ Pruning all Docker resources...$(NC)"
-	@docker system prune -a -f --volumes
-	@echo "$(GREEN)✓ Complete prune finished$(NC)"
-
-.PHONY: purge
-purge: teardown-all ## Complete purge (stop all, remove volumes and unused resources)
-	@echo "$(RED)⚠️  WARNING: This will remove all data and unused Docker resources$(NC)"
-	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
-	@echo "$(YELLOW)→ Removing volumes...$(NC)"
-	@docker volume rm $$(docker volume ls -q | grep -E 'grafana-data|loki-data|tempo-data|prometheus-data|pyroscope-data|redis-data|seca-db') 2>/dev/null || true
-	@echo "$(YELLOW)→ Pruning Docker system...$(NC)"
-	@docker system prune -a -f --volumes
-	@echo "$(GREEN)✓ Complete purge finished$(NC)"
 
 .PHONY: show-urls
 show-urls: ## Show all service URLs

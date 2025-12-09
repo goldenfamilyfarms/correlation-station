@@ -15,7 +15,7 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations, seca_reviews
+from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 from app.database import init_database, seed_sample_data
@@ -126,7 +126,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         window_seconds=settings.corr_window_seconds,
         exporter_manager=exporter_manager,
     )
-    
+
     # Store in app state
     app.state.correlation_engine = correlation_engine
     app.state.LOG_RECORDS_RECEIVED = LOG_RECORDS_RECEIVED
@@ -168,13 +168,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 app = FastAPI(
     title="SEEFA Observability - Correlation Engine",
     description="""Real-time log and trace correlation engine for SEEFA Observability Platform.
-    
+
     ## Features
     - **Real-time Correlation**: Links logs and traces within 60s windows using trace_id
     - **Multi-Backend Export**: Exports to Loki, Tempo, Prometheus, and optional Datadog
     - **OTLP Support**: Native OpenTelemetry Protocol ingestion
     - **Low-Cardinality Design**: Prevents metric explosion with optimized labeling
-    
+
     ## Endpoints
     - **POST /api/logs**: Ingest log batches
     - **POST /api/otlp/v1/logs**: OTLP logs ingestion
@@ -282,6 +282,7 @@ app.include_router(logs.router, prefix="/api", tags=["logs"])
 app.include_router(otlp.router, prefix="/api/otlp/v1", tags=["otlp"])
 app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
+app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 
 
 # Prometheus metrics endpoint

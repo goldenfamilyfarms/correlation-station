@@ -14,9 +14,10 @@ export default function DocumentationPage() {
       </div>
 
       <Tabs defaultValue="traceql" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="traceql">TraceQL</TabsTrigger>
           <TabsTrigger value="promql">PromQL</TabsTrigger>
+          <TabsTrigger value="logql">LogQL</TabsTrigger>
           <TabsTrigger value="instrumentation">Instrumentation</TabsTrigger>
           <TabsTrigger value="opentelemetry">OpenTelemetry SDK</TabsTrigger>
         </TabsList>
@@ -272,6 +273,259 @@ export default function DocumentationPage() {
                   <li>Range selectors like <code className="bg-gray-100 px-2 py-1 rounded">[5m]</code> must be at least 2x scrape interval</li>
                   <li>Regex matching: <code className="bg-gray-100 px-2 py-1 rounded">=~</code> for match, <code className="bg-gray-100 px-2 py-1 rounded">!~</code> for not match</li>
                   <li>Use <code className="bg-gray-100 px-2 py-1 rounded">offset</code> to compare with past: <code className="bg-gray-100 px-2 py-1 rounded">metric offset 1h</code></li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* LogQL Tab */}
+        <TabsContent value="logql" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-grafana-orange" />
+                <CardTitle>LogQL - Log Query Language</CardTitle>
+              </div>
+              <CardDescription>
+                Query and analyze logs in Grafana Loki
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">What is LogQL?</h3>
+                <p className="text-gray-600 mb-4">
+                  LogQL is Grafana Loki's query language, inspired by PromQL. It allows you to query,
+                  filter, and aggregate log data using label selectors and line filters.
+                </p>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Basic Syntax</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
+                    <div className="text-grafana-orange">// Get logs for a specific service</div>
+                    <div>{'{ service_name="auth-service" }'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
+                    <div className="text-grafana-orange">// Filter logs containing "error"</div>
+                    <div>{'{ service_name="api" } |= "error"'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
+                    <div className="text-grafana-orange">// Exclude logs containing "debug"</div>
+                    <div>{'{ job="app" } != "debug"'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Log Stream Selectors</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Multiple label matchers</div>
+                    <div>{'{ service_name="api", environment="production", level="error" }'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Regex matching</div>
+                    <div>{'{ service_name=~"api.*", level!~"debug|trace" }'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Using or operator (|)</div>
+                    <div>{'{ service_name="api" } | { service_name="gateway" }'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Line Filter Operators</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-blue">|=</code>
+                    <p className="text-sm text-gray-600 mt-1">Line contains string (case-sensitive)</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-blue">!=</code>
+                    <p className="text-sm text-gray-600 mt-1">Line does not contain string</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-blue">|~</code>
+                    <p className="text-sm text-gray-600 mt-1">Line matches regex</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-blue">!~</code>
+                    <p className="text-sm text-gray-600 mt-1">Line does not match regex</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Parser Expressions</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Parse JSON logs</div>
+                    <div>{'{ service_name="api" } | json'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Parse specific JSON fields</div>
+                    <div>{'{ job="app" } | json level, message, user_id'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Parse logfmt format</div>
+                    <div>{'{ service_name="gateway" } | logfmt'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Parse with regex and extract labels</div>
+                    <div>{'{ job="nginx" } | regexp `(?P<ip>\\S+) - (?P<user>\\S+) \\[(?P<timestamp>[^]]+)\\]`'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Label Filter Expressions</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Filter after parsing</div>
+                    <div>{'{ job="app" } | json | level="error" and status_code >= 500'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Using comparison operators</div>
+                    <div>{'{ service_name="api" } | json | duration > 1000 and user_id != ""'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Aggregation Functions</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Count logs per second by service</div>
+                    <div>{'sum by (service_name) (rate({ job="app" }[5m]))'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Count error logs</div>
+                    <div>{'sum(count_over_time({ service_name="api" } |= "error" [5m]))'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Calculate bytes processed</div>
+                    <div>{'sum(bytes_over_time({ job="nginx" }[1h]))'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Average of extracted values</div>
+                    <div>{'avg_over_time({ job="api" } | json | unwrap duration [5m])'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Common Aggregation Functions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">rate()</code>
+                    <p className="text-sm text-gray-600 mt-1">Calculate per-second rate</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">count_over_time()</code>
+                    <p className="text-sm text-gray-600 mt-1">Count log lines</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">bytes_over_time()</code>
+                    <p className="text-sm text-gray-600 mt-1">Sum log bytes</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">sum()</code>
+                    <p className="text-sm text-gray-600 mt-1">Sum values across series</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">avg()</code>
+                    <p className="text-sm text-gray-600 mt-1">Average values</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <code className="font-semibold text-grafana-green">max()/min()</code>
+                    <p className="text-sm text-gray-600 mt-1">Maximum/minimum values</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Advanced Examples</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Error rate by service</div>
+                    <div>{'sum by (service_name) (rate({ level="error" }[5m]))'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Top 10 error messages</div>
+                    <div>{'topk(10, sum by (message) (count_over_time({ level="error" } | json [1h])))'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// 95th percentile response time</div>
+                    <div>{'quantile_over_time(0.95, { job="api" } | json | unwrap duration [5m])'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Logs per minute with formatting</div>
+                    <div>{'{ service_name="api" } | json | line_format "{{.timestamp}} [{{.level}}] {{.message}}"'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Unwrap for Metrics Extraction</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Extract and aggregate numeric values</div>
+                    <div>{'sum_over_time({ job="api" } | json | unwrap bytes_sent [5m])'}</div>
+                  </div>
+
+                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                    <div className="text-grafana-orange">// Convert duration labels to metrics</div>
+                    <div>{'avg_over_time({ service_name="payment" } | json | unwrap request_duration_ms [10m])'}</div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Pro Tips</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li>Use label selectors first for efficient queries - they leverage Loki's index</li>
+                  <li>Chain filters for better performance: <code className="bg-gray-100 px-2 py-1 rounded">{'{ } |= "error" |= "timeout"'}</code></li>
+                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">| json</code> to parse structured logs and filter on fields</li>
+                  <li>Keep label cardinality low - use line filters for high-cardinality data</li>
+                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">unwrap</code> to extract metrics from logs for aggregation</li>
+                  <li>Combine with <code className="bg-gray-100 px-2 py-1 rounded">line_format</code> to customize log output</li>
                 </ul>
               </div>
             </CardContent>
