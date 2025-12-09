@@ -1,8 +1,0 @@
-include: 
-  - project: service-engineering-automation/dev-ops/cicd
-    ref: main
-    file:
-      - /qc_scan.yml
-
-qc_scan:
-  extends: .qc_scan
