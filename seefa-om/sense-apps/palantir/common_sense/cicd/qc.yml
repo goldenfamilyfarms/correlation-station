@@ -1,8 +1,0 @@
-qc:
-  stage: quality
-  tags:
-    - qc
-  script:
-    - pip install black==22.8.0 flake8
-    - black --check --line-length 120 .
-    - flake8 --max-line-length=120 --extend-ignore=E203 .
