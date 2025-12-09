@@ -278,27 +278,27 @@ setup-sense-apps: #setup-gateway ## Setup Sense applications (Beorn, Palantir, A
 	@echo "$(BLUE)========================================$(NC)"
 	@echo ""
 	@echo "$(YELLOW)→ Building Beorn...$(NC)"
-	@$(DOCKER_COMPOSE) build beorn
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) build beorn
 	@echo "$(YELLOW)→ Starting Beorn...$(NC)"
-	@$(DOCKER_COMPOSE) up -d beorn
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) up -d beorn
 	@sleep 5
 	@curl -sf http://localhost:5001/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Beorn healthy on :5001$(NC)" || \
 		echo "$(YELLOW)  ⚠ Beorn starting...$(NC)"
 	@echo ""
 	@echo "$(YELLOW)→ Building Palantir...$(NC)"
-	@$(DOCKER_COMPOSE) build palantir
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) build palantir
 	@echo "$(YELLOW)→ Starting Palantir...$(NC)"
-	@$(DOCKER_COMPOSE) up -d palantir
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) up -d palantir
 	@sleep 5
 	@curl -sf http://localhost:5002/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Palantir healthy on :5002$(NC)" || \
 		echo "$(YELLOW)  ⚠ Palantir starting...$(NC)"
 	@echo ""
 	@echo "$(YELLOW)→ Building Arda...$(NC)"
-	@$(DOCKER_COMPOSE) build arda
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) build arda
 	@echo "$(YELLOW)→ Starting Arda...$(NC)"
-	@$(DOCKER_COMPOSE) up -d arda
+	@cd $(SENSE_DIR) && $(DOCKER_COMPOSE) up -d arda
 	@sleep 5
 	@curl -sf http://localhost:5003/health >/dev/null 2>&1 && \
 		echo "$(GREEN)  ✓ Arda healthy on :5003$(NC)" || \
