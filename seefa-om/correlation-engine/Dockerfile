@@ -17,8 +17,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Create non-root user
+# Create non-root user and data directory
 RUN useradd -m -u 1000 -s /bin/bash correlation && \
+    mkdir -p /app/data && \
     chown -R correlation:correlation /app
 
 # Copy installed packages from builder
