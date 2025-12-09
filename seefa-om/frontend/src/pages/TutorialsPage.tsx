@@ -510,10 +510,6 @@ export default function TutorialsPage() {
                       </CardContent>
                     </Card>
                   ))}
-
-                  {idx < selectedTutorial.documentationSections.length - 1 && (
-                    <Separator />
-                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
