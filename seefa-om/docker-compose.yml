@@ -209,7 +209,7 @@ services:
   #   container_name: beorn
   #   restart: unless-stopped
   #   ports:
-  #     - "5001:5002"
+  #     - "5004:5002"
   #   environment:
   #     - SERVICE_NAME=beorn
   #     - SERVICE_PORT=5002
