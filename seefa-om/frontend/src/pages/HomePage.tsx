@@ -28,7 +28,7 @@ export default function HomePage() {
       description: 'View correlation engine metrics and API documentation',
       icon: Activity,
       color: 'grafana-blue',
-      href: 'http://localhost:8080/docs',
+      href: 'http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs',
       external: true,
     },
     {
@@ -36,7 +36,7 @@ export default function HomePage() {
       description: 'Continuous profiling for performance analysis',
       icon: Flame,
       color: 'grafana-yellow',
-      href: 'http://localhost:4040',
+      href: 'http://austx-mdso-logs-02.chtrse.com/pyroscope',
       external: true,
     },
     {
@@ -44,7 +44,7 @@ export default function HomePage() {
       description: 'Metrics storage and querying',
       icon: TestTube,
       color: 'grafana-red',
-      href: 'http://localhost:9090',
+      href: 'http://159.56.4.94:9090',
       external: true,
     },
   ]
@@ -128,19 +128,19 @@ export default function HomePage() {
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Getting Started</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <h3 className="font-semibold text-grafana-orange mb-2">📚 Documentation</h3>
+            <h3 className="font-semibold text-grafana-orange mb-2">Documentation</h3>
             <p className="text-sm text-gray-600">
               Explore comprehensive guides on TraceQL, PromQL, and application instrumentation
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-grafana-blue mb-2">🏗️ Architecture</h3>
+            <h3 className="font-semibold text-grafana-blue mb-2">Architecture</h3>
             <p className="text-sm text-gray-600">
               Learn about our distributed systems architecture and design patterns
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-grafana-green mb-2">🔍 SECA Reviews</h3>
+            <h3 className="font-semibold text-grafana-green mb-2">SECA Reviews</h3>
             <p className="text-sm text-gray-600">
               Bi-weekly error analysis and resolution tracking for production issues
             </p>
