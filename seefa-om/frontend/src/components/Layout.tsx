@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Activity, Home, BookOpen, Network, AlertCircle } from 'lucide-react'
+import { Activity, Home, BookOpen, Network, AlertCircle, GraduationCap } from 'lucide-react'
 
 export default function Layout() {
   const location = useLocation()
@@ -9,6 +9,7 @@ export default function Layout() {
     { name: 'Documentation', href: '/docs', icon: BookOpen },
     { name: 'Architecture', href: '/architecture', icon: Network },
     { name: 'SECA Reviews', href: '/seca-reviews', icon: AlertCircle },
+    { name: 'Tutorials', href: '/tutorials', icon: GraduationCap },
   ]
 
   return (

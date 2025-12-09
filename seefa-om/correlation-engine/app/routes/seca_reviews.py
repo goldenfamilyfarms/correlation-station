@@ -40,6 +40,7 @@ class CreateReviewRequest(BaseModel):
 
 class UpdateReviewRequest(BaseModel):
     summary: str
+    errors: List[ErrorDetail] = None
 
 
 @router.get("/seca-reviews")
@@ -90,7 +91,10 @@ async def update_existing_review(
 ) -> Dict[str, Any]:
     """Update an existing SECA error review"""
     try:
-        review = await update_review(review_id, request.summary)
+        errors_dict = None
+        if request.errors is not None:
+            errors_dict = [error.dict() for error in request.errors]
+        review = await update_review(review_id, request.summary, errors_dict)
         if not review:
             raise HTTPException(status_code=404, detail="Review not found")
         return review

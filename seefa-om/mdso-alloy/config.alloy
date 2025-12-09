@@ -5,8 +5,48 @@
 // Discover syslog files to tail
 local.file_match "syslog_files" {
   path_targets = [
+    // Original paths
     {"__path__" = "/var/log/ciena/blueplanet.log"},
     {"__path__" = "/bp2/log/*.log"},
+    {"__path__" = "/var/log/ciena/*"},
+
+    // Script plan logs
+    {"__path__" = "/opt/ciena/bp2/scriptplan_2.4.8-24.08-1_1/log/plan-script*"},
+
+    // Elasticsearch logs
+    {"__path__" = "/opt/ciena/bp2/elasticsearch_24.08-10-es8.15.0_1/log/es.log"},
+    {"__path__" = "/opt/ciena/bp2/gvselasticsearch_24.08-4-es8.12.1_2/log/elasticsearch/*"},
+
+    // BPO Core logs
+    {"__path__" = "/opt/ciena/bp2/bpocore_4.9.3-13365-7b757e187d_1/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bpocore_4.9.3-13365-7b757e187d_1/log/plan-log/*"},
+
+    // BPO Marketer logs
+    {"__path__" = "/opt/ciena/bp2/bpmarketra_1910.0.0-5_0/log/*"},
+
+    // Prometheus logs
+    {"__path__" = "/opt/ciena/bp2/prometheus_3.4.39_0/*"},
+
+    // BPO RA (Resource Adapters) logs
+    {"__path__" = "/opt/ciena/bp2/bpraadva_6.5.1.v.23.12.01_1/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bpraadva_6.5.1.v.23.12.01_4/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bpracisco_6.5.4.v.23.12.02_2/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bprajuniper_6.5.1.v.23.12.01_2/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bprajuniper_6.5.1.v.23.12.01_5/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bprarad_6.5.2.v.21.10.06_2/log/*"},
+    {"__path__" = "/opt/ciena/bp2/bprarphy_6.4.4.v.21.10.4_0/log/*"},
+
+    // Host metrics logs
+    {"__path__" = "/opt/ciena/bp2/host-metrics_1.0.24_0/log/*"},
+
+    // Kafka logs
+    {"__path__" = "/opt/ciena/bp2/kafka_24.8.3-k3.6.1_0/log/*"},
+
+    // RA Control logs
+    {"__path__" = "/opt/ciena/bp2/ractrl_6.9.6_1/log/*"},
+
+    // RA Access logs
+    {"__path__" = "/opt/ciena/bp2/raccess_6.1.1_0/log/*"},
   ]
 }
 

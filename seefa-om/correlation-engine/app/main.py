@@ -15,7 +15,7 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations, seca_reviews
+from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 from app.database import init_database, seed_sample_data
@@ -282,6 +282,7 @@ app.include_router(logs.router, prefix="/api", tags=["logs"])
 app.include_router(otlp.router, prefix="/api/otlp/v1", tags=["otlp"])
 app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
+app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 
 
 # Prometheus metrics endpoint
