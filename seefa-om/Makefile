@@ -411,6 +411,7 @@ teardown-frontend: ## Stop and remove Frontend UI
 	@echo "$(YELLOW)→ Stopping Frontend UI...$(NC)"
 	@$(DOCKER_COMPOSE) stop correlation-station-ui 2>/dev/null || true
 	@$(DOCKER_COMPOSE) rm -f correlation-station-ui 2>/dev/null || true
+	@echo "$(GREEN)✓ Frontend removed$(NC)") rm -f correlation-station-ui 2>/dev/null || true
 	@echo "$(GREEN)✓ Frontend removed$(NC)"
 
 .PHONY: teardown-redis
