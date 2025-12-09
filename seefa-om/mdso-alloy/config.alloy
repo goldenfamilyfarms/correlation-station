@@ -200,16 +200,6 @@ otelcol.receiver.loki "default" {
 otelcol.exporter.otlphttp "meta" {
   client {
     endpoint = "http://159.56.4.94:55681"
-
-    // Retry configuration for reliability
-    retry_on_failure {
-      enabled         = true
-      initial_interval = "5s"
-      max_interval    = "30s"
-      max_elapsed_time = "300s"
-    }
-
-    // Timeout settings
-    timeout = "10s"
+    timeout = "30s"
   }
 }
