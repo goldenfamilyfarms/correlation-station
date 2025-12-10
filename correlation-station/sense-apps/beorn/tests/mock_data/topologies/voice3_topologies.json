@@ -1,0 +1,125 @@
+{
+  "customerName": "TWC",
+  "serviceName": "51.IPXN.002287..TWCC",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "VOICE",
+  "serviceMedia": "FIBER",
+  "topology": [
+      {
+          "model": "ONF_TAPI",
+          "version": "2.0.0",
+          "data": {
+              "node": [
+                  {
+                      "uuid": "AUSDTXIR2CW",
+                      "name": [
+                          {
+                              "name": "hostName",
+                              "value": "AUSDTXIR2CW"
+                          },
+                          {
+                              "name": "deviceRole",
+                              "value": "PE"
+                          },
+                          {
+                              "name": "vendor",
+                              "value": "JUNIPER"
+                          },
+                          {
+                              "name": "model",
+                              "value": "MX480"
+                          },
+                          {
+                              "name": "managementIP",
+                              "value": "71.42.150.66"
+                          },
+                          {
+                            "name": "location",
+                            "value": "Z_SIDE"
+                          },          
+                          {
+                              "name": "address",
+                              "value": "11921 N MOPAC EXPY 78759"
+                          },
+                          {
+                              "name": "fqdn",
+                              "value": "AUSDTXIR2CW.DEV.CHTRSE.COM"
+                          },
+                          {
+                              "name": "equipmentStatus",
+                              "value": "LIVE"
+                          }
+                      ],
+                      "ownedNodeEdgePoint": [
+                          {
+                              "uuid": "AUSDTXIR2CW-GE-4/2/7",
+                              "name": [
+                                  {
+                                      "name": "name",
+                                      "value": "GE-4/2/7"
+                                  },
+                                  {
+                                      "name": "portRole",
+                                      "value": "ENNI"
+                                  },
+                                  {
+                                      "name": "transportId",
+                                      "value": "51.KFFD.000069..TWCC"
+                                  }
+                              ]
+                          }
+                      ]
+                  }
+              ],
+              "link": []
+          }
+      }
+  ],
+  "service": [
+      {
+          "model": "MEF-LEGATO-EVC",
+          "version": "2017-07-27",
+          "data": {
+              "evc": [
+                  {
+                      "cosNames": [
+                          {
+                              "name": "BRONZE"
+                          }
+                      ],
+                      "evc-ingress-bwp": "10m",
+                      "evc-egress-bwp": "10m",
+                      "adminState": true,
+                      "userLabel": "51.IPXN.002287..TWCC",
+                      "maxNumOfEvcEndPoint": 1,
+                      "serviceType": "IP",
+                      "connectionType": "Point to Point",
+                      "sVlan": "1300",
+                      "endPoints": [
+                          {
+                              "uniId": "AUSDTXIR2CW-GE-4/2/7",
+                              "adminState": true,
+                              "address": "11921 N MOPAC EXPY 78759",
+                              "sVlan": "1300",
+                              "sVlanOperation": "PUSH"
+                          }
+                      ]
+                  }
+              ],
+              "fia": [
+                  {
+                      "type": "VOICE",
+                      "endPoints": [
+                          {
+                              "uniId": "AUSDTXIR2CW-GE-4/2/7",
+                              "lanIpv4Addresses": "192.168.1.1/30",
+                              "lanIpv6Addresses": []
+                          }
+                      ]
+                  }
+              ]
+          }
+      }
+  ]
+}

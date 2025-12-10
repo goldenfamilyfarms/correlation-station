@@ -1,0 +1,80 @@
+stream_over_http_enabled: true
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+  log_level: info
+
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1.073741824e+09
+  trace_by_id:
+    duration_slo: 5s
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+  log_received_spans:
+    enabled: true
+    include_all_attributes: true
+
+ingester:
+  max_block_duration: 5m
+  trace_idle_period: 10s
+  max_block_bytes: 5_000_000
+
+compactor:
+  compaction:
+    block_retention: 168h # 7 days
+    max_block_bytes: 5_000_000
+    compaction_window: 1h
+    v2_out_buffer_bytes: 5_000_000
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+      v2_encoding: zstd
+    pool:
+      max_workers: 100
+      queue_depth: 10000
+
+overrides:
+  max_global_traces_per_user: 10000
+  max_bytes_per_trace: 50000
+  ingestion_rate_limit_bytes: 15_000_000
+  ingestion_burst_size_bytes: 20_000_000
+  max_search_duration: 0
+
+metrics_generator:
+  registry:
+    collection_interval: 15s
+    external_labels:
+      source: tempo
+      environment: dev
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  processor:
+    service_graphs:
+      histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5]
+      dimensions:
+        - service.name
+        - deployment.environment
+    span_metrics:
+      histogram_buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5]
+      dimensions:
+        - service.name
+        - http.method
+        - http.status_code
+        - deployment.environment

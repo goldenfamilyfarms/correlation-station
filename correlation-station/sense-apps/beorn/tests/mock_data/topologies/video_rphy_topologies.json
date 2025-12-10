@@ -1,0 +1,339 @@
+{
+    "customerName": "BALLAD HEALTH",
+    "serviceName": "42.VSXX.000096..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "VIDEO",
+    "serviceMedia": "FIBER",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "BUVLTNAX1CW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "BUVLTNAX1CW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "MX960"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "150.181.6.7"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "1320 SHIPLEY FERRY RD 37617"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "BUVLTNAX1CW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "BUVLTNAX1CW-ET-10/3/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-10/3/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE40L.BUVLTNAX1CW.BUVLTNAX1QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE18"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "BUVLTNAX1CW-ET-1/3/0",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-1/3/0"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE40L.BUVLTNAX1CW.BUVLTNAX1QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE18"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "BUVLTNAX1QW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "BUVLTNAX1QW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "AGG"
+                },
+                {
+                  "name": "vendor",
+                  "value": "JUNIPER"
+                },
+                {
+                  "name": "model",
+                  "value": "QFX5100-96S"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "10.27.7.29"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "1320 SHIPLEY FERRY RD 37617"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "BUVLTNAX1QW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "BUVLTNAX1QW-ET-1/0/96",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-1/0/96"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE40L.BUVLTNAX1CW.BUVLTNAX1QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE18"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "BUVLTNAX1QW-ET-0/0/96",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ET-0/0/96"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE40L.BUVLTNAX1CW.BUVLTNAX1QW"
+                    },
+                    {
+                      "name": "lagMember",
+                      "value": "AE18"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "BUVLTNAX1QW-XE-1/0/28",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "XE-1/0/28"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE10.BUVLTNAX1QW.BRSTTNUYBZW"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "BRSTTNUYBZW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "BRSTTNUYBZW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "ADVA"
+                },
+                {
+                  "name": "model",
+                  "value": "FSP 150-XG116PRO"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "DHCP"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "1 MEDICAL PARK BLVD 37620"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "BRSTTNUYBZW.CML.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "PLANNED"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "BRSTTNUYBZW-ETH_PORT-1-1-1-8",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH_PORT-1-1-1-8"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42001.GE10.BUVLTNAX1QW.BRSTTNUYBZW"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "BRSTTNUYBZW-ETH_PORT-1-1-1-3",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "ETH_PORT-1-1-1-3"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "UNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "42.VSXX.000096..CHTR"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "BUVLTNAX1CW-ET-10/3/0",
+                "BUVLTNAX1QW-ET-1/0/96"
+              ],
+              "uuid": "BUVLTNAX1CW-ET-10/3/0_BUVLTNAX1QW-ET-1/0/96"
+            },
+            {
+              "nodeEdgePoint": [
+                "BUVLTNAX1CW-ET-1/3/0",
+                "BUVLTNAX1QW-ET-0/0/96"
+              ],
+              "uuid": "BUVLTNAX1CW-ET-1/3/0_BUVLTNAX1QW-ET-0/0/96"
+            },
+            {
+              "nodeEdgePoint": [
+                "BUVLTNAX1QW-XE-1/0/28",
+                "BRSTTNUYBZW-ETH_PORT-1-1-1-8"
+              ],
+              "uuid": "BUVLTNAX1QW-XE-1/0/28_BRSTTNUYBZW-ETH_PORT-1-1-1-8"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "SILVER"
+                }
+              ],
+              "evc-ingress-bwp": "5g",
+              "evc-egress-bwp": "5g",
+              "adminState": true,
+              "userLabel": "42.VSXX.000096..CHTR",
+              "maxNumOfEvcEndPoint": 1,
+              "serviceType": "RPHY",
+              "connectionType": "Point to Point",
+              "sVlan": "4063",
+              "endPoints": [
+                {
+                  "uniId": "BRSTTNUYBZW-ETH_PORT-1-1-1-3",
+                  "adminState": true,
+                  "address": "1 MEDICAL PARK BLVD 37620",
+                  "sVlan": "4063",
+                  "sVlanOperation": "PUSH"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }

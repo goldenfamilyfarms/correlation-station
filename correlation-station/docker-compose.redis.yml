@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: correlation-redis
+    ports:
+      - '6379:6379'
+
+  rq-worker:
+    build:
+      context: .
+      dockerfile: correlation-engine/docker/worker.Dockerfile
+    container_name: correlation-rq-worker
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+    restart: unless-stopped

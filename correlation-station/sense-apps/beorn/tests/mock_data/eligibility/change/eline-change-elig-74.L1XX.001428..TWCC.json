@@ -1,0 +1,485 @@
+{
+    "customerName": "STATE OF OHIO",
+    "serviceName": "74.L1XX.001428..TWCC",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CLMBOHNJ2AW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMBOHNJ2AW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "EX4200-24F"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.9.48.21"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1320 ARTHUR E ADAMS DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMBOHNJ2AW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-0/1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-1/1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-2/1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-2/1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-3/1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-3/1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-0/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-1/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-2/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-2/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ2AW-XE-3/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-3/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CLMBOHNJ1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMBOHNJ1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.65"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1320 ARTHUR E ADAMS DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMBOHNJ1CW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMBOHNJ1CW-XE-0/2/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/2/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE2"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ1CW-XE-0/0/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ1CW-XE-0/0/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMBOHNJ1CW-XE-3/2/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-3/2/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE0"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ2AW-XE-0/1/1",
+                            "CLMBOHNJ2AW-XE-1/1/1"
+                        ],
+                        "uuid": "CLMBOHNJ2AW-XE-0/1/1_CLMBOHNJ2AW-XE-1/1/1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ2AW-XE-2/1/1",
+                            "CLMBOHNJ2AW-XE-3/1/1"
+                        ],
+                        "uuid": "CLMBOHNJ2AW-XE-2/1/1_CLMBOHNJ2AW-XE-3/1/1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ1CW-XE-0/2/1",
+                            "CLMBOHNJ2AW-XE-0/1/0"
+                        ],
+                        "uuid": "CLMBOHNJ1CW-XE-0/2/1_CLMBOHNJ2AW-XE-0/1/0"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ1CW-XE-0/0/0",
+                            "CLMBOHNJ2AW-XE-1/1/0"
+                        ],
+                        "uuid": "CLMBOHNJ1CW-XE-0/0/0_CLMBOHNJ2AW-XE-1/1/0"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ1CW-XE-0/0/1",
+                            "CLMBOHNJ2AW-XE-2/1/0"
+                        ],
+                        "uuid": "CLMBOHNJ1CW-XE-0/0/1_CLMBOHNJ2AW-XE-2/1/0"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMBOHNJ1CW-XE-3/2/1",
+                            "CLMBOHNJ2AW-XE-3/1/0"
+                        ],
+                        "uuid": "CLMBOHNJ1CW-XE-3/2/1_CLMBOHNJ2AW-XE-3/1/0"
+                    }
+                ]
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "MARNOHIP1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "MARNOHIP1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX480"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.32"
+                            },
+                            {
+                                "name": "address",
+                                "value": "330 W FAIRGROUND ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "MARNOHIP1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "MARNOHIP1CW-GE-2/1/7",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-2/1/7"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "MARNOH492ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "MARNOH492ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.8.214.217"
+                            },
+                            {
+                                "name": "address",
+                                "value": "940 MARION WILLIAMSPORT RD"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "MARNOH492ZW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "MARNOH492ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "MARNOH492ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "MARNOHIP1CW-GE-2/1/7",
+                            "MARNOH492ZW-ETH PORT 1"
+                        ],
+                        "uuid": "MARNOHIP1CW-GE-2/1/7_MARNOH492ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "SILVER"
+                            }
+                        ],
+                        "evc-ingress-bwp": "200m",
+                        "evc-egress-bwp": "200m",
+                        "evcId": "417137",
+                        "adminState": true,
+                        "userLabel": "74.L1XX.001428..TWCC",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1478",
+                        "endPoints": [
+                            {
+                                "uniId": "CLMBOHNJ2AW-XE-3/1/1",
+                                "adminState": true,
+                                "address": "1320 ARTHUR E ADAMS DR"
+                            },
+                            {
+                                "uniId": "MARNOH492ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "940 MARION WILLIAMSPORT RD",
+                                "sVlan": "1478",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

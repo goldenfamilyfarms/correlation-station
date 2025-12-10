@@ -1,0 +1,47 @@
+[
+    {
+        "CIRC_PATH_INST_ID": "2683417",
+        "PATH_NAME": "CHTRSE.VRFID.429452.BZN HANGARS 1\u00262 LLC",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "TWC NETWORK TAG_PATHS",
+        "ATTR_NAME": "GIA",
+        "ATTR_VALUE": "NO"
+    },
+    {
+        "CIRC_PATH_INST_ID": "2683417",
+        "PATH_NAME": "CHTRSE.VRFID.429452.BZN HANGARS 1\u00262 LLC",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "TWC NETWORK TAG_PATHS",
+        "ATTR_NAME": "OFF-NET FACILITY",
+        "ATTR_VALUE": "NO"
+    },
+    {
+        "CIRC_PATH_INST_ID": "2683417",
+        "PATH_NAME": "CHTRSE.VRFID.429452.BZN HANGARS 1\u00262 LLC",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "TSP CIRCUIT INFO",
+        "ATTR_NAME": "TSP CHILD PRESENT",
+        "ATTR_VALUE": "NO"
+    },
+    {
+        "CIRC_PATH_INST_ID": "2683417",
+        "PATH_NAME": "CHTRSE.VRFID.429452.BZN HANGARS 1\u00262 LLC",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "LEGACY_NETWORK",
+        "ATTR_NAME": "SOURCE",
+        "ATTR_VALUE": "L-CHTR"
+    },
+    {
+        "CIRC_PATH_INST_ID": "2683417",
+        "PATH_NAME": "CHTRSE.VRFID.429452.BZN HANGARS 1\u00262 LLC",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "EVC ATTRIBUTES",
+        "ATTR_NAME": "NETWORK VLAN-ID",
+        "ATTR_VALUE": "1200"
+    }
+]

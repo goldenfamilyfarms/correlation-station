@@ -1,0 +1,371 @@
+{
+    "customerName": "HAMILTON DESIGNS",
+    "serviceName": "31.L1XX.991045..CHTR",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "FIA",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CRMMINGG1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CRMMINGG1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.95.246.129"
+                            },
+                            {
+                                "name": "address",
+                                "value": "352 GRADLE DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CRMMINGG1CW.MW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CRMMINGG1CW-ET-1/3/2",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/3/2"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRMMINGG1CW-ET-10/3/2",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-10/3/2"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CRMMINGG0QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CRMMINGG0QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.30.1.2"
+                            },
+                            {
+                                "name": "address",
+                                "value": "352 GRADLE DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CRMMINGG0QW.NE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CRMMINGG0QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRMMINGG0QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CRMMINGG0QW-XE-0/0/22",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/22"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "FSHSIN671AW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "FSHSIN671AW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "MTU"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX-2I-10G/4SFPP/4SFP4UTP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.30.1.232"
+                            },
+                            {
+                                "name": "address",
+                                "value": "11 MUNICIPAL DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "FSHSIN671AW.SE.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "FSHSIN671AW-0/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "0/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "FSHSIN671AW-ETH PORT 0/6",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 0/6"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "FSHSIN672ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "FSHSIN672ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "11 MUNICIPAL DR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "FSHSIN672ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "FSHSIN672ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "FSHSIN672ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "CRMMINGG1CW-ET-1/3/2",
+                            "CRMMINGG0QW-ET-0/0/96"
+                        ],
+                        "uuid": "CRMMINGG1CW-ET-1/3/2_CRMMINGG0QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CRMMINGG1CW-ET-10/3/2",
+                            "CRMMINGG0QW-ET-1/0/96"
+                        ],
+                        "uuid": "CRMMINGG1CW-ET-10/3/2_CRMMINGG0QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CRMMINGG0QW-XE-0/0/22",
+                            "FSHSIN671AW-0/1"
+                        ],
+                        "uuid": "CRMMINGG0QW-XE-0/0/22_FSHSIN671AW-0/1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "FSHSIN671AW-ETH PORT 0/6",
+                            "FSHSIN672ZW-ETH PORT 1"
+                        ],
+                        "uuid": "FSHSIN671AW-ETH PORT 0/6_FSHSIN672ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "evc-ingress-bwp": "50m",
+                        "evc-egress-bwp": "50m",
+                        "adminState": true,
+                        "userLabel": "31.L1XX.991045..CHTR",
+                        "maxNumOfEvcEndPoint": 1,
+                        "serviceType": "IP",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1127",
+                        "endPoints": [
+                            {
+                                "uniId": "FSHSIN672ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "11 MUNICIPAL DR",
+                                "sVlan": "1127",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ],
+                "fia": [
+                    {
+                        "type": "DIRECT",
+                        "endPoints": [
+                            {
+                                "uniId": "CRMMINGG1CW-ET-1/3/2",
+                                "lanIpv4Addresses": [
+                                    "96.11.94.192/29"
+                                ],
+                                "lanIpv6Addresses": [
+                                    "2605:A40E:680::/48"
+                                ],
+                                "wanIpv6Address": "2605:A401:4::20:0:100/127"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

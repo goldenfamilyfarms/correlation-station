@@ -1,0 +1,9 @@
+[{
+	"test_circ_inst": 1862128,
+	"test_tid": "GNBONCNNS3W",
+	"test_fqdn": "GNBONCNNS3W.CHTRSE.COM",
+	"test_circ_status": "Designed",
+	"test_equip_status": "Planned",
+	"test_equip_vendor": "JUNIPER",
+	"test_equip_model": "NFX250-S1"
+}]

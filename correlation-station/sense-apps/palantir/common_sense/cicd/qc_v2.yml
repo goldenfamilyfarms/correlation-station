@@ -1,0 +1,8 @@
+qc:
+  stage: quality
+  tags:
+    - qc
+  script:
+    - pip install flake8 flake8-bugbear flake8-comprehensions flake8-bandit
+    - flake8 ${PROJECT_NAME}_app/ --config .flake8-app
+    - flake8 tests/ --config .flake8-tests

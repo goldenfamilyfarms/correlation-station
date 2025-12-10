@@ -1,0 +1,40 @@
+// TEST 1: Pure OTel Components
+// MDSO Dev → OTel Gateway (no Loki components)
+
+// Read syslog files
+otelcol.receiver.filelog "syslog" {
+  include = [
+    "/var/log/ciena/blueplanet.log",
+  ]
+  start_at = "beginning"
+  
+  output {
+    logs = [otelcol.processor.resource.add_attributes.input]
+  }
+}
+
+// Add service and environment attributes
+otelcol.processor.resource "add_attributes" {
+  attributes {
+    key    = "service.name"
+    value  = "mdso"
+    action = "upsert"
+  }
+  attributes {
+    key    = "deployment.environment"
+    value  = "dev"
+    action = "upsert"
+  }
+  
+  output {
+    logs = [otelcol.exporter.otlphttp.gateway.input]
+  }
+}
+
+// Export to OTel Gateway on Meta
+otelcol.exporter.otlphttp "gateway" {
+  client {
+    endpoint = "http://159.56.4.94:55681"
+    timeout  = "10s"
+  }
+}

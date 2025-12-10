@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-standalone-chrome
+    ports:
+      - '4444:4444'
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    shm_size: '2g'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4444/wd/hub/status']
+      interval: 10s
+      timeout: 5s
+      retries: 5

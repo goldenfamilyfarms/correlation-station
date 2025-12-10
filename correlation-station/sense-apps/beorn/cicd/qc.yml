@@ -1,0 +1,29 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+
+black_check:
+  stage: quality
+  tags:
+    - qc
+  image: python:3.11
+  script:
+    - |
+      pip install ruff
+      echo "Checking for Black-style wrapping patterns..."
+      if git diff --cached | grep -E '^\+\s{4}[^\s].*\($'; then
+        echo "❌ Black-style formatting detected. Please use Ruff instead."
+        exit 1
+      fi
+
+qc:
+  stage: quality
+  tags:
+    - qc
+  image: python:3.11
+  script:
+    - pip install flake8 flake8-bugbear flake8-comprehensions flake8-bandit ruff
+    - ruff format . --diff || true
+    - ruff format .
+    - ruff check . --fix
+    - flake8 beorn_app/ --config .flake8
+    - flake8 tests/ --config .flake8-test
