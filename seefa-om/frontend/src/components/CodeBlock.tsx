@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
 
 interface CodeBlockProps {
   code: string
@@ -18,10 +19,10 @@ export default function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
 
   const highlightCode = (text: string, lang: string) => {
     const keywords = {
-      logql: ['sum', 'count_over_time', 'rate', 'avg_over_time', 'json', 'logfmt', 'unwrap'],
-      traceql: ['duration', 'status', 'error', 'service', 'name'],
+      logql: ['sum', 'count_over_time', 'rate', 'avg_over_time', 'json', 'logfmt', 'unwrap', 'line_format'],
+      traceql: ['duration', 'status', 'error', 'service', 'name', 'operation'],
       python: ['from', 'import', 'def', 'class', 'return', 'async', 'await', 'with', 'as'],
-      yaml: ['version', 'services', 'environment', 'ports', 'volumes'],
+      yaml: ['version', 'services', 'environment', 'ports', 'volumes', 'grpc', 'endpoint', 'output', 'traces', 'logs'],
     }
 
     const langKeywords = keywords[lang as keyof typeof keywords] || []
@@ -47,13 +48,14 @@ export default function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
   }
 
   return (
-    <div className="relative group my-4">
-      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+    <Card className="my-4 overflow-hidden border-gray-700">
+      <CardHeader className="flex flex-row items-center justify-between bg-gray-900 py-3 px-4">
+        <span className="text-sm font-medium text-gray-300 uppercase">{language}</span>
         <Button
           size="sm"
           variant="ghost"
           onClick={handleCopy}
-          className="h-8 px-2 bg-gray-800 hover:bg-gray-700 text-white"
+          className="h-8 px-2 hover:bg-gray-800 text-gray-300"
         >
           {copied ? (
             <>
@@ -67,13 +69,15 @@ export default function CodeBlock({ code, language = 'text' }: CodeBlockProps) {
             </>
           )}
         </Button>
-      </div>
-      <pre className="bg-black rounded-lg p-4 overflow-x-auto border border-gray-700">
-        <code
-          className="text-gray-300 text-sm font-mono"
-          dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }}
-        />
-      </pre>
-    </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <pre className="bg-black p-4 overflow-x-auto m-0">
+          <code
+            className="text-gray-300 text-sm font-mono"
+            dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }}
+          />
+        </pre>
+      </CardContent>
+    </Card>
   )
 }
