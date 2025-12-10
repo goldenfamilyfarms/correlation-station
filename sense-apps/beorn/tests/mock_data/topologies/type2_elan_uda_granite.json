@@ -1,0 +1,38 @@
+[
+    {
+        "CIRC_PATH_INST_ID": "2631041",
+        "PATH_NAME": "51.L2XX.001307..CHTR",
+        "REV_NBR": "1",
+        "PATH_CLASS": "P",
+        "GROUP_NAME": "ADDITIONAL CIRCUIT INFORMATION",
+        "ATTR_NAME": "VC CLASS",
+        "ATTR_VALUE": "TYPE 2"
+    },
+    {
+        "CIRC_PATH_INST_ID": "1509654",
+        "PATH_NAME": "CHTRSE.VRFID.427442.TWC INTERNAL TESTING",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "LEGACY_NETWORK",
+        "ATTR_NAME": "SOURCE",
+        "ATTR_VALUE": "L-TWC"
+    },
+    {
+        "CIRC_PATH_INST_ID": "1509654",
+        "PATH_NAME": "CHTRSE.VRFID.427442.TWC INTERNAL TESTING",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "EVC ATTRIBUTES",
+        "ATTR_NAME": "NETWORK VLAN-ID",
+        "ATTR_VALUE": "400"
+    },
+    {
+        "CIRC_PATH_INST_ID": "1509654",
+        "PATH_NAME": "CHTRSE.VRFID.427442.TWC INTERNAL TESTING",
+        "REV_NBR": "1",
+        "PATH_CLASS": "N",
+        "GROUP_NAME": "EVC ATTRIBUTES",
+        "ATTR_NAME": "SERVICE LEVEL MONITORING",
+        "ATTR_VALUE": "CONFIGURED"
+    }
+]

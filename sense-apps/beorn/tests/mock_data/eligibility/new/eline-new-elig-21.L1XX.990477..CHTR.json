@@ -1,0 +1,355 @@
+{
+    "customerName": "VERIZON BUSINESS",
+    "serviceName": "21.L1XX.990477..CHTR",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CLMCOH352ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMCOH352ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX240"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.131"
+                            },
+                            {
+                                "name": "address",
+                                "value": "251 NEILSTON ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMCOH352ZW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMCOH352ZW-XE-2/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-2/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": []
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "SGVLOHAJ1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "SGVLOHAJ1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.178.9"
+                            },
+                            {
+                                "name": "address",
+                                "value": "8179 DOW CIR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "SGVLOHAJ1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "SGVLOHAJ1CW-ET-5/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-5/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "SGVLOHAJ1CW-ET-7/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-7/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "SGVLOHAJ0QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "SGVLOHAJ0QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.8.25.65"
+                            },
+                            {
+                                "name": "address",
+                                "value": "8179 DOW CIR"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "SGVLOHAJ0QW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "SGVLOHAJ0QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "SGVLOHAJ0QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "SGVLOHAJ0QW-GE-1/0/14",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-1/0/14"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "BKPKOHIA1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "BKPKOHIA1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "6275 EASTLAND RD"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "BKPKOHIA1ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "BKPKOHIA1ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "BKPKOHIA1ZW-ETH PORT 3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "SGVLOHAJ1CW-ET-5/3/0",
+                            "SGVLOHAJ0QW-ET-0/0/96"
+                        ],
+                        "uuid": "SGVLOHAJ1CW-ET-5/3/0_SGVLOHAJ0QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "SGVLOHAJ1CW-ET-7/3/0",
+                            "SGVLOHAJ0QW-ET-1/0/96"
+                        ],
+                        "uuid": "SGVLOHAJ1CW-ET-7/3/0_SGVLOHAJ0QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "SGVLOHAJ0QW-GE-1/0/14",
+                            "BKPKOHIA1ZW-ETH PORT 1"
+                        ],
+                        "uuid": "SGVLOHAJ0QW-GE-1/0/14_BKPKOHIA1ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "perfTier": [
+                            {
+                                "name": "REGIONAL"
+                            }
+                        ],
+                        "evc-ingress-bwp": "50m",
+                        "evc-egress-bwp": "50m",
+                        "evcId": "443129",
+                        "adminState": true,
+                        "userLabel": "21.L1XX.990477..CHTR",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "144",
+                        "endPoints": [
+                            {
+                                "uniId": "CLMCOH352ZW-XE-2/3/0",
+                                "adminState": true,
+                                "address": "251 NEILSTON ST",
+                                "sVlan": "144"
+                            },
+                            {
+                                "uniId": "BKPKOHIA1ZW-ETH PORT 3",
+                                "adminState": true,
+                                "address": "6275 EASTLAND RD",
+                                "sVlan": "144",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

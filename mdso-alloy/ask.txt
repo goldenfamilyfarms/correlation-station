@@ -1,0 +1,5 @@
+sudo docker stop alloy-test1 && sudo docker rm alloy-test1
+sudo rm -rf setup-test1.sh && sudo vi setup-test1.sh
+
+sudo chmod +x./setup-test2.sh && ./setup-test2.sh
+sudo docker logs -f alloy-test1

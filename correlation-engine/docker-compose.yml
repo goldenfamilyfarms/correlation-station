@@ -1,0 +1,116 @@
+# Standalone Docker Compose for Correlation Engine
+# Use this to run just the correlation engine for development/testing
+
+networks:
+  observability:
+    external: true
+    name: observability
+  correlation-net:
+    driver: bridge
+
+services:
+  correlation-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ARTIFACTORY_USER: ${ARTIFACTORY_USER}
+        ARTIFACTORY_TOKEN: ${ARTIFACTORY_TOKEN}
+    container_name: correlation-engine-standalone
+    restart: unless-stopped
+    ports:
+      - "8080:8080"                  # <— avoid host clash; 8080 stays internal
+    environment:
+      # Server
+      - PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+      # Correlation settings
+      - CORR_WINDOW_SECONDS=${CORR_WINDOW_SECONDS:-60}
+      - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-5000}
+
+      # Backend URLs — use in-cluster service names now that we join 'observability'
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - TEMPO_GRPC_ENDPOINT=tempo:4317
+      - TEMPO_HTTP_ENDPOINT=http://tempo:4318
+      - PROMETHEUS_PUSHGATEWAY=
+
+      # Auth / misc
+      - ENABLE_BASIC_AUTH=${ENABLE_BASIC_AUTH:-false}
+      - BASIC_AUTH_USER=${BASIC_AUTH_USER:-}
+      - BASIC_AUTH_PASS=${BASIC_AUTH_PASS:-}
+      - ALLOW_ORIGINS=${ALLOW_ORIGINS:-*}
+      # - DATADOG_API_KEY=${DATADOG_API_KEY:-}
+      # - DATADOG_SITE=${DATADOG_SITE:-datadoghq.com}
+      # - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-dev}
+
+    networks:
+      - observability                 # <— talk to tempo/loki
+      - correlation-net               # (optional extra net)
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    volumes:
+      - ./app:/app/app:ro
+
+
+# services:
+#   correlation-engine:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#       args:
+#         ARTIFACTORY_USER: ${ARTIFACTORY_USER}
+#         ARTIFACTORY_TOKEN: ${ARTIFACTORY_TOKEN}
+#     container_name: correlation-engine-standalone
+#     restart: unless-stopped
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       # Server
+#       - PORT=8080
+#       - LOG_LEVEL=${LOG_LEVEL:-info}
+
+#       # Correlation settings
+#       - CORR_WINDOW_SECONDS=${CORR_WINDOW_SECONDS:-60}
+#       - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-5000}
+
+#       # Backend URLs (use external services)
+#       - LOKI_URL=${LOKI_URL:-http://host.docker.internal:3100/loki/api/v1/push}
+#       - TEMPO_GRPC_ENDPOINT=${TEMPO_GRPC_ENDPOINT:-host.docker.internal:4317}
+#       - TEMPO_HTTP_ENDPOINT=${TEMPO_HTTP_ENDPOINT:-http://host.docker.internal:4318}
+#       - PROMETHEUS_PUSHGATEWAY=${PROMETHEUS_PUSHGATEWAY:-}
+
+#       # Authentication
+#       - ENABLE_BASIC_AUTH=${ENABLE_BASIC_AUTH:-false}
+#       - BASIC_AUTH_USER=${BASIC_AUTH_USER:-}
+#       - BASIC_AUTH_PASS=${BASIC_AUTH_PASS:-}
+
+#       # CORS
+#       - ALLOW_ORIGINS=${ALLOW_ORIGINS:-*}
+
+#       # Datadog (optional)
+#       - DATADOG_API_KEY=${DATADOG_API_KEY:-}
+#       - DATADOG_SITE=${DATADOG_SITE:-datadoghq.com}
+
+#       # Deployment
+#       - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-dev}
+#     networks:
+#       - correlation-net
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#       start_period: 10s
+#     volumes:
+#       # Mount source for development
+#       - ./app:/app/app:ro
+#     extra_hosts:
+#       # Allow access to host services (Loki, Tempo, etc.)
+#       - "host.docker.internal:host-gateway"

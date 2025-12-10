@@ -1,0 +1,488 @@
+{
+    "customerName": "UNIVERSITY FEDERAL CREDIT UNION",
+    "serviceName": "97.L1XX.003120..TWCC",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "AUSVTX353ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "AUSVTX353ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX-220A"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.5.11.98"
+                            },
+                            {
+                                "name": "address",
+                                "value": "9229 WATERFORD CENTRE BLVD"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "AUSVTX353ZW.SW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "AUSVTX353ZW-1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "AUSVTX353ZW-4/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "4/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "AUSUTXLA2QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "AUSUTXLA2QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.4.27.91"
+                            },
+                            {
+                                "name": "address",
+                                "value": "12012 N MOPAC EXPY"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "AUSUTXLA2QW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "AUSUTXLA2QW-XE-0/0/59",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/0/59"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "AUSUTXLA2QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE19"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "AUSUTXLA2QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE19"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "AUSUTXLA2CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "AUSUTXLA2CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "24.31.233.141"
+                            },
+                            {
+                                "name": "address",
+                                "value": "12012 N MOPAC EXPY"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "AUSUTXLA2CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "AUSUTXLA2CW-ET-1/3/2",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/3/2"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE19"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "AUSUTXLA2CW-ET-9/3/2",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-9/3/2"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE19"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "AUSUTXLA2QW-XE-0/0/59",
+                            "AUSVTX353ZW-4/1"
+                        ],
+                        "uuid": "AUSUTXLA2QW-XE-0/0/59_AUSVTX353ZW-4/1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "AUSUTXLA2CW-ET-1/3/2",
+                            "AUSUTXLA2QW-ET-0/0/96"
+                        ],
+                        "uuid": "AUSUTXLA2CW-ET-1/3/2_AUSUTXLA2QW-ET-0/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "AUSUTXLA2CW-ET-9/3/2",
+                            "AUSUTXLA2QW-ET-1/0/96"
+                        ],
+                        "uuid": "AUSUTXLA2CW-ET-9/3/2_AUSUTXLA2QW-ET-1/0/96"
+                    }
+                ]
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "IRNITXSG1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "IRNITXSG1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "71.40.237.240"
+                            },
+                            {
+                                "name": "address",
+                                "value": "3331 W ROYAL LN"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "IRNITXSG1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "IRNITXSG1CW-XE-2/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-2/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "IRNGTXOA1AW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "IRNGTXOA1AW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "MTU"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "EX4200-24F"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.75.247.5"
+                            },
+                            {
+                                "name": "address",
+                                "value": "100 E ROYAL LN"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "IRNGTXOA1AW.SW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "IRNGTXOA1AW-XE-0/1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "IRNGTXOA1AW-XE-0/1/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-0/1/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "IRNGTXOABZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "IRNGTXOABZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX-220A"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.5.2.224"
+                            },
+                            {
+                                "name": "address",
+                                "value": "100 E ROYAL LN"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "IRNGTXOABZW.SW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "IRNGTXOABZW-4/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "4/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "IRNGTXOABZW-1/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "1/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "IRNITXSG1CW-XE-2/1/0",
+                            "IRNGTXOA1AW-XE-0/1/1"
+                        ],
+                        "uuid": "IRNITXSG1CW-XE-2/1/0_IRNGTXOA1AW-XE-0/1/1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "IRNGTXOA1AW-XE-0/1/0",
+                            "IRNGTXOABZW-4/1"
+                        ],
+                        "uuid": "IRNGTXOA1AW-XE-0/1/0_IRNGTXOABZW-4/1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "SILVER"
+                            }
+                        ],
+                        "evc-ingress-bwp": "1g",
+                        "evc-egress-bwp": "1g",
+                        "evcId": "412363",
+                        "adminState": true,
+                        "userLabel": "97.L1XX.003120..TWCC",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1205",
+                        "endPoints": [
+                            {
+                                "uniId": "AUSVTX353ZW-1/1",
+                                "adminState": true,
+                                "address": "9229 WATERFORD CENTRE BLVD",
+                                "sVlan": "1205",
+                                "sVlanOperation": "PUSH"
+                            },
+                            {
+                                "uniId": "IRNGTXOABZW-1/1",
+                                "adminState": true,
+                                "address": "100 E ROYAL LN",
+                                "sVlan": "1205",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

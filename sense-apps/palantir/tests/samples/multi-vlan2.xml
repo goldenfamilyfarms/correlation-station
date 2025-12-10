@@ -1,0 +1,800 @@
+<interface-information style="normal">
+  <physical-interface>
+    <name>xe-0/3/0</name>
+    <admin-status format="Enabled">up</admin-status>
+    <oper-status>up</oper-status>
+    <local-index>174</local-index>
+    <snmp-index>582</snmp-index>
+    <description>MTU:Ascendum:101 Knightsbridge Dr, Hamilton, OH 45011:10.9.0.14:HMTNOHFM2ZW</description>
+    <link-level-type>Flexible-Ethernet</link-level-type>
+    <sonet-mode>LAN-PHY</sonet-mode>
+    <mtu>9172</mtu>
+    <source-filtering>disabled</source-filtering>
+    <speed>10Gbps</speed>
+    <loopback>none</loopback>
+    <if-flow-control>enabled</if-flow-control>
+    <if-device-flags>
+      <ifdf-present/>
+      <ifdf-running/>
+    </if-device-flags>
+    <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4004000</internal-flags>
+    </if-config-flags>
+    <if-media-flags>
+      <internal-flags>0x800</internal-flags>
+    </if-media-flags>
+    <physical-interface-cos-information>
+      <physical-interface-cos-hw-max-queues>8</physical-interface-cos-hw-max-queues>
+      <physical-interface-cos-use-max-queues>8</physical-interface-cos-use-max-queues>
+    </physical-interface-cos-information>
+    <current-physical-address>00:26:88:24:80:7b</current-physical-address>
+    <hardware-physical-address>00:26:88:24:80:7b</hardware-physical-address>
+    <interface-flapped seconds="92225478">2014-10-12 00:54:00 EDT (152w3d 10:11 ago)</interface-flapped>
+    <traffic-statistics style="brief">
+      <input-bps>45471656</input-bps>
+      <input-pps>12935</input-pps>
+      <output-bps>139320952</output-bps>
+      <output-pps>26971</output-pps>
+    </traffic-statistics>
+    <active-alarms>
+      <interface-alarms>
+        <alarm-not-present/>
+      </interface-alarms>
+    </active-alarms>
+    <active-defects>
+      <interface-alarms>
+        <alarm-not-present/>
+      </interface-alarms>
+    </active-defects>
+    <ethernet-pcs-statistics style="verbose">
+      <bit-error-seconds>1</bit-error-seconds>
+      <errored-blocks-seconds>2</errored-blocks-seconds>
+    </ethernet-pcs-statistics>
+    <interface-transmit-statistics>Disabled</interface-transmit-statistics>
+
+    <logical-interface>
+      <name>xe-0/3/0.59</name>
+      <local-index>1515</local-index>
+      <snmp-index>8547</snmp-index>
+      <description>CARR:ELINE:Verizon Business@101 KNIGHTSBRIDGE DR:51.L1XX.004187..TWCC:251 NEILSTON ST</description>
+      <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.59 ] ">[ 0x8100.59 ] </link-address>
+      <encapsulation>VLAN-CCC</encapsulation>
+      <logical-interface-bandwidth>1000mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+        <input-packets>73121650715</input-packets>
+        <output-packets>50253912663</output-packets>
+      </traffic-statistics>
+      <filter-information></filter-information>
+      <address-family>
+        <address-family-name>ccc</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+          <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+      </address-family>
+    </logical-interface>
+
+    <logical-interface>
+      <name>xe-0/3/0.71</name>
+      <local-index>1290</local-index>
+      <snmp-index>10585</snmp-index>
+      <description>CARR:ELINE:VERIZON BUSINESS@VORA TECHNOLOGY PARK - 101 KNIGHTSBRIDGE DR HAMILTON OH 45011:51.L1XX.006346..TWCC:251 NEILSTON ST COLUMBUS OH 43215</description>
+      <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.71 ] ">[ 0x8100.71 ] </link-address>
+      <encapsulation>VLAN-CCC</encapsulation>
+      <logical-interface-bandwidth>10mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+        <input-packets>1296265710</input-packets>
+        <output-packets>1641031081</output-packets>
+      </traffic-statistics>
+      <filter-information> </filter-information>
+      <address-family>
+        <address-family-name>ccc</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+          <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+      </address-family>
+    </logical-interface>
+
+    <logical-interface>
+      <name>xe-0/3/0.99</name>
+      <local-index>1414</local-index>
+      <snmp-index>5700</snmp-index>
+      <description>MGMT:::10.9.0.14:</description>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x20004000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.99 ] Native-vlan-id: 99 In(pop) Out(push 0x8100.99) ">[ 0x8100.99 ] Native-vlan-id: 99 In(pop) Out(push 0x8100.99) </link-address>
+      <encapsulation>VLAN-Bridge</encapsulation>
+      <traffic-statistics style="brief">
+      <input-packets>16906721</input-packets>
+      <output-packets>12479980</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>bridge</address-family-name>
+      <mtu>9172</mtu>
+      <address-family-flags>
+      <internal-flags>0x4000000</internal-flags>
+      </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.100</name>
+        <local-index>1416</local-index>
+        <snmp-index>5702</snmp-index>
+        <description>CUST:DIA:Ascendum:51.L1XX.000046.WOH.TWCC:</description>
+        <if-config-flags>
+        iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.100 ] ">[ 0x8100.100 ] </link-address>
+        <encapsulation>ENET2</encapsulation>
+        <logical-interface-bandwidth>1000mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>60447743983</input-packets>
+        <output-packets>536383286863</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>inet</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <ifff-sendbcast-pkt-to-re/>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>98.102.3.8/30</ifa-destination>
+        <ifa-local>98.102.3.9</ifa-local>
+        <ifa-broadcast>98.102.3.11</ifa-broadcast>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>multiservice</address-family-name>
+        <mtu>Unlimited</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1100</name>
+        <local-index>1432</local-index>
+        <snmp-index>5832</snmp-index>
+        <description>CUST:DIA:CROWN PACKAGING - DAYTON:93.LOXX.000080.WOH.TWCC:</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1100 ] ">[ 0x8100.1100 ] </link-address>
+        <encapsulation>ENET2</encapsulation>
+        <logical-interface-bandwidth>40mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>68092897124</input-packets>
+        <output-packets>22415350039</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>inet</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <ifff-no-redirects/>
+        <ifff-sendbcast-pkt-to-re/>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>74.218.208.32/28</ifa-destination>
+        <ifa-local>74.218.208.33</ifa-local>
+        <ifa-broadcast>74.218.208.47</ifa-broadcast>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>multiservice</address-family-name>
+        <mtu>Unlimited</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1101</name>
+        <local-index>206</local-index>
+        <snmp-index>9426</snmp-index>
+        <description>CUST:DIA:TALBERT HOUSE@101 KNIGHTSBRIDGE DR HAMILTON OH 45011:51.L1XX.005151..TWCC:</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1101 ] ">[ 0x8100.1101 ] </link-address>
+        <encapsulation>ENET2</encapsulation>
+        <logical-interface-bandwidth>200mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>6934505992</input-packets>
+        <output-packets>7774341346</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>inet</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <ifff-sendbcast-pkt-to-re/>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>98.100.4.192/29</ifa-destination>
+        <ifa-local>98.100.4.193</ifa-local>
+        <ifa-broadcast>98.100.4.199</ifa-broadcast>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>inet6</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>2605:a000:0:8::f:a866/127</ifa-destination>
+        <ifa-local>2605:a000:0:8::f:a866</ifa-local>
+        <interface-address>
+        <in6-addr-flags>
+        <ifaf-none/>
+        </in6-addr-flags>
+        </interface-address>
+        </interface-address>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <internal-flags>0x800</internal-flags>
+        </ifa-flags>
+        <ifa-destination>fe80::/64</ifa-destination>
+        <ifa-local>fe80::226:8804:4d24:807b</ifa-local>
+        <interface-address>
+        <in6-addr-flags>
+        <ifaf-none/>
+        </in6-addr-flags>
+        </interface-address>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>multiservice</address-family-name>
+        <mtu>Unlimited</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1102</name>
+        <local-index>525</local-index>
+        <snmp-index>10345</snmp-index>
+        <description>CUST:DIA:VORA TECHNOLOGY PARK@101 KNIGHTSBRIDGE DR:51.L1XX.006629..TWCC:</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1102 ] ">[ 0x8100.1102 ] </link-address>
+        <encapsulation>ENET2</encapsulation>
+        <logical-interface-bandwidth>1mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>700647</input-packets>
+        <output-packets>7029001</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>inet</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <ifff-sendbcast-pkt-to-re/>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>147.0.237.68/30</ifa-destination>
+        <ifa-local>147.0.237.69</ifa-local>
+        <ifa-broadcast>147.0.237.71</ifa-broadcast>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>inet6</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <internal-flags>0x800</internal-flags>
+        </ifa-flags>
+        <ifa-destination>fe80::/64</ifa-destination>
+        <ifa-local>fe80::226:8804:4e24:807b</ifa-local>
+        <interface-address>
+        <in6-addr-flags>
+        <ifaf-none/>
+        </in6-addr-flags>
+        </interface-address>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>multiservice</address-family-name>
+        <mtu>Unlimited</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1103</name>
+        <local-index>1854</local-index>
+        <snmp-index>11098</snmp-index>
+        <description>CUST:DIA:AWS COMMERCIAL LLC@101 KNIGHTSBRIDGE DR:51.L1XX.008180..TWCC:</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1103 ] ">[ 0x8100.1103 ] </link-address>
+        <encapsulation>ENET2</encapsulation>
+        <logical-interface-bandwidth>1mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>361501</input-packets>
+        <output-packets>845999</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>inet</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <ifff-sendbcast-pkt-to-re/>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <ifaf-current-primary/>
+        </ifa-flags>
+        <ifa-destination>24.123.223.44/30</ifa-destination>
+        <ifa-local>24.123.223.45</ifa-local>
+        <ifa-broadcast>24.123.223.47</ifa-broadcast>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>inet6</address-family-name>
+        <mtu>9150</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        <interface-address>
+        <ifa-flags>
+        <ifaf-current-preferred/>
+        <internal-flags>0x800</internal-flags>
+        </ifa-flags>
+        <ifa-destination>fe80::/64</ifa-destination>
+        <ifa-local>fe80::226:8804:4f24:807b</ifa-local>
+        <interface-address>
+        <in6-addr-flags>
+        <ifaf-none/>
+        </in6-addr-flags>
+        </interface-address>
+        </interface-address>
+        </address-family>
+        <address-family>
+        <address-family-name>multiservice</address-family-name>
+        <mtu>Unlimited</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1200</name>
+        <local-index>410</local-index>
+        <snmp-index>5704</snmp-index>
+        <description>CUST:ELAN:VERDIN COMPANY@101 KNIGHTSBRIDGE DR:51.L1XX.006303..TWCC:VPLS416096</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1200 ] ">[ 0x8100.1200 ] </link-address>
+        <encapsulation>VLAN-VPLS</encapsulation>
+        <logical-interface-bandwidth>200mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>21530328277</input-packets>
+        <output-packets>12115806583</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>vpls</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+        <ifff-is-primary/>
+        <internal-flags>0x4000000</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1201</name>
+        <local-index>1409</local-index>
+        <snmp-index>5740</snmp-index>
+        <description>CUST:ELAN:CROWN PACKAGING:51.L1XX.000831..TWCC:</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1201 ] In(pop) Out(push 0x8100.1201) ">[ 0x8100.1201 ] In(pop) Out(push 0x8100.1201) </link-address>
+        <encapsulation>VLAN-VPLS</encapsulation>
+        <logical-interface-bandwidth>40mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>32588826812</input-packets>
+        <output-packets>50297017257</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>vpls</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+        <ifff-is-primary/>
+        <internal-flags>0x4000000</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1202</name>
+        <local-index>1486</local-index>
+        <snmp-index>6274</snmp-index>
+        <description>CUST:ELINE:Ascendum IMS@101 KNIGHTSBRIDGE DR:85.L1XX.000344..TWCC:</description>
+        <if-config-flags>
+        <iff-down/>                                                   This is the logical interface being down.
+        <iff-ccc-down/> 
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1202 ] ">[ 0x8100.1202 ] </link-address>
+        <encapsulation>VLAN-CCC</encapsulation>
+        <logical-interface-bandwidth>100mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>44562142658</input-packets>
+        <output-packets>83592670489</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>ccc</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1204</name>
+        <local-index>412</local-index>
+        <snmp-index>9784</snmp-index>
+        <description>CUST:ELINE:CENTERGRID@101 KNIGHTSBRIDGE DR HAMILTON OH 45011:51.L1XX.005816..TWCC:10290 ALLIANCE RD BLUE ASH OH 45242</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1204 ] ">[ 0x8100.1204 ] </link-address>
+        <encapsulation>VLAN-CCC</encapsulation>
+        <logical-interface-bandwidth>1000mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>44780621984</input-packets>
+        <output-packets>29279697925</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>ccc</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+        <internal-flags>0x0</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1205</name>
+        <local-index>1825</local-index>
+        <snmp-index>11015</snmp-index>
+        <description>CUST:ELAN:VERDIN COMPANY@101 KNIGHTSBRIDGE DR:51.L1XX.007531..TWCC:VPLS416096</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+        <link-address format="VLAN-Tag [ 0x8100.1205 ] In(swap .1200) Out(swap .1205) ">[ 0x8100.1205 ] In(swap .1200) Out(swap .1205) </link-address>
+        <encapsulation>VLAN-VPLS</encapsulation>
+        <logical-interface-bandwidth>200mbps</logical-interface-bandwidth>
+        <traffic-statistics style="brief">
+        <input-packets>3056</input-packets>
+        <output-packets>11042610</output-packets>
+        </traffic-statistics>
+        <filter-information>
+        </filter-information>
+        <address-family>
+        <address-family-name>vpls</address-family-name>
+        <mtu>9172</mtu>
+        <address-family-flags>
+        <internal-flags>0x4000000</internal-flags>
+        </address-family-flags>
+        </address-family>
+      </logical-interface>
+
+      <logical-interface>
+        <name>xe-0/3/0.1206</name>
+        <local-index>1853</local-index>
+        <snmp-index>11097</snmp-index>
+        <description>CUST:ELAN:AWS COMMERCIAL LLC@101 KNIGHTSBRIDGE DR:51.L1XX.008183..TWCC:VPLS121145</description>
+        <if-config-flags>
+        <iff-snmp-traps/>
+        <internal-flags>0x4000</internal-flags>
+        </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.1206 ] ">[ 0x8100.1206 ] </link-address>
+      <encapsulation>VLAN-VPLS</encapsulation>
+      <logical-interface-bandwidth>100mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+      <input-packets>276499616</input-packets>
+      <output-packets>227798515</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>vpls</address-family-name>
+      <mtu>9172</mtu>
+      <address-family-flags>
+      <ifff-is-primary/>
+      <internal-flags>0x4000000</internal-flags>
+      </address-family-flags>
+      </address-family>
+      </logical-interface>
+
+      <logical-interface>
+      <name>xe-0/3/0.1221</name>
+      <local-index>200</local-index>
+      <snmp-index>10939</snmp-index>
+      <description>CARR:ELINE:LEVEL 3 WEST@VORA TECHNOLOGY PARK - 101 KNIGHTSBRIDGE DR HAMILTON OH 45011:51.L1XX.006678..TWCC:400 PIKE ST CINCINNATI OH 45202</description>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.1221 ] ">[ 0x8100.1221 ] </link-address>
+      <encapsulation>VLAN-CCC</encapsulation>
+      <logical-interface-bandwidth>50mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+      <input-packets>6067767468</input-packets>
+      <output-packets>9983253790</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>ccc</address-family-name>
+      <mtu>9172</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      </address-family>
+      </logical-interface>
+
+      <logical-interface>
+      <name>xe-0/3/0.1236</name>
+      <local-index>1906</local-index>
+      <snmp-index>11196</snmp-index>
+      <description>CARR:ELINE:EARTHLINK@Crown Packaging - 101 KNIGHTSBRIDGE DR:51.L1XX.008456..TWCC:350 E CERMAK RD</description>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.1236 ] ">[ 0x8100.1236 ] </link-address>
+      <encapsulation>VLAN-CCC</encapsulation>
+      <logical-interface-bandwidth>50mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+      <input-packets>9459148</input-packets>
+      <output-packets>4882824</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>ccc</address-family-name>
+      <mtu>9172</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      </address-family>
+      </logical-interface>
+
+      <logical-interface>
+      <name>xe-0/3/0.1300</name>
+      <local-index>418</local-index>
+      <snmp-index>10050</snmp-index>
+      <description>CUST:VOICE:TALBERT HOUSE@101 KNIGHTSBRIDGE DR HAMILTON OH 45011:51.IPXN.000707..TWCC:</description>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.1300 ] ">[ 0x8100.1300 ] </link-address>
+      <encapsulation>ENET2</encapsulation>
+      <logical-interface-bandwidth>10mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+      <input-packets>819040685</input-packets>
+      <output-packets>825195637</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>inet</address-family-name>
+      <mtu>9150</mtu>
+      <address-family-flags>
+      <ifff-sendbcast-pkt-to-re/>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      <interface-address>
+      <ifa-flags>
+      <ifaf-current-preferred/>
+      <ifaf-current-primary/>
+      </ifa-flags>
+      <ifa-destination>74.87.247.206/31</ifa-destination>
+      <ifa-local>74.87.247.206</ifa-local>
+      </interface-address>
+      </address-family>
+      <address-family>
+      <address-family-name>inet6</address-family-name>
+      <mtu>9150</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      <interface-address>
+      <ifa-flags>
+      <ifaf-current-preferred/>
+      <internal-flags>0x800</internal-flags>
+      </ifa-flags>
+      <ifa-destination>fe80::/64</ifa-destination>
+      <ifa-local>fe80::226:8805:1424:807b</ifa-local>
+      <interface-address>
+      <in6-addr-flags>
+      <ifaf-none/>
+      </in6-addr-flags>
+      </interface-address>
+      </interface-address>
+      </address-family>
+      <address-family>
+      <address-family-name>multiservice</address-family-name>
+      <mtu>Unlimited</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      </address-family>
+      </logical-interface>
+
+      <logical-interface>
+      <name>xe-0/3/0.1301</name>
+      <local-index>1844</local-index>
+      <snmp-index>10948</snmp-index>
+      <description>CUST:VOICE:Talbert House@101 KNIGHTSBRIDGE DR:51.IPXN.000788..TWCC:</description>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x8100.1301 ] ">[ 0x8100.1301 ] </link-address>
+      <encapsulation>ENET2</encapsulation>
+      <logical-interface-bandwidth>10mbps</logical-interface-bandwidth>
+      <traffic-statistics style="brief">
+      <input-packets>148715745</input-packets>
+      <output-packets>147096697</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>inet</address-family-name>
+      <mtu>9150</mtu>
+      <address-family-flags>
+      <ifff-sendbcast-pkt-to-re/>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      <interface-address>
+      <ifa-flags>
+      <ifaf-current-preferred/>
+      <ifaf-current-primary/>
+      </ifa-flags>
+      <ifa-destination>74.219.98.200/31</ifa-destination>
+      <ifa-local>74.219.98.200</ifa-local>
+      </interface-address>
+      </address-family>
+      <address-family>
+      <address-family-name>inet6</address-family-name>
+      <mtu>9150</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      <interface-address>
+      <ifa-flags>
+      <ifaf-current-preferred/>
+      <internal-flags>0x800</internal-flags>
+      </ifa-flags>
+      <ifa-destination>fe80::/64</ifa-destination>
+      <ifa-local>fe80::226:8805:1524:807b</ifa-local>
+      <interface-address>
+      <in6-addr-flags>
+      <ifaf-none/>
+      </in6-addr-flags>
+      </interface-address>
+      </interface-address>
+      </address-family>
+      <address-family>
+      <address-family-name>multiservice</address-family-name>
+      <mtu>Unlimited</mtu>
+      <address-family-flags>
+      <internal-flags>0x0</internal-flags>
+      </address-family-flags>
+      </address-family>
+    </logical-interface>
+
+    <logical-interface>
+      <name>xe-0/3/0.32767</name>
+      <local-index>1415</local-index>
+      <snmp-index>5701</snmp-index>
+      <if-config-flags>
+      <iff-snmp-traps/>
+      <internal-flags>0x4004000</internal-flags>
+      </if-config-flags>
+      <link-address format="VLAN-Tag [ 0x0000.0 ] ">[ 0x0000.0 ] </link-address>
+      <encapsulation>ENET2</encapsulation>
+      <traffic-statistics style="brief">
+      <input-packets>2938153</input-packets>
+      <output-packets>3033674</output-packets>
+      </traffic-statistics>
+      <filter-information>
+      </filter-information>
+      <address-family>
+      <address-family-name>multiservice</address-family-name>
+      <mtu>Unlimited</mtu>
+      <address-family-flags>
+      <ifff-none/>
+      </address-family-flags>
+      </address-family>
+    </logical-interface>
+  </physical-interface>
+</interface-information>

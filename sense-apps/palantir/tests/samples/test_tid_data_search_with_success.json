@@ -1,0 +1,31 @@
+{
+    "name": "dv_spirent_vta_lookup",
+    "elements": [
+        {
+            "test_circ_inst": 1550373,
+            "test_circ_id": "51001.GE1.AUSDTXIR2CW.AUSDTXIR1FX",
+            "test_circ_status": "Designed",
+            "test_equip_inst": 1169037,
+            "pe_tid": "AUSDTXIR2CW",
+            "test_tid": "AUSDTXIR1FX",
+            "test_fqdn": "AUSDTXIR1FX.DEV.CHTRSE.COM",
+            "test_ip": "97.105.228.140",
+            "test_equip_status": "Planned",
+            "test_equip_vendor": "JUNIPER",
+            "test_equip_model": "NFX250-S1"
+        },
+        {
+            "test_circ_inst": 1682850,
+            "test_circ_id": "51002.GE1.AUSDTXIR2CW.AUSDTXIR1FX",
+            "test_circ_status": "Designed",
+            "test_equip_inst": 1169037,
+            "pe_tid": "AUSDTXIR2CW",
+            "test_tid": "AUSDTXIR1FX",
+            "test_fqdn": "AUSDTXIR1FX.DEV.CHTRSE.COM",
+            "test_ip": "97.105.228.140",
+            "test_equip_status": "Planned",
+            "test_equip_vendor": "JUNIPER",
+            "test_equip_model": "NFX250-S1"
+        }
+    ]
+}

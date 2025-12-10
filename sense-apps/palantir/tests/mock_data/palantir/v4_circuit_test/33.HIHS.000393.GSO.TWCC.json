@@ -1,0 +1,152 @@
+{
+  "CustomerName": "VERIZON CAROLINAS",
+  "CircuitID": "33.HIHS.000393.GSO.TWCC",
+  "Bandwidth": "200 Mbps",
+  "ServiceLevel": null,
+  "Status": "Live",
+  "Legs": [
+    {
+      "LegName": "33.HIHS.000393.GSO.TWCC-1223",
+      "VCID": "334000392",
+      "ZSide": {
+        "CustomerAddr": "2849 SHACKTOWN RD",
+        "PE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "YDVLNC1019W",
+          "IpAddress": "70.62.92.27",
+          "VLANOperation": null,
+          "ServiceVLANID": "1223",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "2/1/24",
+          "InterfaceInfo": null,
+          "Description": null,
+          "EVCType": null,
+          "CustomerVLANID": "1223",
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ADVA",
+          "Model": "FSP 150CC-GE206",
+          "Hostname": "YDVLNCAE1AW",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "access-1-1-1-4",
+          "VLANOperation": "PUSH",
+          "ServiceVLANID": "1223",
+          "EVCType": null,
+          "IpAddress": "DHCP",
+          "CustomerVLANID": "1223"
+        }
+      },
+      "ASide": {
+        "CustomerAddr": "4819 KOGER BLVD",
+        "PE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "GNBQNC151AW",
+          "IpAddress": "70.62.92.16",
+          "VLANOperation": null,
+          "ServiceVLANID": "1223",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "2/2/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "CustomerVLANID": null,
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "GNBQNC151AW",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "2/2/1",
+          "VLANOperation": null,
+          "ServiceVLANID": "1223",
+          "EVCType": null,
+          "IpAddress": "70.62.92.16",
+          "CustomerVLANID": null
+        }
+      }
+    },
+    {
+      "LegName": "33.HIHS.000393.GSO.TWCC-1224",
+      "VCID": "334000393",
+      "ZSide": {
+        "CustomerAddr": "2849 SHACKTOWN RD",
+        "PE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "YDVLNC1019W",
+          "IpAddress": "70.62.92.27",
+          "VLANOperation": null,
+          "ServiceVLANID": "1224",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "2/1/24",
+          "InterfaceInfo": null,
+          "Description": null,
+          "EVCType": null,
+          "CustomerVLANID": "1224",
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ADVA",
+          "Model": "FSP 150CC-GE206",
+          "Hostname": "YDVLNCAE1AW",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "access-1-1-1-4",
+          "VLANOperation": "PUSH",
+          "ServiceVLANID": "1224",
+          "EVCType": null,
+          "IpAddress": "DHCP",
+          "CustomerVLANID": "1224"
+        }
+      },
+      "ASide": {
+        "CustomerAddr": "4819 KOGER BLVD",
+        "PE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "GNBQNC152AW",
+          "IpAddress": "70.62.92.17",
+          "VLANOperation": null,
+          "ServiceVLANID": "1224",
+          "TestAccessPort": null,
+          "WBoxTestAccessPort": null,
+          "Interface": "2/2/1",
+          "InterfaceInfo": null,
+          "Description": null,
+          "CustomerVLANID": null,
+          "WBox": []
+        },
+        "CPE": {
+          "Vendor": "ALCATEL",
+          "Model": "7750 SR-7",
+          "Hostname": "GNBQNC152AW",
+          "TestAccessPort": null,
+          "InterfaceInfo": null,
+          "Description": null,
+          "PortType": null,
+          "Interface": "2/2/1",
+          "VLANOperation": null,
+          "ServiceVLANID": "1224",
+          "EVCType": null,
+          "IpAddress": "70.62.92.17",
+          "CustomerVLANID": null
+        }
+      }
+    }
+  ],
+  "UnitType": null
+}

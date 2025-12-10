@@ -1,0 +1,68 @@
+// TEST 3: Full Pipeline
+// MDSO Dev → OTel Gateway → Correlation Engine → OTel Gateway → Loki/Tempo
+
+// Discover syslog files
+local.file_match "syslog_files" {
+  path_targets = [
+    {"__path__" = "/var/log/ciena/blueplanet.log"},
+    {"__path__" = "/bp2/log/*.log"},
+  ]
+}
+
+// Tail syslog files
+loki.source.file "syslog" {
+  targets    = local.file_match.syslog_files.targets
+  forward_to = [loki.process.normalize.receiver]
+}
+
+// Parse and normalize syslog format
+loki.process "normalize" {
+  forward_to = [otelcol.receiver.loki.default.receiver]
+
+  // Parse syslog: "Nov 10 05:07:25 hostname message"
+  stage.regex {
+    expression = "^(?P<timestamp>\\S+\\s+\\S+\\s+\\S+)\\s+(?P<host>\\S+)\\s+(?P<message>.*)$"
+  }
+
+  // Add low-cardinality labels
+  stage.labels {
+    values = {
+      service = "mdso",
+      env     = "dev",
+    }
+  }
+
+  // Extract host as structured field
+  stage.structured_metadata {
+    values = {
+      host = "",
+    }
+  }
+}
+
+// Convert Loki logs to OTLP
+otelcol.receiver.loki "default" {
+  output {
+    logs = [otelcol.exporter.otlphttp.gateway.input]
+  }
+}
+
+// Export to OTel Gateway on Meta
+// Gateway will forward to:
+//   1. Correlation Engine (for correlation)
+//   2. Loki (for storage)
+//   3. Tempo (for traces if present)
+otelcol.exporter.otlphttp "gateway" {
+  client {
+    endpoint = "http://159.56.4.94:55681"
+    timeout  = "10s"
+    
+    // Retry configuration
+    retry_on_failure {
+      enabled          = true
+      initial_interval = "5s"
+      max_interval     = "30s"
+      max_elapsed_time = "300s"
+    }
+  }
+}

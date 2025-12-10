@@ -1,0 +1,15 @@
+[
+    {
+    "transactionID": "270",
+    "zSide": {
+      "ip": "71.42.150.66",
+      "port": "ge-0/1/7",
+      "vlan": "VLAN1199"
+    },
+    "aSide": {
+      "ip": null,
+      "port": null,
+      "vlan": null
+    }
+  }
+]
