@@ -1,0 +1,56 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Logs and temp
+*.log
+tmp/
+*.bak
+
+# Ignore extracted OTEL collector files in this workspace directory
+context/architecture-info/bp charter tools/otel-integration/*.log
+
+# Keep track of binaries via Git LFS if enabled
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.tar.gz
+*.zip
+
+# local envs
+.env.local
+.env.*.local
+
+# VS Code settings
+.vscode/
+
+# Python virtualenv
+.venv/
+
+# Mac
+.DS_Store

@@ -1,0 +1,238 @@
+{
+    "customerName": "VERIZON BUSINESS",
+    "serviceName": "44.L1XX.005579..CHTR",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CLMCOH352ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMCOH352ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX240"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.131"
+                            },
+                            {
+                                "name": "address",
+                                "value": "251 NEILSTON ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMCOH352ZW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMCOH352ZW-XE-2/0/1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-2/0/1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "ENNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": []
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "ASHTOHDT1CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "ASHTOHDT1CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.178.58"
+                            },
+                            {
+                                "name": "address",
+                                "value": "4900 ROCKWELL RD"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "ASHTOHDT1CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "ASHTOHDT1CW-GE-10/2/2",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-10/2/2"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CNNTOH241ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CNNTOH241ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "RAD"
+                            },
+                            {
+                                "name": "model",
+                                "value": "ETX203AX/2SFP/2UTP2SFP"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.8.58.163"
+                            },
+                            {
+                                "name": "address",
+                                "value": "3365 E CENTER ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CNNTOH241ZW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CNNTOH241ZW-ETH PORT 1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CNNTOH241ZW-ETH PORT 4",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH PORT 4"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "ASHTOHDT1CW-GE-10/2/2",
+                            "CNNTOH241ZW-ETH PORT 1"
+                        ],
+                        "uuid": "ASHTOHDT1CW-GE-10/2/2_CNNTOH241ZW-ETH PORT 1"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "BRONZE"
+                            }
+                        ],
+                        "perfTier": [
+                            {
+                                "name": "REGIONAL"
+                            }
+                        ],
+                        "evc-ingress-bwp": "100m",
+                        "evc-egress-bwp": "100m",
+                        "evcId": "423494",
+                        "adminState": true,
+                        "userLabel": "44.L1XX.005579..CHTR",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "86",
+                        "endPoints": [
+                            {
+                                "uniId": "CLMCOH352ZW-XE-2/0/1",
+                                "adminState": true,
+                                "address": "251 NEILSTON ST",
+                                "sVlan": "86"
+                            },
+                            {
+                                "uniId": "CNNTOH241ZW-ETH PORT 4",
+                                "adminState": true,
+                                "address": "3365 E CENTER ST",
+                                "sVlan": "86",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

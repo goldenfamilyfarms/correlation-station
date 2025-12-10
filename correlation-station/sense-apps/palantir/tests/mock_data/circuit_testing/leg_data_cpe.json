@@ -1,0 +1,15 @@
+{
+    "Vendor": "JUNIPER",
+    "Model": "MX240",
+    "Hostname": "AUSDTXIR6CW",
+    "TestAccessPort": null,
+    "InterfaceInfo": null,
+    "Description": null,
+    "PortType": null,
+    "Interface": "et-2/3/2",
+    "VLANOperation": null,
+    "ServiceVLANID": null,
+    "EVCType": null,
+    "IpAddress": "71.42.150.82",
+    "CustomerVLANID": null
+}

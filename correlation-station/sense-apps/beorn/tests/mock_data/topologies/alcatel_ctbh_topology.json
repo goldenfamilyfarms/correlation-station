@@ -1,0 +1,556 @@
+{
+  "PRIMARY": {
+    "customerName": "VERIZON SOUTHLAKE",
+    "serviceName": "21.L2XX.001157..TWCC",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "CTBH 4G",
+    "serviceMedia": "FIBER",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "SCHZTXCE4TW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "SCHZTXCE4TW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7750 SR-7"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.224.133"
+                },
+                {
+                  "name": "location",
+                  "value": "A_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "5804 TRI COUNTY PKWY 78154"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "SCHZTXCE4TW.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "SCHZTXCE4TW-5/2/2",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "5/2/2"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "ENNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "21001.GE10.SCHZTXCE4TW.SCHZTXCE2XS"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": []
+        }
+      },
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "PHRRTXGY02W",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "PHRRTXGY02W"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7750 SR-12"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.224.192"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "3001 N I RD 78577"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "PHRRTXGY02W.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "PHRRTXGY02W-2/1/5",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "2/1/5"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.PHRRTXGY02W.HDLGTXAC01W"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "HDLGTXAC01W",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "HDLGTXAC01W"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7210 SAS-M (10GIGE)"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.238.26"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "2900 INTERNATIONAL BLVD 78557"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "HDLGTXAC01W.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "HDLGTXAC01W-1/1/23",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "1/1/23"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.PHRRTXGY02W.HDLGTXAC01W"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "HDLGTXAC01W-1/1/1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "1/1/1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "UNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.HDLGTXAC01W.HDLGTXAC01W"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "PHRRTXGY02W-2/1/5",
+                "HDLGTXAC01W-1/1/23"
+              ],
+              "uuid": "PHRRTXGY02W-2/1/5_HDLGTXAC01W-1/1/23"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "GOLD"
+                }
+              ],
+              "evc-ingress-bwp": "1g",
+              "evc-egress-bwp": "1g",
+              "adminState": true,
+              "userLabel": "21.L2XX.001157..TWCC",
+              "maxNumOfEvcEndPoint": 2,
+              "serviceType": "EVPL",
+              "connectionType": "Point to Point",
+              "sVlan": "2552",
+              "endPoints": [
+                {
+                  "uniId": "SCHZTXCE4TW-5/2/2",
+                  "adminState": true,
+                  "address": "5804 TRI COUNTY PKWY 78154",
+                  "sVlan": "2552"
+                },
+                {
+                  "uniId": "HDLGTXAC01W-1/1/1",
+                  "adminState": true,
+                  "address": "2900 INTERNATIONAL BLVD 78557",
+                  "sVlan": "2552",
+                  "sVlanOperation": "PUSH",
+                  "ceVlans": [
+                    "2552"
+                  ]
+                }
+              ],
+              "evcId": "4350"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "SECONDARY": {
+    "customerName": "VERIZON SOUTHLAKE",
+    "serviceName": "21.L2XX.001157..TWCC",
+    "customerType": "CARR",
+    "modelVersion": "2.0",
+    "serviceType": "CTBH 4G",
+    "serviceMedia": "FIBER",
+    "topology": [
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "SCHZTXCE3TW",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "SCHZTXCE3TW"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7750 SR-7"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.224.132"
+                },
+                {
+                  "name": "location",
+                  "value": "A_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "5804 TRI COUNTY PKWY 78154"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "SCHZTXCE3TW.SW.TWCBIZ.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "SCHZTXCE3TW-1/2/2",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "1/2/2"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "ENNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "21001.GE10.SCHZTXCE3TW.SCHZTXCE3XS"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": []
+        }
+      },
+      {
+        "model": "ONF_TAPI",
+        "version": "2.0.0",
+        "data": {
+          "node": [
+            {
+              "uuid": "PHRRTXGY03W",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "PHRRTXGY03W"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "PE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7750 SR-12"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.224.193"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "3001 N I RD 78577"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "PHRRTXGY03W.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "PHRRTXGY03W-2/1/5",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "2/1/5"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.PHRRTXGY03W.HDLGTXAC01W"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "uuid": "HDLGTXAC01W",
+              "name": [
+                {
+                  "name": "hostName",
+                  "value": "HDLGTXAC01W"
+                },
+                {
+                  "name": "deviceRole",
+                  "value": "CPE"
+                },
+                {
+                  "name": "vendor",
+                  "value": "NOKIA"
+                },
+                {
+                  "name": "model",
+                  "value": "7210 SAS-M (10GIGE)"
+                },
+                {
+                  "name": "managementIP",
+                  "value": "76.54.238.26"
+                },
+                {
+                  "name": "location",
+                  "value": "Z_SIDE"
+                },
+                {
+                  "name": "address",
+                  "value": "2900 INTERNATIONAL BLVD 78557"
+                },
+                {
+                  "name": "fqdn",
+                  "value": "HDLGTXAC01W.CHTRSE.COM"
+                },
+                {
+                  "name": "equipmentStatus",
+                  "value": "LIVE"
+                }
+              ],
+              "ownedNodeEdgePoint": [
+                {
+                  "uuid": "HDLGTXAC01W-1/1/24",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "1/1/24"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "INNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.PHRRTXGY03W.HDLGTXAC01W"
+                    }
+                  ]
+                },
+                {
+                  "uuid": "HDLGTXAC01W-1/1/1",
+                  "name": [
+                    {
+                      "name": "name",
+                      "value": "1/1/1"
+                    },
+                    {
+                      "name": "portRole",
+                      "value": "UNI"
+                    },
+                    {
+                      "name": "transportId",
+                      "value": "95001.GE1.HDLGTXAC01W.HDLGTXAC01W"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "link": [
+            {
+              "nodeEdgePoint": [
+                "PHRRTXGY03W-2/1/5",
+                "HDLGTXAC01W-1/1/24"
+              ],
+              "uuid": "PHRRTXGY03W-2/1/5_HDLGTXAC01W-1/1/24"
+            }
+          ]
+        }
+      }
+    ],
+    "service": [
+      {
+        "model": "MEF-LEGATO-EVC",
+        "version": "2017-07-27",
+        "data": {
+          "evc": [
+            {
+              "cosNames": [
+                {
+                  "name": "GOLD"
+                }
+              ],
+              "evc-ingress-bwp": "1g",
+              "evc-egress-bwp": "1g",
+              "adminState": true,
+              "userLabel": "21.L2XX.001157..TWCC",
+              "maxNumOfEvcEndPoint": 2,
+              "serviceType": "EVPL",
+              "connectionType": "Point to Point",
+              "sVlan": "3552",
+              "endPoints": [
+                {
+                  "uniId": "SCHZTXCE3TW-1/2/2",
+                  "adminState": true,
+                  "address": "5804 TRI COUNTY PKWY 78154",
+                  "sVlan": "3552"
+                },
+                {
+                  "uniId": "HDLGTXAC01W-1/1/1",
+                  "adminState": true,
+                  "address": "2900 INTERNATIONAL BLVD 78557",
+                  "sVlan": "3552",
+                  "sVlanOperation": "PUSH",
+                  "ceVlans": [
+                    "3552"
+                  ]
+                }
+              ],
+              "evcId": "4349"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

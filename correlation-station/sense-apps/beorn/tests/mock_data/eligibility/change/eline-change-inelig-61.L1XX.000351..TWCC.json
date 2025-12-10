@@ -1,0 +1,427 @@
+{
+    "customerName": "COLUMBUS COLLEGIATE ACADEMY - WEST",
+    "serviceName": "61.L1XX.000351..TWCC",
+    "customerType": "CUST",
+    "modelVersion": "2.0",
+    "serviceType": "ELINE",
+    "topology": [
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CLMDOHGK4ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMDOHGK4ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "ADVA"
+                            },
+                            {
+                                "name": "model",
+                                "value": "FSP 150-XG116PRO"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "DHCP"
+                            },
+                            {
+                                "name": "address",
+                                "value": "300 DANA AVE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMDOHGK4ZW.CML.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMDOHGK4ZW-ETH_PORT-1-1-1-3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH_PORT-1-1-1-3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMDOHGK4ZW-ETH_PORT-1-1-1-8",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ETH_PORT-1-1-1-8"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "FTPFOH030QW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "FTPFOH030QW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "AGG"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "QFX5100-96S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.10.120.251"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1055 HARRISBURG PIKE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "FTPFOH030QW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "FTPFOH030QW-XE-1/0/4",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "XE-1/0/4"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "FTPFOH030QW-ET-1/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-1/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "FTPFOH030QW-ET-0/0/96",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-0/0/96"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "FTPFOH032CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "FTPFOH032CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.138"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1055 HARRISBURG PIKE"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "FTPFOH032CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "FTPFOH032CW-ET-5/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-5/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "FTPFOH032CW-ET-7/3/0",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ET-7/3/0"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    },
+                                    {
+                                        "name": "lagMember",
+                                        "value": "AE17"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "FTPFOH030QW-XE-1/0/4",
+                            "CLMDOHGK4ZW-ETH_PORT-1-1-1-8"
+                        ],
+                        "uuid": "FTPFOH030QW-XE-1/0/4_CLMDOHGK4ZW-ETH_PORT-1-1-1-8"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "FTPFOH032CW-ET-5/3/0",
+                            "FTPFOH030QW-ET-1/0/96"
+                        ],
+                        "uuid": "FTPFOH032CW-ET-5/3/0_FTPFOH030QW-ET-1/0/96"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "FTPFOH032CW-ET-7/3/0",
+                            "FTPFOH030QW-ET-0/0/96"
+                        ],
+                        "uuid": "FTPFOH032CW-ET-7/3/0_FTPFOH030QW-ET-0/0/96"
+                    }
+                ]
+            }
+        },
+        {
+            "model": "ONF_TAPI",
+            "version": "2.0.0",
+            "data": {
+                "node": [
+                    {
+                        "uuid": "CLMJOH091CW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMJOH091CW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "PE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "JUNIPER"
+                            },
+                            {
+                                "name": "model",
+                                "value": "MX960"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "65.189.176.4"
+                            },
+                            {
+                                "name": "address",
+                                "value": "2676 MARGARET ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMJOH091CW.CHTRSE.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMJOH091CW-GE-11/3/5",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "GE-11/3/5"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "CLMDOHKS1ZW",
+                        "name": [
+                            {
+                                "name": "hostName",
+                                "value": "CLMDOHKS1ZW"
+                            },
+                            {
+                                "name": "deviceRole",
+                                "value": "CPE"
+                            },
+                            {
+                                "name": "vendor",
+                                "value": "ADVA"
+                            },
+                            {
+                                "name": "model",
+                                "value": "FSP 150CC-GE114/114S"
+                            },
+                            {
+                                "name": "managementIP",
+                                "value": "10.8.188.14"
+                            },
+                            {
+                                "name": "address",
+                                "value": "1469 E MAIN ST"
+                            },
+                            {
+                                "name": "fqdn",
+                                "value": "CLMDOHKS1ZW.MW.TWCBIZ.COM"
+                            }
+                        ],
+                        "ownedNodeEdgePoint": [
+                            {
+                                "uuid": "CLMDOHKS1ZW-NETWORK-1-1-1-1",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "NETWORK-1-1-1-1"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "INNI"
+                                    }
+                                ]
+                            },
+                            {
+                                "uuid": "CLMDOHKS1ZW-ACCESS-1-1-1-3",
+                                "name": [
+                                    {
+                                        "name": "name",
+                                        "value": "ACCESS-1-1-1-3"
+                                    },
+                                    {
+                                        "name": "portRole",
+                                        "value": "UNI"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "link": [
+                    {
+                        "nodeEdgePoint": [
+                            "CLMJOH091CW-GE-11/3/5",
+                            "CLMDOHKS1ZW-NETWORK-1-1-1-1"
+                        ],
+                        "uuid": "CLMJOH091CW-GE-11/3/5_CLMDOHKS1ZW-NETWORK-1-1-1-1"
+                    },
+                    {
+                        "nodeEdgePoint": [
+                            "CLMDOHKS1ZW-NETWORK-1-1-1-1.1200",
+                            "CLMDOHKS1ZW-ACCESS-1-1-1-3"
+                        ],
+                        "uuid": "CLMDOHKS1ZW-NETWORK-1-1-1-1.1200_CLMDOHKS1ZW-ACCESS-1-1-1-3"
+                    }
+                ]
+            }
+        }
+    ],
+    "service": [
+        {
+            "model": "MEF-LEGATO-EVC",
+            "version": "2017-07-27",
+            "data": {
+                "evc": [
+                    {
+                        "cosNames": [
+                            {
+                                "name": "SILVER"
+                            }
+                        ],
+                        "evc-ingress-bwp": "500m",
+                        "evc-egress-bwp": "500m",
+                        "evcId": "469595",
+                        "adminState": true,
+                        "userLabel": "61.L1XX.000351..TWCC",
+                        "maxNumOfEvcEndPoint": 2,
+                        "serviceType": "EPL",
+                        "connectionType": "Point to Point",
+                        "sVlan": "1200",
+                        "endPoints": [
+                            {
+                                "uniId": "CLMDOHGK4ZW-ETH_PORT-1-1-1-3",
+                                "adminState": true,
+                                "address": "300 DANA AVE",
+                                "sVlan": "1207",
+                                "sVlanOperation": "PUSH"
+                            },
+                            {
+                                "uniId": "CLMDOHKS1ZW-ACCESS-1-1-1-3",
+                                "adminState": true,
+                                "address": "1469 E MAIN ST",
+                                "sVlan": "1200",
+                                "sVlanOperation": "PUSH"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

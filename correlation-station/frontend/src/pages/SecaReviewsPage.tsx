@@ -1,0 +1,755 @@
+import { useState, useEffect, useRef } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { AlertCircle, Calendar, TrendingDown, TrendingUp, Edit, Save, X, Upload, FileText } from 'lucide-react'
+import { format } from 'date-fns'
+
+interface ErrorReview {
+  id: number
+  period: string
+  created_at: string
+  updated_at: string
+  summary: string
+  errors: ErrorDetail[]
+}
+
+interface ErrorDetail {
+  id: string
+  service: string
+  error_type: string
+  count: number
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  description: string
+  root_cause: string
+  resolution_status: 'resolved' | 'in_progress' | 'planned' | 'investigating'
+  action_items: string[]
+  responsible_team: string
+}
+
+export default function SecaReviewsPage() {
+  const [reviews, setReviews] = useState<ErrorReview[]>([])
+  const [selectedReview, setSelectedReview] = useState<ErrorReview | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [editedContent, setEditedContent] = useState('')
+  const [editingCardId, setEditingCardId] = useState<string | null>(null)
+  const [editedError, setEditedError] = useState<ErrorDetail | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadedData, setUploadedData] = useState<{summary: string, errors: ErrorDetail[]} | null>(null)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetchReviews()
+  }, [])
+
+  const fetchReviews = async () => {
+    try {
+      const mockData: ErrorReview[] = [
+        {
+          id: 1,
+          period: 'October 2025 - Week 1',
+          created_at: '2025-10-02T18:00:00Z',
+          updated_at: '2025-10-02T18:00:00Z',
+          summary: `# Tickets that need to be made\n\n- WIA Fallout\n- Service mapper fallout\n- Fabricator Fallout errors\n- Modeler Remote Script errors\n- Vlan swaps improperly linked devices\n- slm - circuits for carrier was mismatching\n- unexpected path status planned 615-620\n- 623-634\n- Missing ip4 data`,
+          errors: [
+            {
+              id: 'fab-timeout-1',
+              service: 'Fabricator',
+              error_type: 'Compliance Timeout',
+              count: 1,
+              severity: 'high',
+              description: 'Circuit 61.TGXX.000860..CHTR timed out during compliance check after 5 minutes',
+              root_cause: 'Onboarding circuit details resource creation exceeded timeout threshold',
+              resolution_status: 'investigating',
+              action_items: ['Investigate BPO resource creation delays', 'Review timeout configuration'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'juniper-layer2-1',
+              service: 'Config Modeler',
+              error_type: 'Layer 2 Policer KeyError',
+              count: 1,
+              severity: 'critical',
+              description: 'Circuit 63.L1XX.002736..CHTR failed with KeyError: layer2-policer on PTP interface',
+              root_cause: 'TPE requested on entire port instead of individual service. Layer 2 policer lookup attempted on PTP structure type',
+              resolution_status: 'in_progress',
+              action_items: ['Fix TPE configuration logic', 'Add validation for PTP vs CTP structure types', 'Update juniper.py error handling'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'disco-elan-1',
+              service: 'Disconnect Mapper',
+              error_type: 'ELAN SLM KeyError',
+              count: 1,
+              severity: 'high',
+              description: 'Circuit 51.L1XX.007640..TWCC failed with KeyError: elanSlm during origin site determination',
+              root_cause: 'Missing elanSlm data in circuit details service structure',
+              resolution_status: 'planned',
+              action_items: ['Add null checks for elanSlm', 'Validate circuit details structure before processing'],
+              responsible_team: 'Service Mapper Team'
+            },
+            {
+              id: 'disco-timeout-1',
+              service: 'Disconnect Mapper',
+              error_type: 'Timeout Errors',
+              count: 2,
+              severity: 'medium',
+              description: 'Circuits 91.L1XX.005430..TWCC and 26.IPXN.000384..TWCC experienced timeout errors',
+              root_cause: 'Network latency or device communication issues',
+              resolution_status: 'investigating',
+              action_items: ['Review network connectivity', 'Increase timeout thresholds if needed'],
+              responsible_team: 'Compliance Team'
+            },
+            {
+              id: 'disco-device-1',
+              service: 'Discovery',
+              error_type: 'Device Not Found',
+              count: 3,
+              severity: 'medium',
+              description: '1480 errors - could not find shelf, device not found in crosswalk',
+              root_cause: 'Missing device entries in crosswalk database',
+              resolution_status: 'planned',
+              action_items: ['Update crosswalk database', 'Add device discovery validation'],
+              responsible_team: 'Compliance Team'
+            }
+          ]
+        }
+      ]
+      setReviews(mockData)
+      if (mockData.length > 0 && !selectedReview) {
+        setSelectedReview(mockData[0])
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveEdit = async () => {
+    if (!selectedReview) return
+
+    try {
+      const response = await fetch(`/api/seca-reviews/${selectedReview.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          summary: editedContent,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchReviews()
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error('Failed to save review:', error)
+    }
+  }
+
+  const handleEditCard = (error: ErrorDetail) => {
+    setEditingCardId(error.id)
+    setEditedError({ ...error })
+  }
+
+  const handleCancelCardEdit = () => {
+    setEditingCardId(null)
+    setEditedError(null)
+  }
+
+  const handleSaveCard = async () => {
+    if (!selectedReview || !editedError) return
+
+    try {
+      const updatedErrors = selectedReview.errors.map(e =>
+        e.id === editedError.id ? editedError : e
+      )
+
+      const response = await fetch(`/api/seca-reviews/${selectedReview.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          summary: selectedReview.summary,
+          errors: updatedErrors,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchReviews()
+        setEditingCardId(null)
+        setEditedError(null)
+      }
+    } catch (error) {
+      console.error('Failed to save error card:', error)
+    }
+  }
+
+  const updateEditedError = (field: keyof ErrorDetail, value: any) => {
+    if (!editedError) return
+    setEditedError({ ...editedError, [field]: value })
+  }
+
+  const updateActionItem = (index: number, value: string) => {
+    if (!editedError) return
+    const newActionItems = [...editedError.action_items]
+    newActionItems[index] = value
+    setEditedError({ ...editedError, action_items: newActionItems })
+  }
+
+  const addActionItem = () => {
+    if (!editedError) return
+    setEditedError({ ...editedError, action_items: [...editedError.action_items, ''] })
+  }
+
+  const removeActionItem = (index: number) => {
+    if (!editedError) return
+    const newActionItems = editedError.action_items.filter((_, i) => i !== index)
+    setEditedError({ ...editedError, action_items: newActionItems })
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload-review', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUploadedData({
+          summary: data.summary,
+          errors: data.errors,
+        })
+        setShowUploadDialog(true)
+      } else {
+        alert('Failed to upload file. Please try again.')
+      }
+    } catch (error) {
+      console.error('Failed to upload file:', error)
+      alert('Failed to upload file. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleCreateFromUpload = async () => {
+    if (!uploadedData) return
+
+    try {
+      const period = `Manual Upload - ${format(new Date(), 'MMM d, yyyy')}`
+      const response = await fetch('/api/seca-reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          period,
+          summary: uploadedData.summary,
+          errors: uploadedData.errors,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchReviews()
+        setShowUploadDialog(false)
+        setUploadedData(null)
+      }
+    } catch (error) {
+      console.error('Failed to create review:', error)
+    }
+  }
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-300'
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border-orange-300'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-300'
+      case 'low':
+        return 'bg-blue-100 text-blue-800 border-blue-300'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'resolved':
+        return 'bg-green-100 text-green-800'
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800'
+      case 'planned':
+        return 'bg-purple-100 text-purple-800'
+      case 'investigating':
+        return 'bg-yellow-100 text-yellow-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading SECA reviews...</div>
+      </div>
+    )
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">SECA Error Reviews</h1>
+          <p className="text-lg text-gray-600">
+            Bi-weekly error analysis and resolution tracking
+          </p>
+        </div>
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No reviews available yet.</p>
+              <p className="text-sm text-gray-400 mt-2">
+                Reviews will be published bi-weekly with detailed error analysis.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">SECA Error Reviews</h1>
+          <p className="text-lg text-gray-600">
+            Bi-weekly error analysis and resolution tracking
+          </p>
+        </div>
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.md,.markdown"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            variant="default"
+          >
+            {uploading ? (
+              <>
+                <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload PDF/Markdown
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Upload Preview Dialog */}
+      {showUploadDialog && uploadedData && (
+        <Card className="border-2 border-grafana-orange bg-grafana-orange/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-grafana-orange" />
+                <CardTitle>Preview Uploaded Content</CardTitle>
+              </div>
+              <Button
+                onClick={() => {
+                  setShowUploadDialog(false)
+                  setUploadedData(null)
+                }}
+                variant="ghost"
+                size="sm"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <CardDescription>
+              Review the extracted summary and error cards before creating the review
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Extracted Summary</h3>
+              <div className="bg-white p-3 rounded border text-sm max-h-40 overflow-y-auto">
+                {uploadedData.summary}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-sm mb-2">Extracted Errors ({uploadedData.errors.length})</h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {uploadedData.errors.map((error, idx) => (
+                  <div key={idx} className="bg-white p-2 rounded border text-sm">
+                    <div className="font-semibold">{error.error_type}</div>
+                    <div className="text-gray-600 text-xs">{error.service} - {error.severity}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleCreateFromUpload} className="flex-1">
+                <Save className="h-4 w-4 mr-2" />
+                Create Review from Upload
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowUploadDialog(false)
+                  setUploadedData(null)
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Reviews List */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Review Periods</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {reviews.map((review) => (
+                <button
+                  key={review.id}
+                  onClick={() => {
+                    setSelectedReview(review)
+                    setIsEditing(false)
+                  }}
+                  className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
+                    selectedReview?.id === review.id
+                      ? 'border-grafana-orange bg-grafana-orange/5'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-4 w-4 text-grafana-orange" />
+                    <span className="font-semibold text-sm">{review.period}</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {format(new Date(review.created_at), 'MMM d, yyyy')}
+                  </p>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Review Detail */}
+        <div className="lg:col-span-3">
+          {selectedReview && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">{selectedReview.period}</CardTitle>
+                    <CardDescription>
+                      Last updated: {format(new Date(selectedReview.updated_at), 'MMM d, yyyy h:mm a')}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    {!isEditing ? (
+                      <Button
+                        onClick={() => {
+                          setIsEditing(true)
+                          setEditedContent(selectedReview.summary)
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    ) : (
+                      <>
+                        <Button onClick={handleSaveEdit} size="sm">
+                          <Save className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => setIsEditing(false)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Summary */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Executive Summary</h3>
+                  {isEditing ? (
+                    <textarea
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full h-64 p-4 border-2 border-gray-200 rounded-lg font-mono text-sm"
+                      placeholder="Enter markdown content here..."
+                    />
+                  ) : (
+                    <div className="prose max-w-none">
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        {selectedReview.summary.split('\n').map((line, idx) => (
+                          <p key={idx} className="mb-2">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Error Details */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Error Breakdown</h3>
+                  <div className="space-y-4">
+                    {selectedReview.errors.map((error) => {
+                      const isEditingCard = editingCardId === error.id
+                      const currentError = isEditingCard && editedError ? editedError : error
+
+                      return (
+                        <Card key={error.id} className="border-2">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                {isEditingCard ? (
+                                  <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <select
+                                        value={currentError.severity}
+                                        onChange={(e) => updateEditedError('severity', e.target.value as any)}
+                                        className={`px-2 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(currentError.severity)}`}
+                                      >
+                                        <option value="critical">CRITICAL</option>
+                                        <option value="high">HIGH</option>
+                                        <option value="medium">MEDIUM</option>
+                                        <option value="low">LOW</option>
+                                      </select>
+                                      <select
+                                        value={currentError.resolution_status}
+                                        onChange={(e) => updateEditedError('resolution_status', e.target.value as any)}
+                                        className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(currentError.resolution_status)}`}
+                                      >
+                                        <option value="resolved">RESOLVED</option>
+                                        <option value="in_progress">IN PROGRESS</option>
+                                        <option value="planned">PLANNED</option>
+                                        <option value="investigating">INVESTIGATING</option>
+                                      </select>
+                                    </div>
+                                    <input
+                                      type="text"
+                                      value={currentError.error_type}
+                                      onChange={(e) => updateEditedError('error_type', e.target.value)}
+                                      className="w-full text-lg font-semibold border-2 border-gray-200 rounded px-2 py-1"
+                                      placeholder="Error Type"
+                                    />
+                                    <div className="flex gap-4">
+                                      <input
+                                        type="text"
+                                        value={currentError.service}
+                                        onChange={(e) => updateEditedError('service', e.target.value)}
+                                        className="flex-1 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder="Service"
+                                      />
+                                      <input
+                                        type="number"
+                                        value={currentError.count}
+                                        onChange={(e) => updateEditedError('count', parseInt(e.target.value) || 0)}
+                                        className="w-32 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder="Count"
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className={`px-2 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(error.severity)}`}>
+                                        {error.severity.toUpperCase()}
+                                      </span>
+                                      <span className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusColor(error.resolution_status)}`}>
+                                        {error.resolution_status.replace('_', ' ').toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <CardTitle className="text-lg">{error.error_type}</CardTitle>
+                                    <CardDescription className="flex items-center gap-4 mt-1">
+                                      <span>Service: {error.service}</span>
+                                      <span>•</span>
+                                      <span>Occurrences: {error.count.toLocaleString()}</span>
+                                    </CardDescription>
+                                  </>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {!isEditingCard ? (
+                                  <>
+                                    {error.count > 1000 ? (
+                                      <TrendingUp className="h-5 w-5 text-red-500" />
+                                    ) : (
+                                      <TrendingDown className="h-5 w-5 text-green-500" />
+                                    )}
+                                    <Button
+                                      onClick={() => handleEditCard(error)}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button onClick={handleSaveCard} size="sm">
+                                      <Save className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      onClick={handleCancelCardEdit}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Description</h4>
+                              {isEditingCard ? (
+                                <textarea
+                                  value={currentError.description}
+                                  onChange={(e) => updateEditedError('description', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  rows={2}
+                                  placeholder="Description"
+                                />
+                              ) : (
+                                <p className="text-sm text-gray-600">{error.description}</p>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Root Cause</h4>
+                              {isEditingCard ? (
+                                <textarea
+                                  value={currentError.root_cause}
+                                  onChange={(e) => updateEditedError('root_cause', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  rows={2}
+                                  placeholder="Root Cause"
+                                />
+                              ) : (
+                                <p className="text-sm text-gray-600">{error.root_cause}</p>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Action Items</h4>
+                              {isEditingCard ? (
+                                <div className="space-y-2">
+                                  {currentError.action_items.map((item, idx) => (
+                                    <div key={idx} className="flex gap-2">
+                                      <input
+                                        type="text"
+                                        value={item}
+                                        onChange={(e) => updateActionItem(idx, e.target.value)}
+                                        className="flex-1 text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                        placeholder={`Action item ${idx + 1}`}
+                                      />
+                                      <Button
+                                        onClick={() => removeActionItem(idx)}
+                                        variant="outline"
+                                        size="sm"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  <Button
+                                    onClick={addActionItem}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full"
+                                  >
+                                    + Add Action Item
+                                  </Button>
+                                </div>
+                              ) : (
+                                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                  {error.action_items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Responsible Team</h4>
+                              {isEditingCard ? (
+                                <input
+                                  type="text"
+                                  value={currentError.responsible_team}
+                                  onChange={(e) => updateEditedError('responsible_team', e.target.value)}
+                                  className="w-full text-sm border-2 border-gray-200 rounded px-2 py-1"
+                                  placeholder="Responsible Team"
+                                />
+                              ) : (
+                                <span className="inline-block px-2 py-1 bg-grafana-orange/10 text-grafana-orange rounded text-sm">
+                                  {error.responsible_team}
+                                </span>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

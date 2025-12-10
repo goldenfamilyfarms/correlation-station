@@ -1,0 +1,12 @@
+IGNORED_SHELF_PORTS = [
+    "CONSOLE PORT",
+    "ETHERNET MANAGEMENT PORT",
+    "MGMT LAN",
+    "RS-232",
+    "LOCAL MGMT LAN",
+    "LOCAL SERIAL PORT",
+    "USB PORT",
+    "MGMT RJ45",
+    "MGMT USB",
+    "MGMT PORT",
+]

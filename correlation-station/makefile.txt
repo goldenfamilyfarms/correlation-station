@@ -1,0 +1,177 @@
+# ============================================
+# Correlation Station - Master Makefile
+# ============================================
+# Author: derrick.golden@charter.com
+# Purpose: Ops + CI + Promotion orchestration
+# Version: 2.1.0
+# ============================================
+
+SHELL := /bin/bash
+.SHELLFLAGS := -euo pipefail -c
+.DEFAULT_GOAL := help
+MAKEFLAGS += --no-print-directory
+
+# ============================================
+# Colors
+# ============================================
+RED := \033[0;31m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+BLUE := \033[0;34m
+PURPLE := \033[0;35m
+CYAN := \033[0;36m
+NC := \033[0m
+
+-include .env
+export
+
+# ============================================
+# Promotion Configuration
+# ============================================
+
+PUBLIC_DIR := public
+PUBLIC_REMOTE := github
+PUBLIC_BRANCH := github-public
+PUBLIC_REMOTE_BRANCH := main
+
+VERSION_FILE := VERSION
+PUBLIC_TAG_PREFIX := public-v
+
+PROMOTE_DRY_RUN ?= false
+PROMOTION_ARTIFACT_DIR := promotion-artifacts
+
+POLICY_FILE := policy/promotion-policy.yaml
+CHANGELOG_FILE := $(PUBLIC_DIR)/CHANGELOG.md
+
+PROMOTION_GIT_NAME := Promotion Bot
+PROMOTION_GIT_EMAIL := promote@correlation-station.dev
+
+# ============================================
+# HELP
+# ============================================
+
+.PHONY: help
+help:
+	@awk 'BEGIN {FS=":.*##"} /^[a-zA-Z_-]+:.*?##/ \
+	{printf "  \033[33m%-35s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+# ============================================
+# Promo Safety & Policy
+# ============================================
+
+##@ Promotion
+
+.PHONY: promote-check
+promote-check: ## Verify clean repo and public directory
+	@if [ ! -d "$(PUBLIC_DIR)" ]; then \
+		echo "$(RED)❌ Missing public/ directory$(NC)"; exit 1; fi
+	@git diff --quiet || \
+		(echo "$(RED)❌ Dirty working tree$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Repo state valid$(NC)"
+
+.PHONY: promote-policy
+promote-policy: ## Enforce policy-as-code
+	@if [ ! -f "$(POLICY_FILE)" ]; then \
+		echo "$(RED)❌ Promotion policy missing$(NC)"; exit 1; fi
+	@echo "$(CYAN)→ Validating promotion policy$(NC)"
+	@python3 scripts/validate_policy.py $(POLICY_FILE)
+
+.PHONY: promote-setup
+promote-setup: ## Setup git identity + remotes
+	@git config user.name "$(PROMOTION_GIT_NAME)"
+	@git config user.email "$(PROMOTION_GIT_EMAIL)"
+	@git remote -v | grep -q "$(PUBLIC_REMOTE)" || \
+		git remote add $(PUBLIC_REMOTE) git@github.com:YOUR_ORG/YOUR_REPO.git
+	@echo "$(GREEN)✓ Promotion git configured$(NC)"
+
+# ============================================
+# Sanitization + Diff Preview
+# ============================================
+
+.PHONY: promote-sanitize
+promote-sanitize: ## Sanitize README
+	@if [ -f "$(PUBLIC_DIR)/README.md" ]; then \
+		sed -i '/INTERNAL ONLY START/,/INTERNAL ONLY END/d' $(PUBLIC_DIR)/README.md ; \
+		sed -i 's/[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}/<REDACTED_IP>/g' $(PUBLIC_DIR)/README.md ; \
+		sed -i 's/\.chtrse\.com/<REDACTED_DOMAIN>/g' $(PUBLIC_DIR)/README.md ; \
+	fi
+
+.PHONY: promote-diff
+promote-diff: ## Generate diff preview artifact
+	@mkdir -p $(PROMOTION_ARTIFACT_DIR)
+	@git diff origin/main -- $(PUBLIC_DIR) > \
+		$(PROMOTION_ARTIFACT_DIR)/public-diff.patch
+	@echo "$(GREEN)✓ Diff artifact generated$(NC)"
+
+# ============================================
+# Versioning + Changelog
+# ============================================
+
+.PHONY: promote-version
+promote-version: ## Tag public release
+	@VERSION=$$(cat $(VERSION_FILE)); \
+	git tag -f $(PUBLIC_TAG_PREFIX)$${VERSION}
+
+.PHONY: promote-changelog
+promote-changelog: ## Auto-generate public CHANGELOG
+	@echo "# Changelog" > $(CHANGELOG_FILE)
+	@git log --pretty=format:"- %s (%h)" \
+		$$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD)..
+	HEAD >> $(CHANGELOG_FILE)
+
+# ============================================
+# Grafana Snapshot Hook
+# ============================================
+
+.PHONY: promote-grafana
+promote-grafana: ## Attach Grafana dashboard snapshots
+	@if [ -z "$$GRAFANA_API_KEY" ]; then \
+		echo "$(YELLOW)⚠ No Grafana API key — skipping snapshot$(NC)"; exit 0; fi
+	@bash scripts/grafana_snapshot.sh \
+		>> $(PROMOTION_ARTIFACT_DIR)/grafana-snapshots.txt
+
+# ============================================
+# Push + Notify
+# ============================================
+
+.PHONY: promote-push
+promote-push:
+	@if [ "$(PROMOTE_DRY_RUN)" = "true" ]; then \
+		echo "$(YELLOW)[DRY RUN] Skipping push$(NC)"; \
+	else \
+		git subtree split --prefix=$(PUBLIC_DIR) -b $(PUBLIC_BRANCH); \
+		git push $(PUBLIC_REMOTE) \
+			$(PUBLIC_BRANCH):$(PUBLIC_REMOTE_BRANCH) --force; \
+		git push $(PUBLIC_REMOTE) --tags --force; \
+	fi
+
+.PHONY: promote-notify
+promote-notify: ## Notify Webex channel
+	@if [ -z "$$WEBEX_WEBHOOK_URL" ]; then exit 0; fi
+	@curl -s -X POST $$WEBEX_WEBHOOK_URL \
+		-H "Content-Type: application/json" \
+		-d '{"markdown":"✅ Public promotion complete\nCommit: '"$$(git rev-parse --short HEAD)"'"}'
+
+# ============================================
+# Promotion Orchestration
+# ============================================
+
+.PHONY: promote
+promote: promote-check promote-policy promote-setup \
+         promote-sanitize promote-diff promote-changelog \
+         promote-version promote-grafana promote-push promote-notify
+	@echo "$(GREEN)✅ Promotion finished$(NC)"
+
+.PHONY: promote-dry-run
+promote-dry-run:
+	@$(MAKE) promote PROMOTE_DRY_RUN=true
+
+# ============================================
+# CI-ONLY ENTRYPOINT (Guarded)
+# ============================================
+
+.PHONY: promote-ci
+promote-ci: ## CI-only promotion
+	@if [ "$$CI" != "true" ]; then \
+		echo "$(RED)❌ CI-only target$(NC)"; exit 1; fi
+	@$(MAKE) promote

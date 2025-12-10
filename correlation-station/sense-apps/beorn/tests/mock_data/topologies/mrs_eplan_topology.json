@@ -1,0 +1,351 @@
+{
+  "customerName": "BZN HANGARS 1&2 LLC",
+  "serviceName": "40.L1XX.007911..CHTR",
+  "customerType": "CUST",
+  "modelVersion": "2.0",
+  "serviceType": "ELAN",
+  "serviceMedia": "FIBER",
+  "topology": [
+    {
+      "model": "ONF_TAPI",
+      "version": "2.0.0",
+      "data": {
+        "node": [
+          {
+            "uuid": "BZMNMTEF1CW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "BZMNMTEF1CW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "PE"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "MX960"
+              },
+              {
+                "name": "managementIP",
+                "value": "150.181.24.28"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "6130 DAVIS LN 59718"
+              },
+              {
+                "name": "fqdn",
+                "value": "BZMNMTEF1CW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "BZMNMTEF1CW-ET-1/0/3",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/3"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE40L.BZMNMTEF1CW.BZMNMTEF1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "BZMNMTEF1CW-ET-8/0/3",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-8/0/3"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE40L.BZMNMTEF1CW.BZMNMTEF1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "BZMNMTEF1QW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "BZMNMTEF1QW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "AGG"
+              },
+              {
+                "name": "vendor",
+                "value": "JUNIPER"
+              },
+              {
+                "name": "model",
+                "value": "QFX5100-96S"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.29.121.2"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "6130 DAVIS LN 59718"
+              },
+              {
+                "name": "fqdn",
+                "value": "BZMNMTEF1QW.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "BZMNMTEF1QW-ET-0/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-0/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE40L.BZMNMTEF1CW.BZMNMTEF1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "BZMNMTEF1QW-ET-1/0/96",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ET-1/0/96"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE40L.BZMNMTEF1CW.BZMNMTEF1QW"
+                  },
+                  {
+                    "name": "lagMember",
+                    "value": "AE17"
+                  }
+                ]
+              },
+              {
+                "uuid": "BZMNMTEF1QW-GE-0/0/58",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "GE-0/0/58"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE1.BZMNMTEF1QW.BLGRMTED1ZW"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "uuid": "BLGRMTED1ZW",
+            "name": [
+              {
+                "name": "hostName",
+                "value": "BLGRMTED1ZW"
+              },
+              {
+                "name": "deviceRole",
+                "value": "CPE"
+              },
+              {
+                "name": "vendor",
+                "value": "RAD"
+              },
+              {
+                "name": "model",
+                "value": "ETX203AX/2SFP/2UTP2SFP"
+              },
+              {
+                "name": "managementIP",
+                "value": "10.29.121.132"
+              },
+              {
+                "name": "location",
+                "value": "Z_SIDE"
+              },
+              {
+                "name": "address",
+                "value": "185 TAXIWAY Y 59714"
+              },
+              {
+                "name": "fqdn",
+                "value": "BLGRMTED1ZW.CML.CHTRSE.COM"
+              },
+              {
+                "name": "equipmentStatus",
+                "value": "LIVE"
+              }
+            ],
+            "ownedNodeEdgePoint": [
+              {
+                "uuid": "BLGRMTED1ZW-ETH PORT 1",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH PORT 1"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "INNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40001.GE1.BZMNMTEF1QW.BLGRMTED1ZW"
+                  }
+                ]
+              },
+              {
+                "uuid": "BLGRMTED1ZW-ETH PORT 4",
+                "name": [
+                  {
+                    "name": "name",
+                    "value": "ETH PORT 4"
+                  },
+                  {
+                    "name": "portRole",
+                    "value": "UNI"
+                  },
+                  {
+                    "name": "transportId",
+                    "value": "40.L1XX.007911..CHTR"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "link": [
+          {
+            "nodeEdgePoint": [
+              "BZMNMTEF1CW-ET-1/0/3",
+              "BZMNMTEF1QW-ET-0/0/96"
+            ],
+            "uuid": "BZMNMTEF1CW-ET-1/0/3_BZMNMTEF1QW-ET-0/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "BZMNMTEF1CW-ET-8/0/3",
+              "BZMNMTEF1QW-ET-1/0/96"
+            ],
+            "uuid": "BZMNMTEF1CW-ET-8/0/3_BZMNMTEF1QW-ET-1/0/96"
+          },
+          {
+            "nodeEdgePoint": [
+              "BZMNMTEF1QW-GE-0/0/58",
+              "BLGRMTED1ZW-ETH PORT 1"
+            ],
+            "uuid": "BZMNMTEF1QW-GE-0/0/58_BLGRMTED1ZW-ETH PORT 1"
+          }
+        ]
+      }
+    }
+  ],
+  "service": [
+    {
+      "model": "MEF-LEGATO-EVC",
+      "version": "2017-07-27",
+      "data": {
+        "evc": [
+          {
+            "cosNames": [
+              {
+                "name": "SILVER"
+              }
+            ],
+            "evc-ingress-bwp": "200m",
+            "evc-egress-bwp": "200m",
+            "adminState": true,
+            "userLabel": "40.L1XX.007911..CHTR",
+            "maxNumOfEvcEndPoint": 1,
+            "serviceType": "EP-LAN",
+            "connectionType": "Point to Point",
+            "sVlan": "1219",
+            "endPoints": [
+              {
+                "uniId": "BLGRMTED1ZW-ETH PORT 4",
+                "adminState": true,
+                "address": "185 TAXIWAY Y 59714",
+                "sVlan": "1219",
+                "sVlanOperation": "PUSH"
+              }
+            ],
+            "evcId": "429452",
+            "vplsNetworkId": "CHTRSE.VRFID.429452.BZN_HANGARS_1&2_LLC",
+            "vplsVlanId": "1200",
+            "elanSlm": [
+              {
+                "sourceCid": "40.L1XX.007911..CHTR",
+                "sourceMepId": "429452::11",
+                "destinationMepId": "429452::10",
+                "destinationCid": "40.L1XX.007910..CHTR",
+                "sourceId": "40.L1XX.007911..CHTR"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
