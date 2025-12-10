@@ -1224,8 +1224,7 @@ promote-version: ## Tag public release
 promote-changelog: ## Auto-generate public CHANGELOG
 	@echo "# Changelog" > $(CHANGELOG_FILE)
 	@git log --pretty=format:"- %s (%h)" \
-		$$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD)..
-HEAD >> $(CHANGELOG_FILE)
+		$$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD)..HEAD >> $(CHANGELOG_FILE)
 
 .PHONY: promote-grafana
 promote-grafana: ## Attach Grafana dashboard snapshots
