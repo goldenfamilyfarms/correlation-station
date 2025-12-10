@@ -178,16 +178,15 @@ export default function HomePage() {
 
           <div className="flex flex-col items-center gap-4 py-4">
             {/* Tim Robinson "Are you sure about that?" Meme */}
-            <div className="w-full bg-gray-100 rounded-lg p-4">
-              <img
-                src="/correlation-station/tim5.png"
-                alt="Are you sure about that?"
-                className="w-full h-auto rounded"
-                onError={(e) => {
-                  // Fallback if image doesn't load
-                  e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23e5e7eb"/><text x="50%" y="40%" text-anchor="middle" font-family="Arial" font-size="24" fill="%233b82f6">ARE YOU SURE</text><text x="50%" y="60%" text-anchor="middle" font-family="Arial" font-size="24" fill="%233b82f6">ABOUT THAT?!</text></svg>'
-                }}
-              />
+            <div className="w-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-8 border-2 border-blue-200">
+              <div className="text-center space-y-4">
+                <div className="text-6xl">🤔</div>
+                <div className="text-3xl font-bold text-blue-600">ARE YOU SURE</div>
+                <div className="text-3xl font-bold text-purple-600">ABOUT THAT?!</div>
+                <div className="text-sm text-gray-600 italic mt-4">
+                  (Tim Robinson would be disappointed)
+                </div>
+              </div>
             </div>
 
             <p className="text-center text-sm text-gray-600">

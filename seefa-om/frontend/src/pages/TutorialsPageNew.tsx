@@ -336,24 +336,29 @@ export default function TutorialsPageNew() {
           )}
 
           {/* Content */}
-          <div className="prose max-w-none">
+          <div className="space-y-6">
             {selectedTutorial.content.split('\n\n').map((section, idx) => {
               if (section.startsWith('```')) {
                 const lines = section.split('\n')
                 const language = lines[0].replace('```', '')
                 const code = lines.slice(1, -1).join('\n')
-                return <CodeBlock key={idx} code={code} language={language} />
+                return (
+                  <div key={idx} className="space-y-2">
+                    <div className="text-sm text-gray-500 font-mono">{language}</div>
+                    <CodeBlock code={code} language={language} />
+                  </div>
+                )
               }
               
               if (section.startsWith('# ')) {
-                return <h1 key={idx} className="text-2xl font-bold mt-8 mb-4">{section.replace('# ', '')}</h1>
+                return <h1 key={idx} className="text-2xl font-bold mt-8 mb-4 text-gray-900">{section.replace('# ', '')}</h1>
               }
               
               if (section.startsWith('## ')) {
                 return <h2 key={idx} className="text-xl font-semibold mt-6 mb-3 text-grafana-orange">{section.replace('## ', '')}</h2>
               }
               
-              return <p key={idx} className="mb-4 text-gray-700">{section}</p>
+              return <p key={idx} className="mb-4 text-gray-700 leading-relaxed">{section}</p>
             })}
           </div>
         </div>

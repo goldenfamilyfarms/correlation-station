@@ -15,8 +15,13 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload
-from app.routes import seca_jobs
+from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs
+try:
+    from app.routes import seca
+    SECA_ROUTES_AVAILABLE = True
+except ImportError:
+    SECA_ROUTES_AVAILABLE = False
+    logging.warning("SECA routes not available - missing dependencies")
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 from app.database import init_database, seed_sample_data
@@ -286,6 +291,8 @@ app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 app.include_router(seca_jobs.router, prefix="/api", tags=["seca-jobs"])
+if SECA_ROUTES_AVAILABLE:
+    app.include_router(seca.router, prefix="/seca", tags=["seca"])
 
 
 # Prometheus metrics endpoint
