@@ -304,6 +304,21 @@ services:
       timeout: 5s
       retries: 5
 
+  rq-worker:
+    build:
+      context: .
+      dockerfile: correlation-engine/docker/worker.Dockerfile
+    container_name: correlation-rq-worker
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./:/app
+    networks:
+      - observability
+    depends_on:
+      - redis
+
   # ============================================
   # K6 Load Testing
   # ============================================
@@ -316,5 +331,28 @@ services:
       - ./k6:/scripts
     environment:
       - K6_OUT=influxdb=http://influxdb:8086/k6
+    profiles:
+      - testing
+
+  # ============================================
+  # Selenium (for E2E testing)
+  # ============================================
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-standalone-chrome
+    restart: unless-stopped
+    ports:
+      - "4444:4444"
+    environment:
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    shm_size: "2g"
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     profiles:
       - testing

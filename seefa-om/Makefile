@@ -34,6 +34,27 @@ NC := \033[0m # No Color
 -include .env
 export
 
+# ============================================
+# Promotion Configuration
+# ============================================
+
+PUBLIC_DIR := public
+PUBLIC_REMOTE := github
+PUBLIC_BRANCH := github-public
+PUBLIC_REMOTE_BRANCH := main
+
+VERSION_FILE := VERSION
+PUBLIC_TAG_PREFIX := public-v
+
+PROMOTE_DRY_RUN ?= false
+PROMOTION_ARTIFACT_DIR := promotion-artifacts
+
+POLICY_FILE := policy/promotion-policy.yaml
+CHANGELOG_FILE := $(PUBLIC_DIR)/CHANGELOG.md
+
+PROMOTION_GIT_NAME := Promotion Bot
+PROMOTION_GIT_EMAIL := promote@correlation-station.dev
+
 # Docker compose command (auto-detect v1 vs v2)
 DOCKER_COMPOSE := $(shell which docker-compose >/dev/null 2>&1 && echo "docker-compose" || echo "docker compose")
 
@@ -271,6 +292,22 @@ setup-redis: setup-network ## Setup Redis for horizontal scaling
 	@echo "  3. Set: REDIS_URL=redis://redis:6379"
 	@echo "  4. Run: make corr-restart"
 
+.PHONY: setup-rq-worker
+setup-rq-worker: setup-redis ## Setup RQ Worker
+	@echo "$(YELLOW)→ Starting RQ Worker...$(NC)"
+	@$(DOCKER_COMPOSE) up -d rq-worker
+	@sleep 3
+	@echo "$(GREEN)✓ RQ Worker started$(NC)"
+
+.PHONY: setup-selenium
+setup-selenium: setup-network ## Setup Selenium for E2E testing
+	@echo "$(YELLOW)→ Starting Selenium...$(NC)"
+	@$(DOCKER_COMPOSE) --profile testing up -d selenium
+	@sleep 5
+	@curl -sf http://localhost:4444/wd/hub/status >/dev/null 2>&1 && \
+		echo "$(GREEN)✓ Selenium ready on :4444$(NC)" || \
+		echo "$(YELLOW)⚠ Selenium starting...$(NC)"
+
 .PHONY: setup-sense-apps
 setup-sense-apps: #setup-gateway ## Setup Sense applications (Beorn, Palantir, Arda)
 	@echo "$(BLUE)========================================$(NC)"
@@ -420,6 +457,20 @@ teardown-redis: ## Stop and remove Redis
 	@$(DOCKER_COMPOSE) rm -f redis 2>/dev/null || true
 	@echo "$(GREEN)✓ Redis removed$(NC)"
 
+.PHONY: teardown-rq-worker
+teardown-rq-worker: ## Stop and remove RQ Worker
+	@echo "$(YELLOW)→ Stopping RQ Worker...$(NC)"
+	@$(DOCKER_COMPOSE) stop rq-worker 2>/dev/null || true
+	@$(DOCKER_COMPOSE) rm -f rq-worker 2>/dev/null || true
+	@echo "$(GREEN)✓ RQ Worker removed$(NC)"
+
+.PHONY: teardown-selenium
+teardown-selenium: ## Stop and remove Selenium
+	@echo "$(YELLOW)→ Stopping Selenium...$(NC)"
+	@$(DOCKER_COMPOSE) --profile testing stop selenium 2>/dev/null || true
+	@$(DOCKER_COMPOSE) --profile testing rm -f selenium 2>/dev/null || true
+	@echo "$(GREEN)✓ Selenium removed$(NC)"
+
 .PHONY: teardown-correlation
 teardown-correlation: ## Stop and remove Correlation Engine
 	@echo "$(YELLOW)→ Stopping Correlation Engine...$(NC)"
@@ -558,6 +609,18 @@ health-redis: ## Health check for Redis
 	@echo "$(YELLOW)Redis:$(NC)"
 	@docker exec redis redis-cli ping 2>/dev/null | grep -q PONG && \
 		echo "$(GREEN)  ✓ Healthy (PONG)$(NC)" || echo "$(RED)  ✗ Unhealthy$(NC)"
+
+.PHONY: health-rq-worker
+health-rq-worker: ## Health check for RQ Worker
+	@echo "$(YELLOW)RQ Worker:$(NC)"
+	@docker ps | grep -q correlation-rq-worker && \
+		echo "$(GREEN)  ✓ Running$(NC)" || echo "$(RED)  ✗ Not running$(NC)"
+
+.PHONY: health-selenium
+health-selenium: ## Health check for Selenium
+	@echo "$(YELLOW)Selenium:$(NC)"
+	@curl -sf http://localhost:4444/wd/hub/status >/dev/null 2>&1 && \
+		echo "$(GREEN)  ✓ Healthy$(NC)" || echo "$(RED)  ✗ Unhealthy$(NC)"
 
 .PHONY: health-sense-apps
 health-sense-apps: ## Health check for Sense apps
@@ -937,6 +1000,14 @@ logs-grafana: ## Tail Grafana logs
 logs-sense: ## Tail Sense apps logs
 	@$(DOCKER_COMPOSE) logs -f --tail=50 beorn palantir arda
 
+.PHONY: logs-rq-worker
+logs-rq-worker: ## Tail RQ Worker logs
+	@$(DOCKER_COMPOSE) logs -f --tail=100 rq-worker
+
+.PHONY: logs-selenium
+logs-selenium: ## Tail Selenium logs
+	@$(DOCKER_COMPOSE) --profile testing logs -f --tail=100 selenium
+
 .PHONY: logs-errors
 logs-errors: ## Show only error logs
 	@$(DOCKER_COMPOSE) logs --tail=200 | grep -i error
@@ -1099,6 +1170,103 @@ health: health-full ## Alias for health-full
 
 .PHONY: logs
 logs: logs-all ## Alias for logs-all
+
+# ============================================
+# Promotion Targets
+# ============================================
+
+##@ Promotion
+
+.PHONY: promote-check
+promote-check: ## Verify clean repo and public directory
+	@if [ ! -d "$(PUBLIC_DIR)" ]; then \
+		echo "$(RED)❌ Missing public/ directory$(NC)"; exit 1; fi
+	@git diff --quiet || \
+		(echo "$(RED)❌ Dirty working tree$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Repo state valid$(NC)"
+
+.PHONY: promote-policy
+promote-policy: ## Enforce policy-as-code
+	@if [ ! -f "$(POLICY_FILE)" ]; then \
+		echo "$(RED)❌ Promotion policy missing$(NC)"; exit 1; fi
+	@echo "$(CYAN)→ Validating promotion policy$(NC)"
+	@python3 scripts/validate_policy.py $(POLICY_FILE)
+
+.PHONY: promote-setup
+promote-setup: ## Setup git identity + remotes
+	@git config user.name "$(PROMOTION_GIT_NAME)"
+	@git config user.email "$(PROMOTION_GIT_EMAIL)"
+	@git remote -v | grep -q "$(PUBLIC_REMOTE)" || \
+		git remote add $(PUBLIC_REMOTE) git@github.com:YOUR_ORG/YOUR_REPO.git
+	@echo "$(GREEN)✓ Promotion git configured$(NC)"
+
+.PHONY: promote-sanitize
+promote-sanitize: ## Sanitize README
+	@if [ -f "$(PUBLIC_DIR)/README.md" ]; then \
+		sed -i '/INTERNAL ONLY START/,/INTERNAL ONLY END/d' $(PUBLIC_DIR)/README.md ; \
+		sed -i 's/[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{3\}/<REDACTED_IP>/g' $(PUBLIC_DIR)/README.md ; \
+		sed -i 's/\.chtrse\.com/<REDACTED_DOMAIN>/g' $(PUBLIC_DIR)/README.md ; \
+	fi
+
+.PHONY: promote-diff
+promote-diff: ## Generate diff preview artifact
+	@mkdir -p $(PROMOTION_ARTIFACT_DIR)
+	@git diff origin/main -- $(PUBLIC_DIR) > \
+		$(PROMOTION_ARTIFACT_DIR)/public-diff.patch
+	@echo "$(GREEN)✓ Diff artifact generated$(NC)"
+
+.PHONY: promote-version
+promote-version: ## Tag public release
+	@VERSION=$$(cat $(VERSION_FILE)); \
+	git tag -f $(PUBLIC_TAG_PREFIX)$${VERSION}
+
+.PHONY: promote-changelog
+promote-changelog: ## Auto-generate public CHANGELOG
+	@echo "# Changelog" > $(CHANGELOG_FILE)
+	@git log --pretty=format:"- %s (%h)" \
+		$$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD)..
+HEAD >> $(CHANGELOG_FILE)
+
+.PHONY: promote-grafana
+promote-grafana: ## Attach Grafana dashboard snapshots
+	@if [ -z "$$GRAFANA_API_KEY" ]; then \
+		echo "$(YELLOW)⚠ No Grafana API key — skipping snapshot$(NC)"; exit 0; fi
+	@bash scripts/grafana_snapshot.sh \
+		>> $(PROMOTION_ARTIFACT_DIR)/grafana-snapshots.txt
+
+.PHONY: promote-push
+promote-push:
+	@if [ "$(PROMOTE_DRY_RUN)" = "true" ]; then \
+		echo "$(YELLOW)[DRY RUN] Skipping push$(NC)"; \
+	else \
+		git subtree split --prefix=$(PUBLIC_DIR) -b $(PUBLIC_BRANCH); \
+		git push $(PUBLIC_REMOTE) \
+			$(PUBLIC_BRANCH):$(PUBLIC_REMOTE_BRANCH) --force; \
+		git push $(PUBLIC_REMOTE) --tags --force; \
+	fi
+
+.PHONY: promote-notify
+promote-notify: ## Notify Webex channel
+	@if [ -z "$$WEBEX_WEBHOOK_URL" ]; then exit 0; fi
+	@curl -s -X POST $$WEBEX_WEBHOOK_URL \
+		-H "Content-Type: application/json" \
+		-d '{"markdown":"✅ Public promotion complete\nCommit: '"$$(git rev-parse --short HEAD)"'"}'
+
+.PHONY: promote
+promote: promote-check promote-policy promote-setup \
+         promote-sanitize promote-diff promote-changelog \
+         promote-version promote-grafana promote-push promote-notify
+	@echo "$(GREEN)✅ Promotion finished$(NC)"
+
+.PHONY: promote-dry-run
+promote-dry-run:
+	@$(MAKE) promote PROMOTE_DRY_RUN=true
+
+.PHONY: promote-ci
+promote-ci: ## CI-only promotion
+	@if [ "$$CI" != "true" ]; then \
+		echo "$(RED)❌ CI-only target$(NC)"; exit 1; fi
+	@$(MAKE) promote
 
 # ============================================
 # End of Makefile
