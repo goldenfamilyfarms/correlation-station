@@ -55,3 +55,11 @@ pytest-httpx==0.25.0  # Compatible with httpx==0.25.2
 # PDF generation
 reportlab>=4.0.0
 PyPDF2>=3.0.0
+
+# Excel processing
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Selenium for web scraping
+selenium>=4.15.0
+webdriver-manager>=4.0.0
