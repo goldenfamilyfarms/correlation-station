@@ -243,10 +243,10 @@ Check if correlation engine receives and uses structured fields:
 docker-compose logs correlation-engine | grep -E "circuit_id|resource_id" | tail -20
 
 # Check correlation metrics
-curl http://159.56.4.94:8080/metrics | grep "correlation_score"
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics | grep "correlation_score"
 
 # Query correlation API for recent correlations
-curl http://159.56.4.94:8080/api/v1/correlations?limit=10 | jq
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/api/v1/correlations?limit=10 | jq
 ```
 
 ### Test 6: Field Coverage Analysis

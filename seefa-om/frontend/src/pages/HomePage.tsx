@@ -44,7 +44,7 @@ export default function HomePage() {
       description: 'Metrics storage and querying',
       icon: TestTube,
       color: 'grafana-red',
-      href: 'http://159.56.4.94:9090',
+      href: 'http://austx-mdso-logs-02.chtrse.com/prometheus/',
       external: true,
     },
   ]

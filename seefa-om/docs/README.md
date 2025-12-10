@@ -562,7 +562,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Documentation**: [ops/runbook.md](ops/runbook.md)
-- **API Docs**: http://159.56.4.94:8080/docs
+- **API Docs**: http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
 - **Issues**: GitHub Issues
 - **Slack**: #observability-support
 

@@ -169,7 +169,7 @@ make start-all
 → Starting OTel Collector Gateway...
 ✓ Gateway running. OTLP: :55680 (gRPC), :55681 (HTTP)
 → Starting Correlation Engine API...
-✓ Correlation API running: http://159.56.4.94:8080
+✓ Correlation API running: http://austx-mdso-logs-02.chtrse.com/correlation-engine/
 
 ========================================
 ✓ All core services started
@@ -177,9 +177,9 @@ make start-all
 
 Service URLs:
   Grafana:         http://austx-mdso-logs-02.chtrse.com/grafana/
-  Prometheus:      http://159.56.4.94:9090
+  Prometheus:      http://austx-mdso-logs-02.chtrse.com/prometheus/
   Loki:            http://159.56.4.94:3100
-  Correlation:     http://159.56.4.94:8080
+  Correlation:     http://austx-mdso-logs-02.chtrse.com/correlation-engine/
 
 Next steps:
   make status        - Check service health
@@ -365,9 +365,9 @@ Open these URLs in your browser:
 |---------|-----|-------|
 | **Frontend UI** | http://localhost:3000 | None |
 | **Grafana** | http://austx-mdso-logs-02.chtrse.com/grafana/ | admin / admin |
-| **Prometheus** | http://159.56.4.94:9090 | None |
+| **Prometheus** | http://austx-mdso-logs-02.chtrse.com/prometheus/ | None |
 | **Pyroscope** | http://localhost:4040 | None |
-| **Correlation Engine API** | http://159.56.4.94:8080/docs | None (Swagger UI) |
+| **Correlation Engine API** | http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs | None (Swagger UI) |
 
 **Open Grafana from terminal:**
 ```bash
@@ -764,8 +764,8 @@ make purge                  # Remove everything including images
 open http://localhost:3000              # Frontend UI
 open http://austx-mdso-logs-02.chtrse.com/grafana/            # Grafana
 open http://localhost:4040              # Pyroscope
-open http://159.56.4.94:9090            # Prometheus
-open http://159.56.4.94:8080/docs       # API docs
+open http://austx-mdso-logs-02.chtrse.com/prometheus/            # Prometheus
+open http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs       # API docs
 
 # Or use make commands
 make open-grafana                       # Open Grafana
@@ -902,7 +902,7 @@ After completing this setup:
 - Frontend UI: http://localhost:3000
 - Grafana: http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
 - Pyroscope: http://localhost:4040
-- Prometheus: http://159.56.4.94:9090
+- Prometheus: http://austx-mdso-logs-02.chtrse.com/prometheus/
 
 **Logs:**
 ```bash

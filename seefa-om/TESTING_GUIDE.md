@@ -26,13 +26,13 @@ k6 run k6/load-test-logs.js
 ### 4. Manual API Testing
 ```bash
 # Health check
-curl http://159.56.4.94:8080/health
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//health
 
 # Stats
-curl http://159.56.4.94:8080/stats
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//stats
 
 # Metrics
-curl http://159.56.4.94:9090/metrics
+curl http://austx-mdso-logs-02.chtrse.com/prometheus//metrics
 ```
 
 ---
@@ -247,7 +247,7 @@ k6 run load-test-basic.js
 k6 run load-test-logs.js
 
 # Custom load test
-k6 run -e BASE_URL=http://159.56.4.94:8080 \
+k6 run -e BASE_URL=http://austx-mdso-logs-02.chtrse.com/correlation-engine/ \
        --vus 50 \
        --duration 5m \
        load-test-logs.js
@@ -273,19 +273,19 @@ watch -n 1 'docker stats --no-stream'
 
 ```bash
 # Health check
-curl http://159.56.4.94:8080/health | jq
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//health | jq
 
 # Stats
-curl http://159.56.4.94:8080/stats | jq
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//stats | jq
 
 # Metrics (Prometheus format)
-curl http://159.56.4.94:8080/metrics
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics
 
 # Query correlations
-curl "http://159.56.4.94:8080/api/correlations?service=test-service&limit=10" | jq
+curl "http://austx-mdso-logs-02.chtrse.com/correlation-engine//api/correlations?service=test-service&limit=10" | jq
 
 # API docs
-curl http://159.56.4.94:8080/docs
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
 ```
 
 ---
@@ -391,7 +391,7 @@ cd ..
 
 echo
 echo "2. Health Checks..."
-curl -f http://159.56.4.94:8080/health || exit 1
+curl -f http://austx-mdso-logs-02.chtrse.com/correlation-engine//health || exit 1
 curl -f http://159.56.4.94:55681/ || exit 1
 
 echo

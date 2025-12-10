@@ -433,7 +433,7 @@ make health-check
 
 # 3. Access services
 open http://159.56.4.94:3000  # Grafana
-open http://159.56.4.94:8080  # Correlation API
+open http://austx-mdso-logs-02.chtrse.com/correlation-engine/  # Correlation API
 ```
 
 ---
@@ -602,7 +602,7 @@ Open these URLs in your browser:
 - Action: Change password on first login
 
 **Correlation API:**
-- URL: http://159.56.4.94:8080/docs
+- URL: http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
 - Shows: FastAPI interactive documentation
 
 **Checklist:**
@@ -1088,7 +1088,7 @@ open http://159.56.4.94:3000
 ### 5. Check Correlation API
 ```bash
 curl http://localhost:8080/health
-open http://159.56.4.94:8080/docs
+open http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
 ```
 
 ---
@@ -1137,7 +1137,7 @@ open http://159.56.4.94:8080/docs
 ┌─────────────────────────────────────────────┐
 │ 5. Access Services                          │
 │    → Grafana: http://159.56.4.94:3000    │
-│    → Correlation: http://159.56.4.94:8080│
+│    → Correlation: http://austx-mdso-logs-02.chtrse.com/correlation-engine/│
 └─────────────────────────────────────────────┘
 ```
 

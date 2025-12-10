@@ -263,7 +263,7 @@ make health-observability
 
 **Access:**
 - Grafana: http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
-- Prometheus: http://159.56.4.94:9090
+- Prometheus: http://austx-mdso-logs-02.chtrse.com/prometheus/
 - Pyroscope: http://localhost:4040
 
 ### Step 4: Setup OTel Gateway
@@ -1404,15 +1404,15 @@ server {
 
 - **Frontend:** http://localhost:3000
 - **Grafana:** http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
-- **Prometheus:** http://159.56.4.94:9090
+- **Prometheus:** http://austx-mdso-logs-02.chtrse.com/prometheus/
 - **Pyroscope:** http://localhost:4040
 
 ### APIs
 
-- **Correlation API:** http://159.56.4.94:8080
-- **API Docs:** http://159.56.4.94:8080/docs
-- **Health:** http://159.56.4.94:8080/health
-- **Metrics:** http://159.56.4.94:8080/metrics
+- **Correlation API:** http://austx-mdso-logs-02.chtrse.com/correlation-engine/
+- **API Docs:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
+- **Health:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//health
+- **Metrics:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics
 
 ### Test Applications
 

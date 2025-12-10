@@ -296,7 +296,7 @@ Verify traces are being sent to Correlation Gateway:
 docker-compose logs beorn | grep -i otlp
 
 # Check Correlation Gateway received traces
-curl http://159.56.4.94:8080/metrics | grep traces_received
+curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics | grep traces_received
 
 # Query Tempo for recent traces
 curl 'http://159.56.4.94:3200/api/search?tags=service.name=beorn&limit=10'
@@ -411,8 +411,8 @@ After deployment, services are available at:
 
 **Observability Stack:**
 - **Grafana**: http://austx-mdso-logs-02.chtrse.com/grafana/ (view traces/logs)
-- **Correlation Engine**: http://159.56.4.94:8080/docs
-- **Prometheus**: http://159.56.4.94:9090
+- **Correlation Engine**: http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
+- **Prometheus**: http://austx-mdso-logs-02.chtrse.com/prometheus/
 - **Loki**: http://159.56.4.94:3100
 - **Tempo**: http://159.56.4.94:9000
 

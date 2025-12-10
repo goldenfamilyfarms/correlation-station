@@ -105,8 +105,8 @@ help: ## Show this help message
 	@echo "$(BLUE)Service URLs:$(NC)"
 	@echo "  Frontend:    http://localhost:3000"
 	@echo "  Grafana:     http://austx-mdso-logs-02.chtrse.com/grafana/"
-	@echo "  Prometheus:  http://159.56.4.94:9090"
-	@echo "  Correlation: http://159.56.4.94:8080"
+	@echo "  Prometheus:  http://austx-mdso-logs-02.chtrse.com/prometheus/"
+	@echo "  Correlation: http://austx-mdso-logs-02.chtrse.com/correlation-engine/"
 	@echo "  Pyroscope:   http://localhost:4040"
 	@echo "  Redis:       localhost:6379"
 	@echo ""
@@ -207,7 +207,7 @@ setup-observability: setup-network ## Setup observability stack (Grafana, Loki, 
 	@echo ""
 	@echo "$(CYAN)Access:$(NC)"
 	@echo "  Grafana:    http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)"
-	@echo "  Prometheus: http://159.56.4.94:9090"
+	@echo "  Prometheus: http://austx-mdso-logs-02.chtrse.com/prometheus/"
 	@echo "  Pyroscope:  http://localhost:4040"
 
 .PHONY: setup-gateway
@@ -256,10 +256,10 @@ setup-correlation: setup-gateway ## Setup Correlation Engine
 	@echo "$(GREEN)✓ Correlation Engine setup complete!$(NC)"
 	@echo ""
 	@echo "$(CYAN)Access:$(NC)"
-	@echo "  API:     http://159.56.4.94:8080"
-	@echo "  Docs:    http://159.56.4.94:8080/docs"
-	@echo "  Health:  http://159.56.4.94:8080/health"
-	@echo "  Metrics: http://159.56.4.94:8080/metrics"
+	@echo "  API:     http://austx-mdso-logs-02.chtrse.com/correlation-engine/"
+	@echo "  Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs"
+	@echo "  Health:  http://austx-mdso-logs-02.chtrse.com/correlation-engine//health"
+	@echo "  Metrics: http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics"
 
 .PHONY: setup-redis
 setup-redis: setup-network ## Setup Redis for horizontal scaling
@@ -403,7 +403,7 @@ setup-all: setup-validate ## Complete automated setup (all components)
 	@echo "$(YELLOW)Access UIs:$(NC)"
 	@echo "  Frontend:   http://localhost:3000"
 	@echo "  Grafana:    http://austx-mdso-logs-02.chtrse.com/grafana/"
-	@echo "  Prometheus: http://159.56.4.94:9090"
+	@echo "  Prometheus: http://austx-mdso-logs-02.chtrse.com/prometheus/"
 
 # ============================================
 # Teardown Targets
@@ -1123,14 +1123,14 @@ show-urls: ## Show all service URLs
 	@echo "$(YELLOW)User Interfaces:$(NC)"
 	@echo "  Frontend:    http://localhost:3000"
 	@echo "  Grafana:     http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)"
-	@echo "  Prometheus:  http://159.56.4.94:9090"
+	@echo "  Prometheus:  http://austx-mdso-logs-02.chtrse.com/prometheus/"
 	@echo "  Pyroscope:   http://localhost:4040"
 	@echo ""
 	@echo "$(YELLOW)APIs:$(NC)"
-	@echo "  Correlation: http://159.56.4.94:8080"
-	@echo "  API Docs:    http://159.56.4.94:8080/docs"
-	@echo "  Health:      http://159.56.4.94:8080/health"
-	@echo "  Metrics:     http://159.56.4.94:8080/metrics"
+	@echo "  Correlation: http://austx-mdso-logs-02.chtrse.com/correlation-engine/"
+	@echo "  API Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs"
+	@echo "  Health:      http://austx-mdso-logs-02.chtrse.com/correlation-engine//health"
+	@echo "  Metrics:     http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics"
 	@echo ""
 	@echo "$(YELLOW)Sense Apps:$(NC)"
 	@echo "  Beorn:       http://localhost:5001"
