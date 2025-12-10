@@ -247,7 +247,8 @@ WORKDIR /arda
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt && \
     apt-get update && \
-    apt-get install fping -y
+    apt-get install fping -y && \
+    mkdir -p /arda/logs/gunicorn
 
 # Set default port
 ENV PORT=5001
