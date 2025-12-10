@@ -1012,6 +1012,18 @@ logs-selenium: ## Tail Selenium logs
 logs-errors: ## Show only error logs
 	@$(DOCKER_COMPOSE) logs --tail=200 | grep -i error
 
+.PHONY: logs-copy
+logs-copy: ## Copy logs to clipboard (usage: make logs-copy SERVICE=correlation-engine)
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "$(RED)Error: SERVICE parameter required$(NC)"; \
+		echo "Usage: make logs-copy SERVICE=correlation-engine"; \
+		exit 1; \
+	fi
+	@echo "$(YELLOW)→ Copying $(SERVICE) logs to clipboard...$(NC)"
+	@$(DOCKER_COMPOSE) logs $(SERVICE) 2>&1 | xclip -selection clipboard && \
+		echo "$(GREEN)✓ Logs copied to clipboard$(NC)" || \
+		echo "$(RED)✗ Failed (install xclip: sudo apt install xclip)$(NC)"
+
 .PHONY: logs-export
 logs-export: ## Export logs to file
 	@mkdir -p logs-export
