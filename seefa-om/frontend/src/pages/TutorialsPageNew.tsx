@@ -209,6 +209,53 @@ sum by (service_name) (
 
 const categories = ['Logs', 'Traces', 'OpenTelemetry', 'MDSO', 'SENSE']
 
+function parseMarkdownContent(content: string) {
+  const elements: JSX.Element[] = []
+  const lines = content.split('\n')
+  let i = 0
+  let key = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // Code block
+    if (line.startsWith('```')) {
+      const language = line.replace('```', '')
+      const codeLines: string[] = []
+      i++
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i])
+        i++
+      }
+      elements.push(<CodeBlock key={key++} code={codeLines.join('\n')} language={language} />)
+      i++
+      continue
+    }
+
+    // H1
+    if (line.startsWith('# ')) {
+      elements.push(<h1 key={key++} className="text-2xl font-bold mt-8 mb-4 text-gray-900">{line.replace('# ', '')}</h1>)
+      i++
+      continue
+    }
+
+    // H2
+    if (line.startsWith('## ')) {
+      elements.push(<h2 key={key++} className="text-xl font-semibold mt-6 mb-3 text-grafana-orange">{line.replace('## ', '')}</h2>)
+      i++
+      continue
+    }
+
+    // Paragraph
+    if (line.trim()) {
+      elements.push(<p key={key++} className="mb-4 text-gray-700 leading-relaxed">{line}</p>)
+    }
+    i++
+  }
+
+  return elements
+}
+
 export default function TutorialsPageNew() {
   const [selectedTutorial, setSelectedTutorial] = useState(tutorials[0])
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(categories))
@@ -336,30 +383,8 @@ export default function TutorialsPageNew() {
           )}
 
           {/* Content */}
-          <div className="space-y-6">
-            {selectedTutorial.content.split('\n\n').map((section, idx) => {
-              if (section.startsWith('```')) {
-                const lines = section.split('\n')
-                const language = lines[0].replace('```', '')
-                const code = lines.slice(1, -1).join('\n')
-                return (
-                  <div key={idx} className="space-y-2">
-                    <div className="text-sm text-gray-500 font-mono">{language}</div>
-                    <CodeBlock code={code} language={language} />
-                  </div>
-                )
-              }
-              
-              if (section.startsWith('# ')) {
-                return <h1 key={idx} className="text-2xl font-bold mt-8 mb-4 text-gray-900">{section.replace('# ', '')}</h1>
-              }
-              
-              if (section.startsWith('## ')) {
-                return <h2 key={idx} className="text-xl font-semibold mt-6 mb-3 text-grafana-orange">{section.replace('## ', '')}</h2>
-              }
-              
-              return <p key={idx} className="mb-4 text-gray-700 leading-relaxed">{section}</p>
-            })}
+          <div className="space-y-2">
+            {parseMarkdownContent(selectedTutorial.content)}
           </div>
         </div>
       </div>
