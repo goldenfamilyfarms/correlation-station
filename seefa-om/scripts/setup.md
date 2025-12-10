@@ -602,7 +602,7 @@ Open these URLs in your browser:
 - Action: Change password on first login
 
 **Correlation API:**
-- URL: http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
+- URL: http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs
 - Shows: FastAPI interactive documentation
 
 **Checklist:**
@@ -1088,7 +1088,7 @@ open http://159.56.4.94:3000
 ### 5. Check Correlation API
 ```bash
 curl http://localhost:8080/health
-open http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
+open http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs
 ```
 
 ---

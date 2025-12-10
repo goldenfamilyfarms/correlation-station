@@ -411,7 +411,7 @@ After deployment, services are available at:
 
 **Observability Stack:**
 - **Grafana**: http://austx-mdso-logs-02.chtrse.com/grafana/ (view traces/logs)
-- **Correlation Engine**: http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
+- **Correlation Engine**: http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs
 - **Prometheus**: http://austx-mdso-logs-02.chtrse.com/prometheus/
 - **Loki**: http://159.56.4.94:3100
 - **Tempo**: http://159.56.4.94:9000

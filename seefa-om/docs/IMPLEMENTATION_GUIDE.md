@@ -1410,9 +1410,9 @@ server {
 ### APIs
 
 - **Correlation API:** http://austx-mdso-logs-02.chtrse.com/correlation-engine/
-- **API Docs:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs
-- **Health:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//health
-- **Metrics:** http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics
+- **API Docs:** http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs
+- **Health:** http://austx-mdso-logs-02.chtrse.com/correlation-engine/health
+- **Metrics:** http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics
 
 ### Test Applications
 

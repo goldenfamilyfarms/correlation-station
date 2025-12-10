@@ -257,9 +257,9 @@ setup-correlation: setup-gateway ## Setup Correlation Engine
 	@echo ""
 	@echo "$(CYAN)Access:$(NC)"
 	@echo "  API:     http://austx-mdso-logs-02.chtrse.com/correlation-engine/"
-	@echo "  Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs"
-	@echo "  Health:  http://austx-mdso-logs-02.chtrse.com/correlation-engine//health"
-	@echo "  Metrics: http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics"
+	@echo "  Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs"
+	@echo "  Health:  http://austx-mdso-logs-02.chtrse.com/correlation-engine/health"
+	@echo "  Metrics: http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics"
 
 .PHONY: setup-redis
 setup-redis: setup-network ## Setup Redis for horizontal scaling
@@ -1128,9 +1128,9 @@ show-urls: ## Show all service URLs
 	@echo ""
 	@echo "$(YELLOW)APIs:$(NC)"
 	@echo "  Correlation: http://austx-mdso-logs-02.chtrse.com/correlation-engine/"
-	@echo "  API Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs"
-	@echo "  Health:      http://austx-mdso-logs-02.chtrse.com/correlation-engine//health"
-	@echo "  Metrics:     http://austx-mdso-logs-02.chtrse.com/correlation-engine//metrics"
+	@echo "  API Docs:    http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs"
+	@echo "  Health:      http://austx-mdso-logs-02.chtrse.com/correlation-engine/health"
+	@echo "  Metrics:     http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics"
 	@echo ""
 	@echo "$(YELLOW)Sense Apps:$(NC)"
 	@echo "  Beorn:       http://localhost:5001"

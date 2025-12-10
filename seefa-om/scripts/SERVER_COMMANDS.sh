@@ -6,30 +6,30 @@ echo "SEEFA-OM Quick Fix - Run on Server"
 echo "========================================="
 echo ""
 
-cd ~/seefa-om
+cd /opt/seefa-om
 
 echo "1. Pulling latest code..."
 git pull origin main
 
 echo ""
 echo "2. Stopping affected services..."
-docker-compose down correlation-engine correlation-station-ui pyroscope
+sudo docker compose down correlation-engine correlation-station-ui pyroscope
 
 echo ""
 echo "3. Rebuilding correlation-engine (with new dependencies)..."
-docker-compose build --no-cache correlation-engine
+sudo docker compose build --no-cache correlation-engine
 
 echo ""
 echo "4. Rebuilding frontend (with Datadog modal fix)..."
-docker-compose build --no-cache correlation-station-ui
+sudo docker compose build --no-cache correlation-station-ui
 
 echo ""
 echo "5. Starting services..."
-docker-compose up -d correlation-engine correlation-station-ui pyroscope
+sudo docker compose up -d correlation-engine correlation-station-ui pyroscope
 
 echo ""
 echo "6. Starting Selenium (for SECA processing)..."
-docker-compose -f docker-compose.selenium.yml up -d
+sudo docker compose -f docker-compose.selenium.yml up -d
 
 echo ""
 echo "Waiting 15 seconds for services to start..."
@@ -39,7 +39,7 @@ echo ""
 echo "========================================="
 echo "Service Status Check"
 echo "========================================="
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "correlation-engine|pyroscope|correlation-station-ui|selenium"
+sudo docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "correlation-engine|pyroscope|correlation-station-ui|selenium"
 
 echo ""
 echo "========================================="

@@ -367,7 +367,7 @@ Open these URLs in your browser:
 | **Grafana** | http://austx-mdso-logs-02.chtrse.com/grafana/ | admin / admin |
 | **Prometheus** | http://austx-mdso-logs-02.chtrse.com/prometheus/ | None |
 | **Pyroscope** | http://localhost:4040 | None |
-| **Correlation Engine API** | http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs | None (Swagger UI) |
+| **Correlation Engine API** | http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs | None (Swagger UI) |
 
 **Open Grafana from terminal:**
 ```bash
@@ -765,7 +765,7 @@ open http://localhost:3000              # Frontend UI
 open http://austx-mdso-logs-02.chtrse.com/grafana/            # Grafana
 open http://localhost:4040              # Pyroscope
 open http://austx-mdso-logs-02.chtrse.com/prometheus/            # Prometheus
-open http://austx-mdso-logs-02.chtrse.com/correlation-engine//docs       # API docs
+open http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs       # API docs
 
 # Or use make commands
 make open-grafana                       # Open Grafana
