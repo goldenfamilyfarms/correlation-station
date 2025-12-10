@@ -5,6 +5,9 @@ if not os.path.exists("logs"):
 log_path = "/arda/logs"
 if not os.path.exists(log_path):
     os.makedirs(log_path)
+gunicorn_log_path = f"{log_path}/gunicorn"
+if not os.path.exists(gunicorn_log_path):
+    os.makedirs(gunicorn_log_path)
 
 bind = "0.0.0.0:5001"
 workers = 16
