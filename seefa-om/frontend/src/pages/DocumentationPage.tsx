@@ -14,12 +14,13 @@ export default function DocumentationPage() {
       </div>
 
       <Tabs defaultValue="traceql" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="traceql">TraceQL</TabsTrigger>
           <TabsTrigger value="promql">PromQL</TabsTrigger>
           <TabsTrigger value="logql">LogQL</TabsTrigger>
           <TabsTrigger value="instrumentation">Instrumentation</TabsTrigger>
           <TabsTrigger value="opentelemetry">OpenTelemetry SDK</TabsTrigger>
+          <TabsTrigger value="matrices">Signal Matrices</TabsTrigger>
         </TabsList>
 
         {/* TraceQL Tab */}
@@ -619,13 +620,13 @@ async def get_user(user_id: int):
               <div>
                 <h3 className="font-semibold text-lg mb-3">Best Practices</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>✅ Use auto-instrumentation libraries when available (FastAPI, Flask, Express, etc.)</li>
-                  <li>✅ Add custom spans for business-critical operations</li>
-                  <li>✅ Include meaningful attributes (user_id, operation_type, error_code)</li>
-                  <li>✅ Use structured logging with correlation IDs</li>
-                  <li>❌ Don't add PII (passwords, SSNs) to span attributes</li>
-                  <li>❌ Don't create too many spans (keep cardinality reasonable)</li>
-                  <li>❌ Don't forget to handle errors and set span status</li>
+                  <li>Use auto-instrumentation libraries when available (FastAPI, Flask, Express, etc.)</li>
+                  <li>Add custom spans for business-critical operations</li>
+                  <li>Include meaningful attributes (user_id, operation_type, error_code)</li>
+                  <li>Use structured logging with correlation IDs</li>
+                  <li>Don't add PII (passwords, SSNs) to span attributes</li>
+                  <li>Don't create too many spans (keep cardinality reasonable)</li>
+                  <li>Don't forget to handle errors and set span status</li>
                 </ul>
               </div>
 
@@ -822,6 +823,204 @@ OTEL_TRACES_SAMPLER_ARG=1.0`}</pre>
                   <li>Set meaningful resource attributes (service.name, deployment.environment)</li>
                   <li>Configure sampling to reduce costs in high-volume environments</li>
                   <li>Test with Console exporter during development</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Signal Matrices Tab */}
+        <TabsContent value="matrices" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-grafana-orange" />
+                <CardTitle>Container & Signal Matrices</CardTitle>
+              </div>
+              <CardDescription>
+                MDSO container instrumentation and signal design patterns
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3">MDSO Container Instrumentation Matrix</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Container</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Signals</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Collection Method</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Attributes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Rationale</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-gray-700">
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">bpocore</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/bpocore/*.log</code>, prometheus scrape <code>:9090</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code>resource_id</code>, <code>product_id</code>, <code>circuit_id</code>, <code>tenant</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Core orchestration engine</td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">scriptplan-*</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Traces</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/scriptplan/*.log</code>, OTel SDK</td>
+                        <td className="border border-gray-300 px-3 py-2"><code>resource_id</code>, <code>circuit_id</code>, <code>plan_name</code>, <code>state</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Workflow execution tracking</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">ra-*</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/ra/*.log</code>, prometheus scrape</td>
+                        <td className="border border-gray-300 px-3 py-2"><code>device_fqdn</code>, <code>vendor</code>, <code>resource_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Resource adapter operations</td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">tracelogs</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/tracelogs/*.log</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code>orchestration_trace</code>, <code>resource_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Orchestration state tracking</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">prometheus</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: remote_write endpoint</td>
+                        <td className="border border-gray-300 px-3 py-2">All MDSO metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Existing metrics aggregation</td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">api-gateway</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, prometheus scrape</td>
+                        <td className="border border-gray-300 px-3 py-2"><code>api_endpoint</code>, <code>method</code>, <code>status_code</code></td>
+                        <td className="border border-gray-300 px-3 py-2">API interaction tracking</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">kafka</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, JMX metrics</td>
+                        <td className="border border-gray-300 px-3 py-2"><code>topic</code>, <code>partition</code>, <code>offset</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Event streaming tracking</td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">postgres</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
+                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, pg_exporter</td>
+                        <td className="border border-gray-300 px-3 py-2"><code>query_time</code>, <code>table</code>, <code>operation</code></td>
+                        <td className="border border-gray-300 px-3 py-2">Database performance</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Signal Design Matrix</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Communication Path</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Spans</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Logs</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Metrics</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Baggage</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Events</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-gray-700">
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2 font-semibold">Sense → MDSO</td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div className="space-y-1">
+                            <div><strong>Name:</strong> <code className="text-xs">sense.mdso.api.call</code></div>
+                            <div><strong>Attrs:</strong> <code className="text-xs">service.name, http.method, http.url, circuit_id, resource_id</code></div>
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><strong>Fields:</strong> <code className="text-xs">timestamp, level, message, circuit_id, trace_id, span_id</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div className="space-y-1">
+                            <div><code className="text-xs">sense_mdso_api_duration_ms</code></div>
+                            <div><strong>Labels:</strong> <code className="text-xs">source, target, endpoint</code></div>
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id, product_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">api_call_start, api_call_complete</code></td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2 font-semibold">MDSO → Sense</td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div className="space-y-1">
+                            <div><strong>Name:</strong> <code className="text-xs">mdso.sense.callback</code></div>
+                            <div><strong>Attrs:</strong> <code className="text-xs">callback_url, resource_id, status</code></div>
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><strong>Fields:</strong> <code className="text-xs">timestamp, callback_type, payload_size</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><code className="text-xs">mdso_callback_duration_ms</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">callback_initiated, callback_delivered</code></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-gray-300 px-3 py-2 font-semibold">MDSO Internal</td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div className="space-y-1">
+                            <div><strong>Name:</strong> <code className="text-xs">mdso.scriptplan.execute</code></div>
+                            <div><strong>Attrs:</strong> <code className="text-xs">plan_name, resource_id, state</code></div>
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><strong>Fields:</strong> <code className="text-xs">orchestration_trace, elapsed_time</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><code className="text-xs">scriptplan_execution_time_ms</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">plan_start, state_change, plan_complete</code></td>
+                      </tr>
+                      <tr className="bg-gray-50">
+                        <td className="border border-gray-300 px-3 py-2 font-semibold">Sense → Sense</td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div className="space-y-1">
+                            <div><strong>Name:</strong> <code className="text-xs">sense.internal.call</code></div>
+                            <div><strong>Attrs:</strong> <code className="text-xs">source.service, target.service</code></div>
+                          </div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><strong>Fields:</strong> <code className="text-xs">correlation_id, operation</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <div><code className="text-xs">sense_internal_call_duration_ms</code></div>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id</code></td>
+                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">internal_call_start, internal_call_end</code></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold text-lg mb-3">Key Observations</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li><strong>Correlation Keys:</strong> <code className="bg-gray-100 px-1 rounded">circuit_id</code> and <code className="bg-gray-100 px-1 rounded">resource_id</code> are propagated via baggage across all services</li>
+                  <li><strong>Span Naming:</strong> Use hierarchical naming: <code className="bg-gray-100 px-1 rounded">system.subsystem.operation</code></li>
+                  <li><strong>Log Enrichment:</strong> All logs include <code className="bg-gray-100 px-1 rounded">trace_id</code> and <code className="bg-gray-100 px-1 rounded">span_id</code> for correlation</li>
+                  <li><strong>Metrics Cardinality:</strong> Keep metric labels low-cardinality (source, target, endpoint only)</li>
+                  <li><strong>Events:</strong> Use span events for point-in-time occurrences within operations</li>
+                  <li><strong>Baggage Propagation:</strong> Critical identifiers flow through distributed traces automatically</li>
                 </ul>
               </div>
             </CardContent>

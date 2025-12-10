@@ -165,7 +165,7 @@ make start-all
 → Cleaning up Docker networks...
 ✓ Network cleanup complete
 → Starting observability stack...
-✓ Stack running. Grafana: http://159.56.4.94:8443
+✓ Stack running. Grafana: http://austx-mdso-logs-02.chtrse.com/grafana/
 → Starting OTel Collector Gateway...
 ✓ Gateway running. OTLP: :55680 (gRPC), :55681 (HTTP)
 → Starting Correlation Engine API...
@@ -176,7 +176,7 @@ make start-all
 ========================================
 
 Service URLs:
-  Grafana:         http://159.56.4.94:8443
+  Grafana:         http://austx-mdso-logs-02.chtrse.com/grafana/
   Prometheus:      http://159.56.4.94:9090
   Loki:            http://159.56.4.94:3100
   Correlation:     http://159.56.4.94:8080
@@ -364,7 +364,7 @@ Open these URLs in your browser:
 | Service | URL | Login |
 |---------|-----|-------|
 | **Frontend UI** | http://localhost:3000 | None |
-| **Grafana** | http://159.56.4.94:8443 | admin / admin |
+| **Grafana** | http://austx-mdso-logs-02.chtrse.com/grafana/ | admin / admin |
 | **Prometheus** | http://159.56.4.94:9090 | None |
 | **Pyroscope** | http://localhost:4040 | None |
 | **Correlation Engine API** | http://159.56.4.94:8080/docs | None (Swagger UI) |
@@ -762,7 +762,7 @@ make purge                  # Remove everything including images
 ```bash
 # Open in browser
 open http://localhost:3000              # Frontend UI
-open http://159.56.4.94:8443            # Grafana
+open http://austx-mdso-logs-02.chtrse.com/grafana/            # Grafana
 open http://localhost:4040              # Pyroscope
 open http://159.56.4.94:9090            # Prometheus
 open http://159.56.4.94:8080/docs       # API docs
@@ -790,7 +790,7 @@ make test-traffic
 
 # 5. View in browser
 open http://localhost:3000
-open http://159.56.4.94:8443
+open http://austx-mdso-logs-02.chtrse.com/grafana/
 
 # 6. Check correlations
 make correlations
@@ -900,7 +900,7 @@ After completing this setup:
 
 **Monitoring:**
 - Frontend UI: http://localhost:3000
-- Grafana: http://159.56.4.94:8443 (admin/admin)
+- Grafana: http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
 - Pyroscope: http://localhost:4040
 - Prometheus: http://159.56.4.94:9090
 

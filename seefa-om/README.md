@@ -1,4 +1,4 @@
-# Observability PoC - End-to-End Correlation System
+# Observability End-to-End Correlation System
 
 > **Real-time log and trace correlation using OpenTelemetry, Grafana Stack, and a custom FastAPI correlation engine**
 
@@ -195,7 +195,8 @@ sudo journalctl -u alloy -f
 
 ```bash
 # Open browser
-open http://159.56.4.94:3000
+open http://austx-mdso-logs-02.chtrse.com/grafana
+
 
 # Login credentials
 Username: admin

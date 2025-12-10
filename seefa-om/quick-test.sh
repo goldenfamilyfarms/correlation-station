@@ -148,7 +148,7 @@ echo "=========================================="
 echo "Trace ID: ${TRACE_ID}"
 echo
 echo "View in Grafana:"
-echo "  Logs:   http://159.56.4.94:8443/explore?left=%7B%22queries%22:%5B%7B%22expr%22:%22%7Bservice_name%3D%5C%22quick-test%5C%22%7D%22%7D%5D%7D"
-echo "  Traces: http://159.56.4.94:8443/explore?left=%7B%22queries%22:%5B%7B%22query%22:%22${TRACE_ID}%22%7D%5D%7D"
+echo "  Logs:   http://austx-mdso-logs-02.chtrse.com/grafana//explore?left=%7B%22queries%22:%5B%7B%22expr%22:%22%7Bservice_name%3D%5C%22quick-test%5C%22%7D%22%7D%5D%7D"
+echo "  Traces: http://austx-mdso-logs-02.chtrse.com/grafana//explore?left=%7B%22queries%22:%5B%7B%22query%22:%22${TRACE_ID}%22%7D%5D%7D"
 echo
 echo "✓ Quick test completed successfully!"

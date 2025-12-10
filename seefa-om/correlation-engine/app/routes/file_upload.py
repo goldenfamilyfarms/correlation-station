@@ -2,10 +2,19 @@
 File upload and processing for SECA reviews
 """
 from typing import Dict, Any
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 import structlog
 import io
 import re
+import tempfile
+import zipfile
+import asyncio
+import os
+import uuid
+from fastapi.responses import StreamingResponse, JSONResponse
+from typing import Tuple
+from rq import Queue as RQQueue
+from redis import Redis
 
 logger = structlog.get_logger()
 
@@ -166,3 +175,105 @@ async def upload_review_file(file: UploadFile = File(...)) -> Dict[str, Any]:
     except Exception as e:
         logger.exception("Failed to process uploaded file", error=str(e))
         raise HTTPException(status_code=500, detail=f"Failed to process file: {str(e)}")
+
+
+@router.post("/upload-seca-xlsx")
+async def upload_seca_xlsx(
+    file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = None,
+    headless: bool = True,
+    sync: bool = False,
+) -> JSONResponse:
+    """Accept XLSX and schedule SECA processing job.
+
+    If REDIS_URL is configured and rq is available, enqueue to RQ. Otherwise schedule in-process background task.
+    Returns a job id and status URL.
+    """
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+
+    ext = file.filename.lower().split('.')[-1]
+    if ext not in ("xlsx", "xlsm", "xls"):
+        raise HTTPException(status_code=400, detail="Only Excel files (.xlsx/.xlsm/.xls) are supported")
+
+    # Save uploaded file to temp location
+    try:
+        content = await file.read()
+
+        # Enforce max upload size (env or default 10MB)
+        max_bytes = int(os.getenv('MAX_UPLOAD_SIZE_BYTES', str(10 * 1024 * 1024)))
+        if len(content) > max_bytes:
+            raise HTTPException(status_code=400, detail=f"Uploaded file exceeds max size of {max_bytes} bytes")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+            tmp_path = tmp.name
+            tmp.write(content)
+    except Exception as e:
+        logger.exception("Failed to save uploaded XLSX", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
+
+    job_id = str(uuid.uuid4())
+    # Simple in-memory job store for BackgroundTasks fallback
+    if 'JOBS' not in globals():
+        globals()['JOBS'] = {}
+
+    # If client requested synchronous processing, run it here and stream zip
+    if sync:
+        try:
+            from app.tasks.seca_tasks import process_seca_file
+            zip_path = await asyncio.to_thread(process_seca_file, tmp_path, file.filename)
+            if zip_path and os.path.exists(zip_path):
+                f = open(zip_path, 'rb')
+                return StreamingResponse(f, media_type='application/zip', headers={
+                    'Content-Disposition': f'attachment; filename="{os.path.basename(zip_path)}"'
+                })
+            else:
+                raise HTTPException(status_code=500, detail='Processing failed')
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception('Synchronous processing failed', error=str(e))
+            raise HTTPException(status_code=500, detail=f'Synchronous processing failed: {e}')
+
+    # Try to enqueue to RQ if REDIS_URL is set
+    redis_url = os.getenv('REDIS_URL')
+    if redis_url:
+        try:
+            redis_conn = Redis.from_url(redis_url)
+            q = RQQueue('seca', connection=redis_conn)
+            # Import task function
+            from app.tasks.seca_tasks import process_seca_file
+            job = q.enqueue(process_seca_file, tmp_path, file.filename)
+            # store mapping from our uuid to rq job id
+            globals()['JOBS'][job_id] = {
+                'status': 'queued',
+                'rq_id': job.get_id(),
+                'result_path': None,
+            }
+            status_url = f"/correlation-engine/api/seca-jobs/{job_id}"
+            return JSONResponse({"job_id": job_id, "status_url": status_url})
+        except Exception as e:
+            logger.warning("Failed to enqueue to RQ, falling back to BackgroundTasks", error=str(e))
+
+    # BackgroundTasks fallback: run in thread and store path in JOBS
+    globals()['JOBS'][job_id] = {'status': 'running', 'result_path': None, 'error': None}
+
+    def _bg_worker(path, filename, jid):
+        try:
+            from app.tasks.seca_tasks import process_seca_file
+            zip_path = process_seca_file(path, filename)
+            globals()['JOBS'][jid]['status'] = 'finished'
+            globals()['JOBS'][jid]['result_path'] = zip_path
+        except Exception as e:
+            globals()['JOBS'][jid]['status'] = 'failed'
+            globals()['JOBS'][jid]['error'] = str(e)
+
+    # schedule background work
+    if background_tasks is not None:
+        background_tasks.add_task(_bg_worker, tmp_path, file.filename, job_id)
+    else:
+        # fallback: run in thread
+        asyncio.create_task(asyncio.to_thread(_bg_worker, tmp_path, file.filename, job_id))
+
+    status_url = f"/correlation-engine/api/seca-jobs/{job_id}"
+    return JSONResponse({"job_id": job_id, "status_url": status_url})

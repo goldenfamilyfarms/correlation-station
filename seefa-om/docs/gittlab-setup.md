@@ -233,7 +233,7 @@ Access your services at:
 Arda API Docs: http://159.56.4.94:5001/docs
 Beorn: http://159.56.4.94:5002
 Palantir: http://159.56.4.94:5003
-Traces and logs will automatically flow to your Grafana stack at http://159.56.4.94:8443
+Traces and logs will automatically flow to your Grafana stack at http://austx-mdso-logs-02.chtrse.com/grafana/
 
 The files are committed and ready to merge!
 

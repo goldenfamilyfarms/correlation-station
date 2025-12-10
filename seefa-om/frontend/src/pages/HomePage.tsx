@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExternalLink, BarChart3, Activity, Dog, Flame, TestTube } from 'lucide-react'
+import { ExternalLink, BarChart3, Activity, Dog, Flame, TestTube, Globe } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -99,7 +99,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* DataDog Card (with modal) */}
+      {/* Legacy Tools Section */}
       <div>
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Legacy Tools</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,6 +117,24 @@ export default function HomePage() {
               </CardTitle>
               <CardDescription>
                 The old observability platform (click if you dare...)
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card
+            className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-grafana-blue"
+            onClick={() => window.open('http://austx-mdso-logs-02.chtrse.com/', '_blank')}
+          >
+            <CardHeader>
+              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
+                <Globe className="h-6 w-6 text-blue-600" />
+              </div>
+              <CardTitle className="flex items-center gap-2">
+                Meta Web Tool
+                <ExternalLink className="h-4 w-4 text-gray-400" />
+              </CardTitle>
+              <CardDescription>
+                Access the main MDSO web portal and tools
               </CardDescription>
             </CardHeader>
           </Card>

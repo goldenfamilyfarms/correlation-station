@@ -262,7 +262,7 @@ make health-observability
 ```
 
 **Access:**
-- Grafana: http://159.56.4.94:8443 (admin/admin)
+- Grafana: http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
 - Prometheus: http://159.56.4.94:9090
 - Pyroscope: http://localhost:4040
 
@@ -1403,7 +1403,7 @@ server {
 ### User Interfaces
 
 - **Frontend:** http://localhost:3000
-- **Grafana:** http://159.56.4.94:8443 (admin/admin)
+- **Grafana:** http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)
 - **Prometheus:** http://159.56.4.94:9090
 - **Pyroscope:** http://localhost:4040
 

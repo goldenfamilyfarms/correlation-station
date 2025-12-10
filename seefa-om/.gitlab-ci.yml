@@ -1,3 +1,44 @@
+stages:
+  - test
+  - integration
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+unit_tests:
+  image: python:3.11
+  stage: test
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -r correlation-engine/requirements.txt
+    - cd correlation-engine
+    - pytest -q
+  artifacts:
+    when: always
+    reports:
+      junit: tests/junit.xml
+
+integration_smoke:
+  image: docker:20.10.16
+  stage: integration
+  services:
+    - name: redis:7-alpine
+      alias: redis
+    - name: selenium/standalone-chrome:115.0
+      alias: selenium
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+  script:
+    - apk add --no-cache curl python3 py3-pip
+    - pip3 install -r correlation-engine/requirements.txt
+    - cd correlation-engine
+    - pytest tests/test_seca_processor.py -q
+  only:
+    - main
 # GitLab CI/CD Pipeline for Correlation Station & Sense Apps
 # Author: Derrick Golden
 # Version: 1.0.0

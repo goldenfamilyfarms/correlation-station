@@ -163,7 +163,7 @@ python3 test_correlation_manual.py
 ```
 
 **Verify in Grafana:**
-1. Go to http://159.56.4.94:8443
+1. Go to http://austx-mdso-logs-02.chtrse.com/grafana/
 2. Navigate to Explore → Tempo
 3. Search for the trace_id
 4. Click on trace → should see correlated logs
@@ -188,7 +188,7 @@ alloy run --config ../config.alloy --dry-run < 01-circuit-creation.log
 ```bash
 # Test a single log line
 echo '2024-01-15 10:30:45 INFO [circuit:61.TGXX.000860..CHTR] Creating circuit on device austx-pe01.chtrse.com' | \
-  grep -oP 'circuit:\K[^\]]+' 
+  grep -oP 'circuit:\K[^\]]+'
 
 # Expected: 61.TGXX.000860..CHTR
 ```
@@ -224,7 +224,7 @@ curl -G http://159.56.4.94:3100/loki/api/v1/query \
   --data-urlencode 'limit=1'
 
 # 5. View in Grafana
-# Navigate to: http://159.56.4.94:8443
+# Navigate to: http://austx-mdso-logs-02.chtrse.com/grafana/
 # Explore → Loki → Query: {service_name="mdso-dev"} |= "TEST.999999"
 ```
 
@@ -485,7 +485,7 @@ integration-test:
 ## Monitoring Test Results
 
 **View in Grafana:**
-1. Navigate to http://159.56.4.94:8443
+1. Navigate to http://austx-mdso-logs-02.chtrse.com/grafana/
 2. Go to Dashboards → Correlation Engine
 3. Check panels:
    - Request Rate

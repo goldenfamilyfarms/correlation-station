@@ -302,7 +302,7 @@ curl http://159.56.4.94:8080/metrics | grep traces_received
 curl 'http://159.56.4.94:3200/api/search?tags=service.name=beorn&limit=10'
 
 # View in Grafana
-# Navigate to: http://159.56.4.94:8443
+# Navigate to: http://austx-mdso-logs-02.chtrse.com/grafana/
 # Explore → Tempo → Search by service name
 ```
 
@@ -410,7 +410,7 @@ After deployment, services are available at:
 - **Palantir API**: http://159.56.4.94:5003/health
 
 **Observability Stack:**
-- **Grafana**: http://159.56.4.94:8443 (view traces/logs)
+- **Grafana**: http://austx-mdso-logs-02.chtrse.com/grafana/ (view traces/logs)
 - **Correlation Engine**: http://159.56.4.94:8080/docs
 - **Prometheus**: http://159.56.4.94:9090
 - **Loki**: http://159.56.4.94:3100

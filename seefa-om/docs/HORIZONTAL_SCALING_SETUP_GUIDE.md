@@ -6,7 +6,7 @@ This guide will walk you through manually setting up horizontal scaling to run m
 
 ---
 
-## =Ë Table of Contents
+## =ï¿½ Table of Contents
 
 1. [Prerequisites](#prerequisites)
 2. [Phase 1: Enable Redis State (Single Instance)](#phase-1-enable-redis-state-single-instance)
@@ -162,7 +162,7 @@ INFO  | correlation_state_backend | backend=redis
 ERROR | redis_not_installed | Install: pip install redis
 ERROR | Failed to connect to Redis
 ```
-’ See [Troubleshooting](#troubleshooting) section
+ï¿½ See [Troubleshooting](#troubleshooting) section
 
 ### Step 1.4: Verify Redis is Working
 

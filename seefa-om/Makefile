@@ -83,7 +83,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(BLUE)Service URLs:$(NC)"
 	@echo "  Frontend:    http://localhost:3000"
-	@echo "  Grafana:     http://159.56.4.94:8443"
+	@echo "  Grafana:     http://austx-mdso-logs-02.chtrse.com/grafana/"
 	@echo "  Prometheus:  http://159.56.4.94:9090"
 	@echo "  Correlation: http://159.56.4.94:8080"
 	@echo "  Pyroscope:   http://localhost:4040"
@@ -185,7 +185,7 @@ setup-observability: setup-network ## Setup observability stack (Grafana, Loki, 
 	@echo "$(GREEN)✓ Observability stack setup complete!$(NC)"
 	@echo ""
 	@echo "$(CYAN)Access:$(NC)"
-	@echo "  Grafana:    http://159.56.4.94:8443 (admin/admin)"
+	@echo "  Grafana:    http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)"
 	@echo "  Prometheus: http://159.56.4.94:9090"
 	@echo "  Pyroscope:  http://localhost:4040"
 
@@ -365,7 +365,7 @@ setup-all: setup-validate ## Complete automated setup (all components)
 	@echo ""
 	@echo "$(YELLOW)Access UIs:$(NC)"
 	@echo "  Frontend:   http://localhost:3000"
-	@echo "  Grafana:    http://159.56.4.94:8443"
+	@echo "  Grafana:    http://austx-mdso-logs-02.chtrse.com/grafana/"
 	@echo "  Prometheus: http://159.56.4.94:9090"
 
 # ============================================
@@ -1021,8 +1021,8 @@ shell-grafana: ## Open shell in Grafana
 .PHONY: open-grafana
 open-grafana: ## Open Grafana in browser
 	@echo "$(GREEN)Opening Grafana...$(NC)"
-	@command -v xdg-open >/dev/null 2>&1 && xdg-open http://159.56.4.94:8443 || \
-		echo "Visit: http://159.56.4.94:8443"
+	@command -v xdg-open >/dev/null 2>&1 && xdg-open http://austx-mdso-logs-02.chtrse.com/grafana/ || \
+		echo "Visit: http://austx-mdso-logs-02.chtrse.com/grafana/"
 
 .PHONY: open-frontend
 open-frontend: ## Open Frontend UI in browser
@@ -1051,7 +1051,7 @@ show-urls: ## Show all service URLs
 	@echo ""
 	@echo "$(YELLOW)User Interfaces:$(NC)"
 	@echo "  Frontend:    http://localhost:3000"
-	@echo "  Grafana:     http://159.56.4.94:8443 (admin/admin)"
+	@echo "  Grafana:     http://austx-mdso-logs-02.chtrse.com/grafana/ (admin/admin)"
 	@echo "  Prometheus:  http://159.56.4.94:9090"
 	@echo "  Pyroscope:   http://localhost:4040"
 	@echo ""

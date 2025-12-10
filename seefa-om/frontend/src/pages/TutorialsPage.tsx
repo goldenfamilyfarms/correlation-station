@@ -22,7 +22,7 @@ const tutorials: Tutorial[] = [
     title: 'Getting Started with SEEFA Observability',
     description: 'Learn the basics of the SEEFA Observability platform and how to navigate the system',
     duration: '15 minutes',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.youtube.com/embed/XzHhd66lmQ4',
     documentationSections: [
       {
         title: 'Platform Overview',
@@ -52,7 +52,7 @@ OpenTelemetry Collector that routes telemetry data between applications and back
       },
       {
         title: 'Getting Started Steps',
-        content: `1. **Access Grafana**: Navigate to http://159.56.4.94:8443
+        content: `1. **Access Grafana**: Navigate to http://austx-mdso-logs-02.chtrse.com/grafana/
 2. **Explore Dashboards**: Review pre-built dashboards for system overview
 3. **Query Logs**: Use the LogQL query interface to search logs
 4. **View Traces**: Examine distributed traces in Tempo
@@ -66,7 +66,7 @@ OpenTelemetry Collector that routes telemetry data between applications and back
     title: 'Querying Logs with LogQL',
     description: 'Master LogQL to effectively search and analyze log data in Grafana Loki',
     duration: '20 minutes',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.youtube.com/embed/jKhXPMYSxgg',
     documentationSections: [
       {
         title: 'LogQL Basics',
@@ -124,7 +124,7 @@ avg_over_time({ service_name="api" } | json | unwrap duration [5m])
     title: 'Analyzing Distributed Traces',
     description: 'Learn how to use Grafana Tempo to debug distributed systems',
     duration: '25 minutes',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.youtube.com/embed/aHx6wxksf08',
     documentationSections: [
       {
         title: 'Understanding Traces',
@@ -192,7 +192,6 @@ Use the trace_id to find related logs for more context`
     title: 'Instrumenting Applications',
     description: 'Add OpenTelemetry instrumentation to your services',
     duration: '30 minutes',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     documentationSections: [
       {
         title: 'OpenTelemetry Setup',
@@ -320,7 +319,7 @@ All changes are automatically timestamped.`
     title: 'Creating Grafana Dashboards',
     description: 'Build custom dashboards for your monitoring needs',
     duration: '25 minutes',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    videoUrl: 'https://www.youtube.com/embed/lILY8eSspEo',
     documentationSections: [
       {
         title: 'Dashboard Basics',
@@ -391,45 +390,45 @@ export default function TutorialsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Tutorials List */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Available Tutorials</CardTitle>
-              <CardDescription>
-                {completedTutorials.size} of {tutorials.length} completed
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {tutorials.map((tutorial) => (
-                <button
-                  key={tutorial.id}
-                  onClick={() => setSelectedTutorial(tutorial)}
-                  className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
-                    selectedTutorial.id === tutorial.id
-                      ? 'border-grafana-orange bg-grafana-orange/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-start gap-2">
-                      <BookOpen className="h-4 w-4 text-grafana-orange mt-0.5 flex-shrink-0" />
-                      <span className="font-semibold text-sm">{tutorial.title}</span>
-                    </div>
-                    {completedTutorials.has(tutorial.id) && (
-                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    )}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
+        {/* Grafana-Style Side Navigation */}
+        <div className="lg:col-span-1 bg-[#181B1F] text-white min-h-[600px] rounded-l-lg">
+          <div className="p-4 border-b border-gray-700">
+            <h2 className="text-lg font-semibold text-white">Tutorials</h2>
+            <p className="text-xs text-gray-400 mt-1">
+              {completedTutorials.size} of {tutorials.length} completed
+            </p>
+          </div>
+          <nav className="py-2">
+            {tutorials.map((tutorial) => (
+              <button
+                key={tutorial.id}
+                onClick={() => setSelectedTutorial(tutorial)}
+                className={`w-full text-left px-4 py-3 transition-all border-l-4 ${
+                  selectedTutorial.id === tutorial.id
+                    ? 'border-l-[#FF8833] bg-[#242830] text-white'
+                    : 'border-l-transparent hover:bg-[#1f2329] text-gray-300 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-3">
+                    <BookOpen className={`h-4 w-4 flex-shrink-0 ${
+                      selectedTutorial.id === tutorial.id ? 'text-[#FF8833]' : 'text-gray-400'
+                    }`} />
+                    <span className="font-medium text-sm">{tutorial.title}</span>
                   </div>
-                  <p className="text-xs text-gray-500 ml-6">{tutorial.duration}</p>
-                </button>
-              ))}
-            </CardContent>
-          </Card>
+                  {completedTutorials.has(tutorial.id) && (
+                    <CheckCircle className="h-4 w-4 text-green-400 flex-shrink-0" />
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 ml-7">{tutorial.duration}</p>
+              </button>
+            ))}
+          </nav>
         </div>
 
         {/* Tutorial Content */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-4 bg-white rounded-r-lg">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">

@@ -16,6 +16,7 @@ import structlog
 
 from app.config import settings
 from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload
+from app.routes import seca_jobs
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 from app.database import init_database, seed_sample_data
@@ -186,6 +187,7 @@ app = FastAPI(
     """,
     version="1.0.0",
     lifespan=lifespan,
+    root_path="/correlation-engine",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
@@ -283,6 +285,7 @@ app.include_router(otlp.router, prefix="/api/otlp/v1", tags=["otlp"])
 app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
+app.include_router(seca_jobs.router, prefix="/api", tags=["seca-jobs"])
 
 
 # Prometheus metrics endpoint
