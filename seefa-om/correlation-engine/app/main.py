@@ -103,7 +103,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
                 server_address=settings.pyroscope_server_address,
                 sample_rate=settings.pyroscope_sample_rate,
                 detect_subprocesses=settings.pyroscope_detect_subprocesses,
-                log_level=settings.pyroscope_log_level,
                 tags={
                     "environment": settings.deployment_env,
                     "version": "1.0.0",
