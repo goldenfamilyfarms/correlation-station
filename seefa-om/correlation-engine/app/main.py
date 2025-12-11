@@ -15,7 +15,7 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs
+from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs, user_auth
 try:
     from app.routes import seca
     SECA_ROUTES_AVAILABLE = True
@@ -290,6 +290,7 @@ app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 app.include_router(seca_jobs.router, prefix="/api", tags=["seca-jobs"])
+app.include_router(user_auth.router, prefix="/api", tags=["user-auth"])
 if SECA_ROUTES_AVAILABLE:
     app.include_router(seca.router, prefix="/seca", tags=["seca"])
 
