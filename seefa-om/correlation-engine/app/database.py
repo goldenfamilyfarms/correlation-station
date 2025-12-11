@@ -17,6 +17,7 @@ async def init_database():
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     async with aiosqlite.connect(DATABASE_PATH) as db:
+        # SECA Error Reviews table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS error_reviews (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,6 +28,38 @@ async def init_database():
                 errors TEXT NOT NULL
             )
         """)
+
+        # Users table for authentication
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Tutorial progress table
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS tutorial_progress (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                tutorial_id TEXT NOT NULL,
+                completed BOOLEAN DEFAULT 0,
+                completed_at TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                UNIQUE (user_id, tutorial_id)
+            )
+        """)
+
+        # Create index for faster lookups
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_tutorial_progress_user
+            ON tutorial_progress (user_id)
+        """)
+
         await db.commit()
         logger.info("Database initialized", path=str(DATABASE_PATH))
 
@@ -229,3 +262,119 @@ Ongoing Concerns:
         )
 
     logger.info("Sample SECA review data seeded")
+
+
+# ====================
+# USER MANAGEMENT
+# ====================
+
+async def create_user(user_id: str, username: str, email: str, password_hash: str) -> Dict[str, Any]:
+    """Create a new user"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        try:
+            await db.execute(
+                """
+                INSERT INTO users (id, username, email, password_hash)
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, username, email, password_hash),
+            )
+            await db.commit()
+            return await get_user_by_id(user_id)
+        except aiosqlite.IntegrityError as e:
+            logger.error("Failed to create user", error=str(e))
+            raise ValueError("Username or email already exists")
+
+
+async def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
+    """Get user by ID"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT id, username, email, created_at FROM users WHERE id = ?",
+            (user_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return {
+                    "id": row["id"],
+                    "username": row["username"],
+                    "email": row["email"],
+                    "created_at": row["created_at"],
+                }
+            return None
+
+
+async def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+    """Get user by username (includes password_hash for auth)"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT * FROM users WHERE username = ?",
+            (username,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return {
+                    "id": row["id"],
+                    "username": row["username"],
+                    "email": row["email"],
+                    "password_hash": row["password_hash"],
+                    "created_at": row["created_at"],
+                }
+            return None
+
+
+# ====================
+# TUTORIAL PROGRESS
+# ====================
+
+async def mark_tutorial_complete(user_id: str, tutorial_id: str) -> bool:
+    """Mark a tutorial as complete for a user"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        await db.execute(
+            """
+            INSERT OR REPLACE INTO tutorial_progress (user_id, tutorial_id, completed, completed_at)
+            VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+            """,
+            (user_id, tutorial_id),
+        )
+        await db.commit()
+        return True
+
+
+async def get_user_progress(user_id: str) -> List[Dict[str, Any]]:
+    """Get all tutorial progress for a user"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            """
+            SELECT tutorial_id, completed, completed_at
+            FROM tutorial_progress
+            WHERE user_id = ? AND completed = 1
+            """,
+            (user_id,)
+        ) as cursor:
+            rows = await cursor.fetchall()
+            return [
+                {
+                    "tutorial_id": row["tutorial_id"],
+                    "completed": bool(row["completed"]),
+                    "completed_at": row["completed_at"],
+                }
+                for row in rows
+            ]
+
+
+async def is_tutorial_complete(user_id: str, tutorial_id: str) -> bool:
+    """Check if a specific tutorial is complete"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        async with db.execute(
+            """
+            SELECT completed FROM tutorial_progress
+            WHERE user_id = ? AND tutorial_id = ?
+            """,
+            (user_id, tutorial_id),
+        ) as cursor:
+            row = await cursor.fetchone()
+            return bool(row[0]) if row else False
