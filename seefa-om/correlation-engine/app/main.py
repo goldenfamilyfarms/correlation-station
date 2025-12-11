@@ -15,7 +15,7 @@ from prometheus_client import Counter, Histogram, generate_latest
 import structlog
 
 from app.config import settings
-from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs
+from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs, user_auth
 try:
     from app.routes import seca
     SECA_ROUTES_AVAILABLE = True
@@ -95,6 +95,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     await init_database()
     await seed_sample_data()
 
+    # Initialize dependency injection services (including Redis)
+    from app.dependencies import initialize_services, initialize_async_services, get_registry
+    initialize_services()
+    await initialize_async_services()
+
     # Initialize Pyroscope profiling
     if PYROSCOPE_AVAILABLE and settings.enable_pyroscope:
         try:
@@ -136,6 +141,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     app.state.correlation_engine = correlation_engine
     app.state.LOG_RECORDS_RECEIVED = LOG_RECORDS_RECEIVED
     app.state.TRACES_RECEIVED = TRACES_RECEIVED
+    app.state.telemetry_cache = get_registry().get_optional("telemetry_cache")
 
     # Start background correlation task
     correlation_task = asyncio.create_task(correlation_engine.run())
@@ -165,6 +171,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
             logger.info("Exporters closed successfully")
         except Exception as e:
             logger.exception("Error closing exporters", error=str(e))
+
+        # Cleanup dependency injection services (including Redis)
+        try:
+            from app.dependencies import cleanup_services
+            await cleanup_services()
+            logger.info("Services cleaned up successfully")
+        except Exception as e:
+            logger.exception("Error cleaning up services", error=str(e))
 
         logger.info("Correlation Engine stopped")
 
@@ -290,6 +304,7 @@ app.include_router(correlations.router, prefix="/api", tags=["correlations"])
 app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 app.include_router(seca_jobs.router, prefix="/api", tags=["seca-jobs"])
+app.include_router(user_auth.router, prefix="/api", tags=["user-auth"])
 if SECA_ROUTES_AVAILABLE:
     app.include_router(seca.router, prefix="/seca", tags=["seca"])
 

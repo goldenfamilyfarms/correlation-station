@@ -180,7 +180,7 @@ export default function HomePage() {
             {/* Tim Robinson "Are you sure about that?" Meme */}
             <div className="w-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-8 border-2 border-blue-200">
               <div className="text-center space-y-4">
-                <div className="text-6xl">🤔</div>
+                <div className="text-6xl font-bold text-blue-600">?!</div>
                 <div className="text-3xl font-bold text-blue-600">ARE YOU SURE</div>
                 <div className="text-3xl font-bold text-purple-600">ABOUT THAT?!</div>
                 <div className="text-sm text-gray-600 italic mt-4">
