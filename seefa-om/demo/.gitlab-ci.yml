@@ -1,0 +1,38 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:dind
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_JOB_TOKEN" $CI_REGISTRY
+    - docker build -t "$IMAGE_TAG" -f demo/mock/Dockerfile demo/mock
+    - docker push "$IMAGE_TAG"
+  only:
+    - demo
+
+unit_tests:
+  stage: test
+  image: python:3.11
+  script:
+    - pip install -r demo/requirements.txt
+    - pytest -q
+  only:
+    - demo
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - echo "Deploy stage placeholder. Configure KUBE_CONFIG or use eksctl to authenticate."
+    - echo "kubectl apply -f k8s/"
+  when: manual
+  only:
+    - demo
