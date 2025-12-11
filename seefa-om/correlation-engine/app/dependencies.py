@@ -15,6 +15,14 @@ from app.pipeline.state_manager import StateManager, InMemoryStateManager, Redis
 
 logger = structlog.get_logger()
 
+# Redis client for telemetry caching
+try:
+    import redis.asyncio as redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    logger.warning("redis not available - telemetry caching disabled")
+    REDIS_AVAILABLE = False
+
 T = TypeVar('T')
 
 
@@ -185,6 +193,52 @@ def create_state_manager() -> StateManager:
         return InMemoryStateManager()
 
 
+async def create_redis_client() -> Optional[redis.Redis]:
+    """Create Redis client for telemetry caching"""
+    if not REDIS_AVAILABLE or not settings.use_redis_state:
+        logger.info("redis_telemetry_cache_disabled")
+        return None
+
+    try:
+        client = redis.from_url(
+            settings.redis_url,
+            max_connections=settings.redis_max_connections,
+            decode_responses=False,  # We'll handle encoding ourselves
+        )
+
+        # Test connection
+        await client.ping()
+
+        logger.info(
+            "redis_client_created",
+            redis_url=settings.redis_url,
+            max_connections=settings.redis_max_connections
+        )
+        return client
+    except Exception as e:
+        logger.error("redis_client_creation_failed", error=str(e))
+        return None
+
+
+def create_telemetry_cache():
+    """Create telemetry cache service (RedisCorrelationStore)"""
+    from app.redis_schema import RedisCorrelationStore
+
+    redis_client = get_registry().get_optional("redis_client")
+
+    if not redis_client:
+        logger.warning("telemetry_cache_skipped_no_redis")
+        return None
+
+    cache = RedisCorrelationStore(
+        redis_client=redis_client,
+        ttl_hours=settings.correlation_ttl_seconds // 3600  # Convert to hours
+    )
+
+    logger.info("telemetry_cache_created")
+    return cache
+
+
 # FastAPI dependency functions (use with Depends())
 
 async def get_mdso_client() -> Optional[MDSOClient]:
@@ -202,6 +256,16 @@ async def get_state_manager() -> StateManager:
     return get_registry().get("state_manager")
 
 
+async def get_redis_client():
+    """FastAPI dependency: Get Redis client"""
+    return get_registry().get_optional("redis_client")
+
+
+async def get_telemetry_cache():
+    """FastAPI dependency: Get telemetry cache"""
+    return get_registry().get_optional("telemetry_cache")
+
+
 # Initialization function
 
 def initialize_services():
@@ -215,8 +279,25 @@ def initialize_services():
     registry.register_factory("mdso_client", create_mdso_client)
     registry.register_factory("mdso_repository", create_mdso_repository)
     registry.register_factory("state_manager", create_state_manager)
+    registry.register_factory("telemetry_cache", create_telemetry_cache)
 
     logger.info("services_initialized")
+
+
+async def initialize_async_services():
+    """Initialize async services (Redis client)
+
+    Call this during application startup after initialize_services().
+    """
+    registry = get_registry()
+
+    # Create Redis client (async)
+    redis_client = await create_redis_client()
+    if redis_client:
+        registry.register_instance("redis_client", redis_client)
+        logger.info("async_services_initialized")
+    else:
+        logger.info("async_services_skipped_no_redis")
 
 
 async def cleanup_services():
