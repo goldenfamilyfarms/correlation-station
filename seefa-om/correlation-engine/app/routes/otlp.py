@@ -199,9 +199,11 @@ async def ingest_otlp_traces(
     Ingest OTLP traces (supports both JSON and protobuf)
 
     Accepts OTLP format traces and adds them to correlation windows.
+    Caches trace data in Redis for deduplication and fast lookups.
     """
     correlation_engine = request.app.state.correlation_engine
     TRACES_RECEIVED = request.app.state.TRACES_RECEIVED
+    telemetry_cache = getattr(request.app.state, "telemetry_cache", None)
 
     if not correlation_engine:
         raise HTTPException(status_code=503, detail="Correlation engine not initialized")
@@ -253,21 +255,91 @@ async def ingest_otlp_traces(
         resource_spans = data.get("resourceSpans", [])
 
         total_spans = 0
-        for resource_span in resource_spans:
-            scope_spans = resource_span.get("scopeSpans", [])
+        cached_spans = 0
 
-            for scope_span in scope_spans:
-                spans = scope_span.get("spans", [])
-                total_spans += len(spans)
+        # Cache traces in Redis if available
+        if telemetry_cache:
+            for resource_span in resource_spans:
+                # Extract resource attributes for service name
+                resource = resource_span.get("resource", {})
+                resource_attrs = {}
+                for attr in resource.get("attributes", []):
+                    key = attr.get("key", "")
+                    value = attr.get("value", {})
+                    if "stringValue" in value:
+                        resource_attrs[key] = value["stringValue"]
+
+                service_name = resource_attrs.get("service.name", "unknown")
+
+                scope_spans = resource_span.get("scopeSpans", [])
+                for scope_span in scope_spans:
+                    spans = scope_span.get("spans", [])
+                    total_spans += len(spans)
+
+                    for span in spans:
+                        # Extract trace ID
+                        trace_id = span.get("traceId", "")
+                        if isinstance(trace_id, bytes):
+                            trace_id = trace_id.hex()
+                        elif not trace_id:
+                            continue  # Skip spans without trace_id
+
+                        # Extract span details
+                        span_name = span.get("name", "")
+                        status_code = span.get("status", {}).get("code", 0)
+                        status = "error" if status_code == 2 else "ok"
+
+                        # Calculate duration
+                        start_time_ns = int(span.get("startTimeUnixNano", 0))
+                        end_time_ns = int(span.get("endTimeUnixNano", 0))
+                        duration_ms = (end_time_ns - start_time_ns) // 1_000_000 if end_time_ns > start_time_ns else 0
+
+                        # Extract custom attributes
+                        correlation_id = ""
+                        resource_id = ""
+                        for attr in span.get("attributes", []):
+                            key = attr.get("key", "")
+                            value = attr.get("value", {})
+                            if key == "circuit_id" and "stringValue" in value:
+                                correlation_id = value["stringValue"]
+                            elif key == "resource_id" and "stringValue" in value:
+                                resource_id = value["stringValue"]
+
+                        # Cache trace in Redis
+                        try:
+                            from app.redis_schema import TraceIndex
+                            trace_index = TraceIndex(
+                                trace_id=trace_id,
+                                service=service_name,
+                                status=status,
+                                duration_ms=duration_ms,
+                                resource_id=resource_id or trace_id,
+                                correlation_id=correlation_id or trace_id,
+                            )
+                            await telemetry_cache.store_trace(trace_index)
+                            cached_spans += 1
+                        except Exception as e:
+                            logger.warning("Failed to cache trace", trace_id=trace_id, error=str(e))
+        else:
+            # No cache - just count spans
+            for resource_span in resource_spans:
+                scope_spans = resource_span.get("scopeSpans", [])
+                for scope_span in scope_spans:
+                    spans = scope_span.get("spans", [])
+                    total_spans += len(spans)
 
         # Forward traces to correlation engine for processing
         await correlation_engine.add_traces(data)
 
         TRACES_RECEIVED.labels(source="otlp").inc(total_spans)
 
-        logger.info("otlp_traces_ingested", span_count=total_spans)
+        logger.info(
+            "otlp_traces_ingested",
+            span_count=total_spans,
+            cached_count=cached_spans if telemetry_cache else None
+        )
 
-        return {"status": "accepted", "span_count": total_spans}
+        return {"status": "accepted", "span_count": total_spans, "cached": cached_spans}
     except Exception as e:
         logger.exception("Failed to ingest OTLP traces", error=str(e))
         raise HTTPException(status_code=500, detail=f"Failed to ingest OTLP traces: {str(e)}")
