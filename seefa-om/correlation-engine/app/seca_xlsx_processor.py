@@ -14,19 +14,37 @@ logger = structlog.get_logger()
 
 
 @dataclass
+class AffectedFile:
+    """
+    Detailed information about an affected file from scraping
+    (Blueprint Section 4.4 - structured output dictionary)
+    """
+    source: str  # "orch_trace" or "other_log"
+    log_file: Optional[str]  # filename or path
+    traceback: Optional[str]  # full extracted traceback text
+    artifact_url: Optional[str]  # URL used by Selenium
+    selenium_status: str  # "ok", "artifact_not_found", "traceback_not_found", "error"
+
+
+@dataclass
 class CircuitError:
-    """Circuit error data from XLSX"""
+    """
+    Circuit error data from XLSX with scraping results
+    (Blueprint Section 4.4 - structured output dictionary format)
+    """
     circuit_id: str
     date: str
     service_request_type: str
     product_name: str
     error_message: str
-    initial_cdnc_summary: str
-    concat_key: str  # circuit_id + date
+    cdnc_summary: str  # Renamed from initial_cdnc_summary
+    concat_key: str  # circuit_id + "_" + date
 
-    # Additional fields populated during scraping
+    # Additional fields populated during scraping (Blueprint Section 4.4)
+    affected_files: List[AffectedFile] = None  # List of AffectedFile objects
+
+    # Legacy fields (for backward compatibility)
     traceback: Optional[str] = None
-    affected_files: List[str] = None
     log_file_path: Optional[str] = None
     categorized_error: Optional[str] = None
 
@@ -62,18 +80,20 @@ class SECAXLSXProcessor:
         """
         Extract circuit data from XLSX
 
-        Column mapping:
+        Column mapping (Blueprint Section 4.1):
+        - A: Status (must be "FAIL" to process)
         - D: Circuit ID
-        - S: Date
-        - J: Service Request Type
-        - G: Product Name
         - E: Error Message
-        - W: Initial CDNC Summary
+        - G: Product Name
+        - J: Service Request Type
+        - S: Date
+        - W: CDNC Summary
         """
         if self.df is None:
             raise ValueError("Must call load_xlsx() first")
 
         # Column indices (0-based)
+        STATUS_COL = 0  # A (BLUEPRINT: filter by FAIL)
         CIRCUIT_ID_COL = 3  # D
         ERROR_MSG_COL = 4   # E
         PRODUCT_NAME_COL = 6  # G
@@ -82,9 +102,16 @@ class SECAXLSXProcessor:
         CDNC_SUMMARY_COL = 22  # W
 
         errors = {}
+        skipped_non_fail = 0
 
         for idx, row in self.df.iterrows():
             try:
+                # BLUEPRINT REQUIREMENT (4.1): Only process rows where Column A = FAIL
+                status = str(row.iloc[STATUS_COL]).strip().upper()
+                if status != "FAIL":
+                    skipped_non_fail += 1
+                    continue
+
                 # Extract values
                 circuit_id = str(row.iloc[CIRCUIT_ID_COL]).strip()
                 date_val = row.iloc[DATE_COL]
@@ -106,14 +133,14 @@ class SECAXLSXProcessor:
                 # Create concatenated key
                 concat_key = f"{circuit_id}_{date_str}"
 
-                # Create error object
+                # Create error object (Blueprint Section 4.4 format)
                 error = CircuitError(
                     circuit_id=circuit_id,
                     date=date_str,
                     service_request_type=service_type,
                     product_name=product_name,
                     error_message=error_msg,
-                    initial_cdnc_summary=cdnc_summary,
+                    cdnc_summary=cdnc_summary,
                     concat_key=concat_key
                 )
 
@@ -135,7 +162,12 @@ class SECAXLSXProcessor:
                 continue
 
         self.errors = errors
-        logger.info("Parsed circuit errors", count=len(errors))
+        logger.info(
+            "Parsed circuit errors",
+            count=len(errors),
+            skipped_non_fail=skipped_non_fail,
+            total_rows=len(self.df)
+        )
 
         return errors
 
