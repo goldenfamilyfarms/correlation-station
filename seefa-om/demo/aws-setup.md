@@ -7,6 +7,27 @@ Assumptions
 - You run the commands from a Bash shell (Windows: Git Bash / WSL recommended).
 - You have Docker installed for building images locally.
 
+WSL note (Windows users)
+If you see a message like "Windows Subsystem for Linux has no installed distributions" when running `wsl.exe -l -v`, you have WSL available but no Linux distro installed. Installing a distro (Ubuntu) is the recommended way to run the Linux-based install commands in this guide.
+
+To install Ubuntu on WSL (PowerShell, run as Administrator):
+
+```powershell
+# list available distributions
+wsl --list --online
+
+# install Ubuntu (recommended)
+wsl --install -d Ubuntu
+
+# After the install completes, launch the Ubuntu app from the Start menu or run:
+wsl -d Ubuntu
+```
+
+Notes:
+- Installing a distro requires running the PowerShell command above once from an elevated prompt.
+- After installation, open the Ubuntu WSL window to finish distro setup (create username/password). Then switch to the WSL shell for the Linux install commands in this document (AWS CLI, kubectl, helm, eksctl).
+- If you cannot run the elevated PowerShell command, or prefer not to install WSL, use the Windows-native installers (winget/choco/MSI) described below instead.
+
 Install required CLIs (one-time)
 
 # macOS / Linux / WSL (example)
