@@ -6,24 +6,32 @@ receivers:
 
 processors:
   batch:
-
 exporters:
   logging:
     loglevel: info
-  otlp:
-    endpoint: "" # configure if you have downstream otlp collector
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    labels:
+      job: "otel-collector"
+  otlp/tempo:
+    endpoint: "tempo:4318"
+    insecure: true
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: ["otlp/tempo","logging"]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: ["loki","logging"]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: ["logging"]
+
+  telemetry:
+    metrics:
+      address: 0.0.0.0:8888

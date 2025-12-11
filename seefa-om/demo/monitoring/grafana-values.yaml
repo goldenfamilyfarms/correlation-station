@@ -1,0 +1,16 @@
+adminUser: demo
+adminPassword: demo
+service:
+  type: ClusterIP
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+sidecar:
+  datasources:
+    enabled: true
+  dashboards:
+    enabled: true
