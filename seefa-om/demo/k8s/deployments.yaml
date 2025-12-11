@@ -20,7 +20,8 @@ spec:
     spec:
       containers:
         - name: mdso-mock
-          image: ghcr.io/demo/mdso-mock:latest
+          # placeholder replaced by seefa-om/demo/scripts/push-images.sh
+          image: IMAGE_MDSO
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5001
@@ -61,7 +62,8 @@ spec:
     spec:
       containers:
         - name: sense-provisioning
-          image: ghcr.io/demo/sense-provisioning:latest
+          # placeholder replaced by seefa-om/demo/scripts/push-images.sh
+          image: IMAGE_PROVISIONING
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5002
@@ -96,7 +98,8 @@ spec:
     spec:
       containers:
         - name: sense-compliance
-          image: ghcr.io/demo/sense-compliance:latest
+          # placeholder replaced by seefa-om/demo/scripts/push-images.sh
+          image: IMAGE_COMPLIANCE
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5003
@@ -131,7 +134,8 @@ spec:
     spec:
       containers:
         - name: sense-disconnect
-          image: ghcr.io/demo/sense-disconnect:latest
+          # placeholder replaced by seefa-om/demo/scripts/push-images.sh
+          image: IMAGE_DISCONNECT
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5004
@@ -166,7 +170,8 @@ spec:
     spec:
       containers:
         - name: correlation-engine
-          image: ghcr.io/demo/correlation-engine:latest
+          # optional placeholder; CI may update this with kubectl set image
+          image: IMAGE_CORRELATION_ENGINE
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
