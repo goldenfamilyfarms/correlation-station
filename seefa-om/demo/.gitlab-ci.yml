@@ -5,18 +5,29 @@ stages:
   - deploy
 
 variables:
-  IMAGE_NAME: "$CI_REGISTRY_IMAGE/demo"
   IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
+  ECR_REGISTRY: "$ECR_REGISTRY" # set in CI variables: <aws_account>.dkr.ecr.<region>.amazonaws.com
+  ECR_REPO: "$ECR_REPO"         # set in CI variables: repository name (e.g. correlation-demo)
 
-# Build image using Docker-in-Docker
-build:
+# Build and push multiple service images to ECR
+build_and_push:
   stage: build
   image: docker:24.0.5
   services:
     - docker:dind
+  before_script:
+    - apk add --no-cache python3 py3-pip jq || true
+    - pip3 install awscli || true
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t "$IMAGE_NAME:$IMAGE_TAG" -f seefa-om/demo/mock/Dockerfile seefa-om/demo/mock
+    - echo "Logging in to ECR"
+    - aws --version || true
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+    - |
+      for svc in mdso provisioning compliance disconnect; do
+        echo "Building $svc"
+        docker build -t $ECR_REGISTRY/$ECR_REPO:$svc-$IMAGE_TAG -f seefa-om/demo/services/$svc/Dockerfile seefa-om/demo/services/$svc
+        docker push $ECR_REGISTRY/$ECR_REPO:$svc-$IMAGE_TAG
+      done
   only:
     - demo
 
@@ -29,18 +40,7 @@ unit_tests:
   only:
     - demo
 
-push_image:
-  stage: push
-  image: docker:24.0.5
-  services:
-    - docker:dind
-  script:
-    - echo "Pushing image to registry"
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG"
-    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG"
-  only:
-    - demo
+
 
 deploy_to_eks:
   stage: deploy
@@ -49,12 +49,16 @@ deploy_to_eks:
     - apk add --no-cache curl python3 py3-pip jq || true
     - pip3 install awscli || true
   script:
-    - echo "Configure AWS credentials in CI variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION"
+    - echo "Configure AWS credentials in CI variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, ECR_REPO, ECR_REGISTRY, EKS_CLUSTER_NAME"
     - aws --version || true
     - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
     - kubectl apply -f seefa-om/demo/k8s/otel-collector-config.yaml -n demo || true
     - kubectl apply -f seefa-om/demo/k8s/deployments.yaml -n demo
-    - kubectl set image deployment/mdso-mock mdso-mock=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG || true
+    - kubectl set image deployment/mdso-mock mdso-mock=$ECR_REGISTRY/$ECR_REPO:mdso-$IMAGE_TAG -n demo || true
+    - kubectl set image deployment/sense-provisioning sense-provisioning=$ECR_REGISTRY/$ECR_REPO:provisioning-$IMAGE_TAG -n demo || true
+    - kubectl set image deployment/sense-compliance sense-compliance=$ECR_REGISTRY/$ECR_REPO:compliance-$IMAGE_TAG -n demo || true
+    - kubectl set image deployment/sense-disconnect sense-disconnect=$ECR_REGISTRY/$ECR_REPO:disconnect-$IMAGE_TAG -n demo || true
+    - kubectl set image deployment/correlation-engine correlation-engine=$ECR_REGISTRY/$ECR_REPO:correlation-engine-$IMAGE_TAG -n demo || true
   when: manual
   only:
     - demo
