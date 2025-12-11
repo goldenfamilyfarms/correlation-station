@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMapName }}
+  labels:
+    app: otel-collector
+data:
+  otel-collector-config.yaml: |-
+{{ .Values.configFile | indent 4 }}

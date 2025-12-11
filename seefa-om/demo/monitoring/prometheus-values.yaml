@@ -11,11 +11,7 @@ nodeExporter:
   enabled: false
 
 grafana:
-  enabled: true
-  adminPassword: "demo"
-  sidecar:
-    dashboards:
-      enabled: true
+  enabled: false
 
 # Reduce resource requests for demo cluster
 prometheusOperator:

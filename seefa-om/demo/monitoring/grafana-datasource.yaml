@@ -1,0 +1,12 @@
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    url: http://loki:3100
+    access: proxy
+    isDefault: false
+  - name: Tempo
+    type: tempo
+    url: http://tempo:4318
+    access: proxy
+    isDefault: false

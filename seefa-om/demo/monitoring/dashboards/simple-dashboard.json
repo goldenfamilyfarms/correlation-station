@@ -1,0 +1,13 @@
+{
+  "annotations": {"list": []},
+  "panels": [
+    {
+      "type": "graph",
+      "title": "demo - OTEL Collector metrics",
+      "targets": []
+    }
+  ],
+  "title": "Demo Overview",
+  "schemaVersion": 16,
+  "version": 1
+}

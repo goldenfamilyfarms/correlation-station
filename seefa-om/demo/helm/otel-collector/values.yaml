@@ -1,0 +1,53 @@
+replicaCount: 1
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "0.84.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  ports:
+    - name: otlp-http
+      port: 4318
+    - name: otlp-grpc
+      port: 4317
+
+configMapName: otel-collector-config
+configFile: |-
+  receivers:
+    otlp:
+      protocols:
+        http:
+        grpc:
+
+  processors:
+    batch:
+  exporters:
+    logging:
+      loglevel: info
+    loki:
+      endpoint: "http://loki:3100/loki/api/v1/push"
+      labels:
+        job: "otel-collector"
+    otlp/tempo:
+      endpoint: "tempo:4318"
+      insecure: true
+
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: ["otlp/tempo","logging"]
+      logs:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: ["loki","logging"]
+      metrics:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: ["logging"]
+
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888
