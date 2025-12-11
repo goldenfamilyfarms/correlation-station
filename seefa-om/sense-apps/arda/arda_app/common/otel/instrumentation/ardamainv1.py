@@ -18,7 +18,7 @@ from arda_app.error_handler import error_message_handler, set_body, validation_m
 from arda_app.version import __VERSION__
 
 # OpenTelemetry initialization
-from common.telemetry import init_telemetry
+from common.otel.telemetry import init_telemetry
 import os
 
 tracer = init_telemetry(
@@ -93,7 +93,7 @@ async def errors_handling(request: Request, call_next):
     except Exception as exc:
         logger.exception(f"Error: {exc}")
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=error_message_handler(body, exc, request)
         )
 

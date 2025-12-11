@@ -15,18 +15,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common')
 
 # Import comprehensive OTEL observability
 try:
-    from observability import setup_observability
+    from common.otel.observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
+    setup_observability = None
     print("Warning: OTEL instrumentation not available. Install opentelemetry-*")
 
 # Pyroscope profiling
 try:
-    import pyroscope
+    import pyroscope  # type: ignore
     PYROSCOPE_AVAILABLE = True
 except ImportError:
     PYROSCOPE_AVAILABLE = False
+    pyroscope = None  # type: ignore
     print("Warning: Pyroscope profiling not available")
 
 from arda_app.api import (
@@ -72,7 +74,7 @@ async def read_index():
 logger = setup_logging()
 
 # Initialize comprehensive OTEL observability for FastAPI (traces + metrics)
-if OTEL_AVAILABLE:
+if OTEL_AVAILABLE and setup_observability is not None:
     try:
         setup_observability(
             app,
@@ -87,7 +89,7 @@ else:
     logger.warning("OTEL not available - running without instrumentation")
 
 # Initialize Pyroscope profiling
-if PYROSCOPE_AVAILABLE and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
+if PYROSCOPE_AVAILABLE and pyroscope is not None and os.getenv("PYROSCOPE_SERVER_ADDRESS"):
     try:
         pyroscope.configure(
             application_name="arda",

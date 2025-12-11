@@ -2,20 +2,20 @@
 Unified OpenTelemetry Module for SENSE Apps
 Consolidates common_sense_telemetry, observability.py, and otel_sense.py
 """
-from common.otel_sense import (
+from common.otel.otel_sense import (
     # Core setup
     setup_otel_sense,
     instrument_flask_lightweight,
     instrument_fastapi_lightweight,
-    
+
     # MDSO-specific helpers
     set_mdso_correlation,
     add_topology_span_attrs,
     add_network_function_attrs,
-    
+
     # Decorators
     traced,
-    
+
     # Utility functions
     get_tracer,
     get_current_span,
