@@ -1,0 +1,38 @@
+name: CI/CD Demo -> EKS
+
+on:
+  push:
+    branches: [ demo ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push demo image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/demo:$GITHUB_SHA -f seefa-om/demo/mock/Dockerfile seefa-om/demo/mock
+          docker push ghcr.io/${{ github.repository }}/demo:$GITHUB_SHA
+      - name: Update kubeconfig and deploy
+        env:
+          K8S_CLUSTER: ${{ secrets.EKS_CLUSTER_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws eks update-kubeconfig --region $AWS_REGION --name $K8S_CLUSTER
+          kubectl apply -f seefa-om/demo/k8s/otel-collector-config.yaml -n demo || true
+          kubectl apply -f seefa-om/demo/k8s/deployments.yaml -n demo

@@ -1,0 +1,17 @@
+{
+  "workflow": "msp_managed_service",
+  "circuit": {
+    "cid": "30.MSP.000300..DEMO",
+    "type": "Managed Service",
+    "customer": "Demo Customer C",
+    "devices": [
+      {"name": "meraki-01", "ip": "203.0.113.10"},
+      {"name": "meraki-02", "ip": "203.0.113.11"}
+    ]
+  },
+  "actions": [
+    {"step": "onboard", "status": "ok"},
+    {"step": "policy-apply", "status": "in-progress"},
+    {"step": "audit", "status": "pending"}
+  ]
+}

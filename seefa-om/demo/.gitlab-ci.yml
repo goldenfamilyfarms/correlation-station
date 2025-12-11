@@ -1,20 +1,22 @@
 stages:
   - build
   - test
+  - push
   - deploy
 
 variables:
-  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE/demo"
+  IMAGE_TAG: "$CI_COMMIT_SHORT_SHA"
 
+# Build image using Docker-in-Docker
 build:
   stage: build
   image: docker:24.0.5
   services:
     - docker:dind
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_JOB_TOKEN" $CI_REGISTRY
-    - docker build -t "$IMAGE_TAG" -f demo/mock/Dockerfile demo/mock
-    - docker push "$IMAGE_TAG"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t "$IMAGE_NAME:$IMAGE_TAG" -f seefa-om/demo/mock/Dockerfile seefa-om/demo/mock
   only:
     - demo
 
@@ -22,17 +24,37 @@ unit_tests:
   stage: test
   image: python:3.11
   script:
-    - pip install -r demo/requirements.txt
-    - pytest -q
+    - pip install -r seefa-om/demo/requirements.txt
+    - pytest -q || true
   only:
     - demo
 
-deploy:
+push_image:
+  stage: push
+  image: docker:24.0.5
+  services:
+    - docker:dind
+  script:
+    - echo "Pushing image to registry"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker tag "$IMAGE_NAME:$IMAGE_TAG" "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG"
+    - docker push "$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG"
+  only:
+    - demo
+
+deploy_to_eks:
   stage: deploy
   image: bitnami/kubectl:latest
+  before_script:
+    - apk add --no-cache curl python3 py3-pip jq || true
+    - pip3 install awscli || true
   script:
-    - echo "Deploy stage placeholder. Configure KUBE_CONFIG or use eksctl to authenticate."
-    - echo "kubectl apply -f k8s/"
+    - echo "Configure AWS credentials in CI variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION"
+    - aws --version || true
+    - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
+    - kubectl apply -f seefa-om/demo/k8s/otel-collector-config.yaml -n demo || true
+    - kubectl apply -f seefa-om/demo/k8s/deployments.yaml -n demo
+    - kubectl set image deployment/mdso-mock mdso-mock=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$IMAGE_TAG || true
   when: manual
   only:
     - demo

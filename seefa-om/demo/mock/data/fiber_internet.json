@@ -1,0 +1,15 @@
+{
+  "workflow": "fiber_internet_activation",
+  "circuit": {
+    "cid": "20.FIB.000200..DEMO",
+    "type": "Fiber Internet",
+    "customer": "Demo Customer B",
+    "a_side": {"device": "demo-cpe-01", "ip": "198.51.100.5"},
+    "z_side": {"device": "demo-pe-03", "ip": "198.51.100.1"}
+  },
+  "actions": [
+    {"step": "order-validated", "status": "ok"},
+    {"step": "connectivity-provisioned", "status": "ok"},
+    {"step": "final-test", "status": "pending"}
+  ]
+}

@@ -26,13 +26,13 @@ k6 run k6/load-test-logs.js
 ### 4. Manual API Testing
 ```bash
 # Health check
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/health
+curl http://net-auto-olly.gff.org/correlation-engine/health
 
 # Stats
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/stats
+curl http://net-auto-olly.gff.org/correlation-engine/stats
 
 # Metrics
-curl http://austx-mdso-logs-02.chtrse.com/prometheus//metrics
+curl http://net-auto-olly.gff.org/prometheus//metrics
 ```
 
 ---
@@ -163,7 +163,7 @@ python3 test_correlation_manual.py
 ```
 
 **Verify in Grafana:**
-1. Go to http://austx-mdso-logs-02.chtrse.com/grafana/
+1. Go to http://net-auto-olly.gff.org/grafana/
 2. Navigate to Explore → Tempo
 3. Search for the trace_id
 4. Click on trace → should see correlated logs
@@ -224,7 +224,7 @@ curl -G http://159.56.4.94:3100/loki/api/v1/query \
   --data-urlencode 'limit=1'
 
 # 5. View in Grafana
-# Navigate to: http://austx-mdso-logs-02.chtrse.com/grafana/
+# Navigate to: http://net-auto-olly.gff.org/grafana/
 # Explore → Loki → Query: {service_name="mdso-dev"} |= "TEST.999999"
 ```
 
@@ -247,7 +247,7 @@ k6 run load-test-basic.js
 k6 run load-test-logs.js
 
 # Custom load test
-k6 run -e BASE_URL=http://austx-mdso-logs-02.chtrse.com/correlation-engine/ \
+k6 run -e BASE_URL=http://net-auto-olly.gff.org/correlation-engine/ \
        --vus 50 \
        --duration 5m \
        load-test-logs.js
@@ -273,19 +273,19 @@ watch -n 1 'docker stats --no-stream'
 
 ```bash
 # Health check
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/health | jq
+curl http://net-auto-olly.gff.org/correlation-engine/health | jq
 
 # Stats
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/stats | jq
+curl http://net-auto-olly.gff.org/correlation-engine/stats | jq
 
 # Metrics (Prometheus format)
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/metrics
+curl http://net-auto-olly.gff.org/correlation-engine/metrics
 
 # Query correlations
-curl "http://austx-mdso-logs-02.chtrse.com/correlation-engine/api/correlations?service=test-service&limit=10" | jq
+curl "http://net-auto-olly.gff.org/correlation-engine/api/correlations?service=test-service&limit=10" | jq
 
 # API docs
-curl http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs
+curl http://net-auto-olly.gff.org/correlation-engine/docs
 ```
 
 ---
@@ -391,7 +391,7 @@ cd ..
 
 echo
 echo "2. Health Checks..."
-curl -f http://austx-mdso-logs-02.chtrse.com/correlation-engine/health || exit 1
+curl -f http://net-auto-olly.gff.org/correlation-engine/health || exit 1
 curl -f http://159.56.4.94:55681/ || exit 1
 
 echo
@@ -485,7 +485,7 @@ integration-test:
 ## Monitoring Test Results
 
 **View in Grafana:**
-1. Navigate to http://austx-mdso-logs-02.chtrse.com/grafana/
+1. Navigate to http://net-auto-olly.gff.org/grafana/
 2. Go to Dashboards → Correlation Engine
 3. Check panels:
    - Request Rate

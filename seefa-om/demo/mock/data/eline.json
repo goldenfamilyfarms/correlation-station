@@ -1,0 +1,15 @@
+{
+  "workflow": "eline_provision",
+  "circuit": {
+    "cid": "10.ELN.000001..DEMO",
+    "type": "E-Line",
+    "customer": "Demo Customer A",
+    "a_side": {"device": "demo-pe-01", "ip": "10.0.0.1"},
+    "z_side": {"device": "demo-pe-02", "ip": "10.0.0.2"}
+  },
+  "actions": [
+    {"step": "create-order", "status": "created"},
+    {"step": "provision", "status": "in-progress"},
+    {"step": "verify", "status": "pending"}
+  ]
+}
