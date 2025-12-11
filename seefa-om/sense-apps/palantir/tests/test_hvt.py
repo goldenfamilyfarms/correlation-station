@@ -34,7 +34,7 @@ def test_metrics_invalid_params(client):
     resp = client.get(url)
     resp_data = json.loads(resp.data.decode("utf-8"))
     assert resp.status_code == 200
-    assert "spectrum-error" in resp_data
+    assert "demo-error" in resp_data
 
     # Testing invalid Z TID
     a_tid = "a_side_tid=ONTRCACP70W"
@@ -44,7 +44,7 @@ def test_metrics_invalid_params(client):
     resp = client.get(url)
     resp_data = json.loads(resp.data.decode("utf-8"))
     assert resp.status_code == 200
-    assert "spectrum-error" in resp_data
+    assert "demo-error" in resp_data
 
 
 def test_metrics_missing_params(client):
@@ -82,7 +82,7 @@ def test_metrics_missing_params(client):
 
 # tests for hvt/metrics/pathid
 def test_pathid_cid_successful(client):
-    """Test hvt/metrics/{pathid} with valid CID and good Spectrum data"""
+    """Test hvt/metrics/{pathid} with valid CID and good demo provider data"""
     pathid = "circuit_id=56.L1XX.000416..TWCC"
     url = "{}eece?{}".format(root_url, pathid)
     resp = client.get(url)
@@ -98,7 +98,7 @@ def test_pathid_cid_unsuccessful(client):
     resp = client.get(url)
     resp_data = json.loads(resp.data.decode("utf-8"))
     assert resp.status_code == 200
-    assert "spectrum-error" in resp_data
+    assert "demo-error" in resp_data
 
 
 def test_pathid_cid_invalid(client):

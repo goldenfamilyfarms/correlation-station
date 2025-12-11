@@ -5,7 +5,7 @@
 *Beorn* is a magical man-bear in Tolkien's Lord of the Rings universe. This microservice
 presents a RESTful APIs for  Network Provisioning.
 
-Current API endpoints can be found at <https://sense.chtrse.com/beorn>
+Current API endpoints can be found at <https://demo.example.com/beorn>
 
 ---
 
@@ -64,8 +64,8 @@ Current API endpoints can be found at <https://sense.chtrse.com/beorn>
 ### Procedure
 
 1. Clone the code repo from git into the directory of your choice
-    - SSH | ```git clone git@gitlab.spectrumflow.net:service-engineering-automation/sense/beorn.git```
-    - HTTPS | ```git clone https://gitlab.spectrumflow.net/service-engineering-automation/sense/beorn.git```
+    - SSH | ```git clone git@git.example.com:demo-org/beorn.git```  # demo placeholder
+    - HTTPS | ```git clone https://git.example.com/demo-org/beorn.git```  # demo placeholder
 
 2. cd into the project root directory
     ```cd beorn```
@@ -90,8 +90,8 @@ Current API endpoints can be found at <https://sense.chtrse.com/beorn>
     - *If needing this step reach out to your leads for help*
 
 8. Add in Git Submodules
-    SSH | ```git clone --recurse-submodules git@gitlab.spectrumflow.net:service-engineering-automation/sense/common_sense.git```
-    HTTPS | ```git clone --recurse-submodules https://gitlab.spectrumflow.net/service-engineering-automation/sense/common_sense.git```
+    SSH | ```git clone --recurse-submodules git@git.example.com:demo-org/common_sense.git```  # demo placeholder
+    HTTPS | ```git clone --recurse-submodules https://git.example.com/demo-org/common_sense.git```  # demo placeholder
 
 9. Setup Pre-Commit
     - Install

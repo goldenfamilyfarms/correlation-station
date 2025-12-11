@@ -113,7 +113,8 @@ class MDSOClient:
             token = await self.get_token()
             headers = {"Authorization": f"Bearer {token}"}
             
-            resource_type = f"charter.resourceTypes.{product_name}"
+            # Use a neutral demo namespace for the public showcase to avoid leaking internal tenant identifiers
+            resource_type = f"demo.resourceTypes.{product_name}"
             
             # Get count
             count_url = f"{self.base_url}/bpocore/market/api/v1/resources/count?exactTypeId={resource_type}"

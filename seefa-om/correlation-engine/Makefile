@@ -17,7 +17,7 @@ build:
 	@echo "Building Correlation API..."
 	@if [ -z "$(shell grep ARTIFACTORY_USER ../.env 2>/dev/null)" ]; then \
 		echo "ERROR: ARTIFACTORY_USER not set in .env"; \
-		echo "Add to .env: ARTIFACTORY_USER=your.name@charter.com"; \
+			echo "Add to .env: ARTIFACTORY_USER=your.name@example.com"; \
 		exit 1; \
 	fi
 	docker compose build

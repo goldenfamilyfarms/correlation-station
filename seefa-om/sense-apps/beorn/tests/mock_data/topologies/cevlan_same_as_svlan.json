@@ -38,7 +38,7 @@
                 "vendor": null,
                 "eq_type": null,
                 "model": null,
-                "path_name": "LEGACY_CHARTER.MOUNTAIN_STATES.MPLS",
+                "path_name": "LEGACY_PROVIDER.MOUNTAIN_STATES.MPLS",
                 "path_inst_id": 1222346,
                 "topology": "Cloud",
                 "tid": null,
@@ -82,7 +82,7 @@
                 "custsvlan": null,
                 "chan_name": "VLAN4063",
                 "management_ip": "96.34.243.25",
-                "device_id": "FTMRCOBT3CW.CHTRSE.COM",
+                "device_id": "FTMRCOBT3CW.example.com",
                 "device_status": "DO-NOT-USE",
                 "split_id": null
             },
@@ -109,7 +109,7 @@
                 "custsvlan": null,
                 "chan_name": "VLAN4063",
                 "management_ip": "96.34.243.25",
-                "device_id": "FTMRCOBT3CW.CHTRSE.COM",
+                "device_id": "FTMRCOBT3CW.example.com",
                 "device_status": "DO-NOT-USE",
                 "split_id": null
             },
@@ -136,7 +136,7 @@
                 "custsvlan": null,
                 "chan_name": "VLAN4063",
                 "management_ip": "10.29.106.10",
-                "device_id": "FTMRCOBT0QW.CHTRSE.COM",
+                "device_id": "FTMRCOBT0QW.example.com",
                 "device_status": "Live",
                 "split_id": null
             },
@@ -163,7 +163,7 @@
                 "custsvlan": null,
                 "chan_name": "VLAN4063",
                 "management_ip": "10.29.106.10",
-                "device_id": "FTMRCOBT0QW.CHTRSE.COM",
+                "device_id": "FTMRCOBT0QW.example.com",
                 "device_status": "Live",
                 "split_id": null
             },

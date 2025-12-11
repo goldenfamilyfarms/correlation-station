@@ -484,6 +484,6 @@ docker-compose down -v --rmi all
 
 ---
 
-**Author**: Derrick Golden (derrick.golden@charter.com)
+**Author**: Demo Maintainer (demo@example.com)
 **Last Updated**: 2025-11-13
 **Version**: 1.0.0
