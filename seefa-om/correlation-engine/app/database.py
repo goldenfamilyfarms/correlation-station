@@ -13,52 +13,66 @@ DATABASE_PATH = Path("/app/data/seca_reviews.db")
 
 
 async def init_database():
-    """Initialize the SQLite database with required tables"""
+    """Initialize the SQLite database with required tables
+    
+    Blueprint Feature 5: Initializes full database schema from database_schema.sql
+    """
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+    # Read and execute the full schema SQL file
+    schema_file = Path(__file__).parent / "database_schema.sql"
+    
     async with aiosqlite.connect(DATABASE_PATH) as db:
-        # SECA Error Reviews table
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS error_reviews (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                period TEXT NOT NULL UNIQUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                summary TEXT NOT NULL,
-                errors TEXT NOT NULL
-            )
-        """)
+        if schema_file.exists():
+            # Execute full schema from SQL file
+            schema_sql = schema_file.read_text()
+            await db.executescript(schema_sql)
+            logger.info("Database schema initialized from database_schema.sql", path=str(DATABASE_PATH))
+        else:
+            # Fallback to legacy schema if SQL file doesn't exist
+            logger.warning("database_schema.sql not found, using legacy schema")
+            
+            # SECA Error Reviews table (legacy)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS error_reviews (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    period TEXT NOT NULL UNIQUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    summary TEXT NOT NULL,
+                    errors TEXT NOT NULL
+                )
+            """)
 
-        # Users table for authentication
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                username TEXT NOT NULL UNIQUE,
-                email TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            # Users table for authentication (legacy - will be upgraded by schema.sql)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id TEXT PRIMARY KEY,
+                    username TEXT NOT NULL UNIQUE,
+                    email TEXT NOT NULL UNIQUE,
+                    password_hash TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        # Tutorial progress table
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS tutorial_progress (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                tutorial_id TEXT NOT NULL,
-                completed BOOLEAN DEFAULT 0,
-                completed_at TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-                UNIQUE (user_id, tutorial_id)
-            )
-        """)
+            # Tutorial progress table (legacy)
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS tutorial_progress (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    tutorial_id TEXT NOT NULL,
+                    completed BOOLEAN DEFAULT 0,
+                    completed_at TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+                    UNIQUE (user_id, tutorial_id)
+                )
+            """)
 
-        # Create index for faster lookups
-        await db.execute("""
-            CREATE INDEX IF NOT EXISTS idx_tutorial_progress_user
-            ON tutorial_progress (user_id)
-        """)
+            await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_tutorial_progress_user
+                ON tutorial_progress (user_id)
+            """)
 
         await db.commit()
         logger.info("Database initialized", path=str(DATABASE_PATH))
@@ -378,3 +392,112 @@ async def is_tutorial_complete(user_id: str, tutorial_id: str) -> bool:
         ) as cursor:
             row = await cursor.fetchone()
             return bool(row[0]) if row else False
+
+
+# ====================
+# SECA WEEKS & ERRORS
+# Blueprint Feature 5: Database functions for SECA data
+# ====================
+
+async def create_seca_week(
+    week_id: str,
+    week_start_date: str,
+    week_end_date: str,
+    summary_text: Optional[str] = None,
+    total_circuits: int = 0,
+    circuits_with_traceback: int = 0
+) -> Dict[str, Any]:
+    """Create a new SECA week"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute(
+            """
+            INSERT INTO seca_weeks 
+            (id, week_start_date, week_end_date, summary_text, total_circuits, circuits_with_traceback)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (week_id, week_start_date, week_end_date, summary_text, total_circuits, circuits_with_traceback)
+        )
+        await db.commit()
+        
+        async with db.execute(
+            "SELECT * FROM seca_weeks WHERE id = ?",
+            (week_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return dict(row) if row else {}
+
+
+async def create_seca_error(
+    error_id: str,
+    seca_week_id: str,
+    circuit_id: str,
+    date: str,
+    service_request_type: Optional[str] = None,
+    product_name: Optional[str] = None,
+    error_message: Optional[str] = None,
+    cdnc_summary: Optional[str] = None,
+    fallout_reason: Optional[str] = None,
+    priority: str = "medium",
+    application: Optional[str] = None,
+    team: Optional[str] = None,
+    owner: Optional[str] = None,
+    status: str = "new",
+    grafana_link: Optional[str] = None,
+    meta_web_link: Optional[str] = None,
+    analysis_pdf_url: Optional[str] = None,
+    traceback: Optional[str] = None
+) -> Dict[str, Any]:
+    """Create a new SECA error"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute(
+            """
+            INSERT OR REPLACE INTO seca_errors
+            (id, seca_week_id, circuit_id, date, service_request_type, product_name,
+             error_message, cdnc_summary, fallout_reason, priority, application,
+             team, owner, status, grafana_link, meta_web_link, analysis_pdf_url, traceback)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (error_id, seca_week_id, circuit_id, date, service_request_type, product_name,
+             error_message, cdnc_summary, fallout_reason, priority, application,
+             team, owner, status, grafana_link, meta_web_link, analysis_pdf_url, traceback)
+        )
+        await db.commit()
+        
+        async with db.execute(
+            "SELECT * FROM seca_errors WHERE id = ?",
+            (error_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return dict(row) if row else {}
+
+
+async def create_seca_affected_file(
+    file_id: str,
+    seca_error_id: str,
+    source: str,
+    log_file: Optional[str] = None,
+    traceback: Optional[str] = None,
+    artifact_url: Optional[str] = None,
+    selenium_status: str = "ok"
+) -> Dict[str, Any]:
+    """Create a new SECA affected file"""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute(
+            """
+            INSERT INTO seca_affected_files
+            (id, seca_error_id, source, log_file, traceback, artifact_url, selenium_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (file_id, seca_error_id, source, log_file, traceback, artifact_url, selenium_status)
+        )
+        await db.commit()
+        
+        async with db.execute(
+            "SELECT * FROM seca_affected_files WHERE id = ?",
+            (file_id,)
+        ) as cursor:
+            row = await cursor.fetchone()
+            return dict(row) if row else {}

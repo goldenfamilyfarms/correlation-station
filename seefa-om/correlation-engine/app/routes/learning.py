@@ -62,7 +62,8 @@ class ModuleWithLessons(BaseModel):
 
 async def get_db():
     """Get database connection"""
-    db = await aiosqlite.connect("correlation_station.db")
+    from app.database import DATABASE_PATH
+    db = await aiosqlite.connect(DATABASE_PATH)
     db.row_factory = aiosqlite.Row
     try:
         yield db

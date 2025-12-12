@@ -197,7 +197,7 @@ All routes implemented:
 - `/` - Home dashboard
 - `/correlation-engine` - Correlation Engine Monitor
 - `/docs` - Observability Documentation
-- `/architecture` - SEFA Architecture
+- `/architecture` - SEEFA Architecture
 - `/seca-review` - SECA Review (with upload modal)
 - `/netdev101` - NetDev101 (tutorials)
 

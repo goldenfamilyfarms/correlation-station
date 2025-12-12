@@ -1,6 +1,7 @@
 """
 SECA Review API Routes
 Handles XLSX upload, Selenium scraping, and report generation
+Blueprint Feature 4 & 5: SECA Review Pipeline + Database Integration
 """
 from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
@@ -8,12 +9,15 @@ from typing import Dict, List
 import tempfile
 import os
 from pathlib import Path
+from datetime import datetime, timedelta
+import uuid
 import structlog
 
 from app.seca_xlsx_processor import SECAXLSXProcessor
 from app.selenium_scraper import MDSOReportScraper
 from app.pdf_generator import generate_seca_report
 from app.redis_schema import RedisCorrelationStore, CircuitEvent
+from app.database import create_seca_week, create_seca_error, create_seca_affected_file
 
 logger = structlog.get_logger()
 
@@ -94,12 +98,82 @@ async def upload_seca_xlsx(
 
         logger.info("Reformatted XLSX generated", path=xlsx_path)
 
+        # Step 6: Save to database (Blueprint Feature 5)
+        # Create SECA week entry
+        week_id = str(uuid.uuid4())
+        today = datetime.now()
+        week_start = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
+        week_end = (today + timedelta(days=6 - today.weekday())).strftime("%Y-%m-%d")
+        
+        # Count circuits with traceback
+        circuits_with_traceback = sum(1 for e in errors.values() if e.traceback or (e.affected_files and any(af.traceback for af in e.affected_files)))
+        
+        summary_text = f"SECA Review for week {week_start} to {week_end}. Total circuits: {len(errors)}, Circuits with traceback: {circuits_with_traceback}"
+        
+        await create_seca_week(
+            week_id=week_id,
+            week_start_date=week_start,
+            week_end_date=week_end,
+            summary_text=summary_text,
+            total_circuits=len(errors),
+            circuits_with_traceback=circuits_with_traceback
+        )
+        
+        # Save each error to database
+        saved_error_ids = []
+        for concat_key, error in errors.items():
+            error_id = str(uuid.uuid4())
+            
+            # Determine primary traceback (from error or first affected file)
+            primary_traceback = error.traceback
+            if not primary_traceback and error.affected_files:
+                for af in error.affected_files:
+                    if af.traceback:
+                        primary_traceback = af.traceback
+                        break
+            
+            await create_seca_error(
+                error_id=error_id,
+                seca_week_id=week_id,
+                circuit_id=error.circuit_id,
+                date=error.date,
+                service_request_type=error.service_request_type,
+                product_name=error.product_name,
+                error_message=error.error_message,
+                cdnc_summary=error.cdnc_summary,
+                fallout_reason=error.categorized_error,
+                priority="medium",  # Could be determined from error type
+                application=None,  # Could be determined from product_name
+                status="new",
+                meta_web_link=f"http://159.56.4.94/reports",  # Meta Web Tool base URL
+                analysis_pdf_url=pdf_path if os.path.exists(pdf_path) else None,
+                traceback=primary_traceback
+            )
+            
+            # Save affected files
+            for af in error.affected_files:
+                file_id = str(uuid.uuid4())
+                await create_seca_affected_file(
+                    file_id=file_id,
+                    seca_error_id=error_id,
+                    source=af.source,
+                    log_file=af.log_file,
+                    traceback=af.traceback,
+                    artifact_url=af.artifact_url,
+                    selenium_status=af.selenium_status
+                )
+            
+            saved_error_ids.append(error_id)
+        
+        logger.info("SECA data saved to database", week_id=week_id, error_count=len(saved_error_ids))
+
         # Return file paths for download
         return {
             "status": "success",
             "total_errors": len(errors),
             "scraped_errors": len(scraped_results),
             "error_groups": len(error_groups),
+            "seca_week_id": week_id,
             "pdf_report": pdf_path,
             "reformatted_xlsx": xlsx_path,
             "download_urls": {

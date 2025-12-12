@@ -17,11 +17,17 @@ import structlog
 from app.config import settings
 from app.routes import health, logs, otlp, correlations, seca_reviews, file_upload, seca_jobs, user_auth
 try:
-    from app.routes import seca
+    from app.routes import seca, learning, seca_data, docs
     SECA_ROUTES_AVAILABLE = True
-except ImportError:
+    LEARNING_ROUTES_AVAILABLE = True
+    SECA_DATA_ROUTES_AVAILABLE = True
+    DOCS_ROUTES_AVAILABLE = True
+except ImportError as e:
     SECA_ROUTES_AVAILABLE = False
-    logging.warning("SECA routes not available - missing dependencies")
+    LEARNING_ROUTES_AVAILABLE = False
+    SECA_DATA_ROUTES_AVAILABLE = False
+    DOCS_ROUTES_AVAILABLE = False
+    logging.warning(f"Some routes not available - missing dependencies: {e}")
 from app.pipeline.correlator import CorrelationEngine
 from app.pipeline.exporters import ExporterManager
 from app.database import init_database, seed_sample_data
@@ -305,6 +311,14 @@ app.include_router(seca_reviews.router, prefix="/api", tags=["seca-reviews"])
 app.include_router(file_upload.router, prefix="/api", tags=["file-upload"])
 app.include_router(seca_jobs.router, prefix="/api", tags=["seca-jobs"])
 app.include_router(user_auth.router, prefix="/api", tags=["user-auth"])
+
+# Blueprint Feature 5: Backend + Database endpoints
+if LEARNING_ROUTES_AVAILABLE:
+    app.include_router(learning.router, tags=["learning"])
+if SECA_DATA_ROUTES_AVAILABLE:
+    app.include_router(seca_data.router, tags=["seca-data"])
+if DOCS_ROUTES_AVAILABLE:
+    app.include_router(docs.router, tags=["docs"])
 if SECA_ROUTES_AVAILABLE:
     app.include_router(seca.router, prefix="/seca", tags=["seca"])
 
