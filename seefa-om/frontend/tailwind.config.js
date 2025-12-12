@@ -51,16 +51,32 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Grafana colors (light mode)
+        // Color Palette
         grafana: {
-          orange: '#FF7E27',
-          blue: '#33A2E5',
-          green: '#3EB15B',
-          yellow: '#F2CC0C',
-          red: '#E02F44',
-          purple: '#9664D9',
-          pink: '#FF5AC8',
-          gray: '#52545C',
+          // Backgrounds & Containers
+          'page-bg': '#F8F9FA',
+          'sidebar-header-bg': '#1E1F20',
+          'content-bg': '#FFFFFF',
+          // Text & Links
+          'heading': '#000000',
+          'body-text': '#6C757D',
+          'sidebar-text': '#A0A0A0',
+          'link': '#1B6AC7',
+          // Buttons & Accents
+          'button-primary': '#1B6AC7',
+          'icon-accent': '#FF9800',
+          'tag-bg': '#FFF3E0',
+          'secondary-button': '#FAFAFA',
+          // Dashboard Colors (for charts)
+          'dashboard-bg': '#161719',
+          'chart-blue': '#316CB8',
+          'chart-green': '#388E3C',
+          'chart-green-light': '#66BB6A',
+          'chart-teal': '#4DB6AC',
+          'chart-yellow': '#FDD835',
+          'chart-orange': '#FFB300',
+          'chart-red': '#F44336',
+          'chart-gridline': '#E0E0E0',
         },
       },
       borderRadius: {

@@ -4,26 +4,45 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 17 100% 58%; /* Grafana Orange */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 198 80% 55%; /* Grafana Blue */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 17 100% 58%;
+    /* Page Background: #F8F9FA */
+    --background: 0 0% 97.8%; /* #F8F9FA */
+    --foreground: 0 0% 42.4%; /* #6C757D - Body Text */
+    
+    /* Card surface: #FFFFFF */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 0%; /* #000000 - Heading Text */
+    
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 0 0% 0%; /* #000000 */
+    
+    /* Primary (Blue Button): #1B6AC7 */
+    --primary: 210 75% 45%; /* #1B6AC7 */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+    
+    /* Primary hover: #1859AC */
+    --primary-hover: 210 75% 38%; /* #1859AC */
+    
+    /* Accent (Icons & Accents): #FF9800 */
+    --accent: 36 100% 50%; /* #FF9800 - Orange */
+    --accent-foreground: 0 0% 0%; /* #000000 */
+    
+    /* Secondary Button/Border: #FAFAFA */
+    --secondary: 0 0% 98%; /* #FAFAFA - Light Grey */
+    --secondary-foreground: 0 0% 0%; /* #000000 */
+    
+    --muted: 0 0% 98%; /* #FAFAFA */
+    --muted-foreground: 0 0% 62.7%; /* #A0A0A0 - Sidebar Text */
+    
+    --destructive: 0 84% 60%; /* #F44336 - Red */
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+    
+    --border: 0 0% 98%; /* #FAFAFA */
+    --input: 0 0% 98%; /* #FAFAFA */
+    --ring: 210 75% 45%; /* #1B6AC7 */
     --radius: 0.5rem;
+    
+    /* Tag Background: #FFF3E0 */
+    --tag-bg: 36 100% 94%; /* #FFF3E0 - Light Orange/Peach */
   }
 }
 
@@ -33,5 +52,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-black;
   }
 }

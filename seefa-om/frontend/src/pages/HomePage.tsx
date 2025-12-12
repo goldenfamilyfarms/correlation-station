@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { ExternalLink, BarChart3, Activity, Dog, Flame, TestTube, Globe } from 'lucide-react'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { BarChart3, Activity, Flame, Gauge, Users, TrendingUp, BookOpen, CheckCircle2 } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { QuickLinkCard } from '@/components/QuickLinkCard'
+import { KpiCard } from '@/components/KpiCard'
+import { HealthRow } from '@/components/HealthRow'
 import {
   Dialog,
   DialogContent,
@@ -10,204 +13,277 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import { Link } from 'react-router-dom'
+
+// Mock data - TODO: Replace with API calls
+const weeklyErrorData = [
+  { week: 'Week 1', provisioning: 12, compliance: 8, other: 5 },
+  { week: 'Week 2', provisioning: 15, compliance: 10, other: 7 },
+  { week: 'Week 3', provisioning: 8, compliance: 6, other: 4 },
+  { week: 'Week 4', provisioning: 10, compliance: 9, other: 6 },
+]
+
+const learningPathSteps = [
+  { id: 1, title: 'Getting started with Grafana', status: 'completed' },
+  { id: 2, title: 'Logs & Traces (Loki/Tempo)', status: 'in_progress' },
+  { id: 3, title: 'Metrics & Prometheus', status: 'not_started' },
+  { id: 4, title: 'Code Profiling with Pyroscope', status: 'not_started' },
+  { id: 5, title: 'Automation Deep Dives', status: 'not_started' },
+]
+
+const recentErrors = [
+  { service: 'ARDA', type: 'Timeout', severity: 'High', status: 'Open', owner: 'John D.', link: '#' },
+  { service: 'BEORN', type: 'Parse Error', severity: 'Medium', status: 'Triage', owner: 'Jane S.', link: '#' },
+  { service: 'PALANTIR', type: 'Upstream 5xx', severity: 'High', status: 'Open', owner: 'Bob M.', link: '#' },
+  { service: 'MDSO', type: 'Config Error', severity: 'Low', status: 'Resolved', owner: 'Alice K.', link: '#' },
+]
+
+const healthServices = [
+  { service: 'Correlation Engine', status: 'healthy' as const, description: 'All systems operational' },
+  { service: 'Grafana Stack', status: 'healthy' as const, description: 'Loki, Tempo, Prometheus running' },
+  { service: 'Redis Cache', status: 'partial' as const, description: 'High memory usage' },
+  { service: 'MDSO Alloy Agent', status: 'healthy' as const, description: 'Collecting telemetry' },
+  { service: 'Sense Apps', status: 'limited' as const, description: 'Some endpoints degraded' },
+]
 
 export default function HomePage() {
   const [dataDogModalOpen, setDataDogModalOpen] = useState(false)
 
-  const quickLinks = [
-    {
-      title: 'Grafana Dashboard',
-      description: 'Access the Grafana UI for logs, traces, and metrics visualization',
-      icon: BarChart3,
-      color: 'grafana-orange',
-      href: 'http://austx-mdso-logs-02.chtrse.com/grafana/',
-      external: true,
-    },
-    {
-      title: 'Correlation Engine',
-      description: 'View correlation engine metrics and API documentation',
-      icon: Activity,
-      color: 'grafana-blue',
-      href: 'http://austx-mdso-logs-02.chtrse.com/correlation-engine/docs',
-      external: true,
-    },
-    {
-      title: 'Pyroscope',
-      description: 'Continuous profiling for performance analysis',
-      icon: Flame,
-      color: 'grafana-yellow',
-      href: 'http://austx-mdso-logs-02.chtrse.com/pyroscope',
-      external: true,
-    },
-    {
-      title: 'Prometheus',
-      description: 'Metrics storage and querying',
-      icon: TestTube,
-      color: 'grafana-red',
-      href: 'http://austx-mdso-logs-02.chtrse.com/prometheus/',
-      external: true,
-    },
-  ]
-
-  const handleDataDogClick = () => {
-    setDataDogModalOpen(true)
-  }
-
   const handleConfirmDataDog = () => {
-    window.open('https://app.datadoghq.com', '_blank')
+    window.open('https://app.datadoghq.com', '_blank', 'noopener,noreferrer')
     setDataDogModalOpen(false)
   }
 
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="text-center space-y-4">
-        <h1 className="text-5xl font-bold text-gray-900">
-          Welcome to <span className="text-grafana-orange">Correlation Station</span>
-        </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Your central hub for observability and monitoring training. Learn how to use Grafana,
-          OpenTelemetry, TraceQL, PromQL, and master distributed systems observability.
-        </p>
+    <div className="flex flex-1 flex-col gap-4">
+      {/* Band 1 - Quick Access Cards */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-4">Quick Access</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickLinkCard
+            title="Grafana Dashboard"
+            description="Access the Grafana UI for logs, traces, and metrics visualization"
+            icon={BarChart3}
+            href="http://159.56.4.94:3000"
+            external
+          />
+          <QuickLinkCard
+            title="Correlation Engine"
+            description="View correlation engine metrics and health status"
+            icon={Activity}
+            href="/correlation-engine"
+          />
+          <QuickLinkCard
+            title="Pyroscope"
+            description="Continuous profiling for performance analysis"
+            icon={Flame}
+            href="http://159.56.4.94:4040"
+            external
+          />
+          <QuickLinkCard
+            title="Prometheus"
+            description="Metrics storage and querying"
+            icon={Gauge}
+            href="http://159.56.4.94:9090"
+            external
+          />
+        </div>
       </div>
 
-      {/* Quick Links Section */}
+      {/* Band 2 - Learning KPIs */}
       <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Quick Access</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickLinks.map((link) => {
-            const Icon = link.icon
-            return (
-              <Card
-                key={link.title}
-                className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-grafana-orange"
-                onClick={() => window.open(link.href, '_blank')}
-              >
-                <CardHeader>
-                  <div className={`w-12 h-12 rounded-lg bg-${link.color}/10 flex items-center justify-center mb-3`}>
-                    <Icon className={`h-6 w-6 text-${link.color}`} style={{ color: `var(--tw-${link.color})` }} />
+        <h2 className="text-2xl font-semibold mb-4">Learning KPIs</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <KpiCard
+            title="Onboarded Engineers"
+            value={18}
+            description="completed observability bootcamp"
+            icon={Users}
+          />
+          <KpiCard
+            title="Loki/Tempo Proficiency"
+            value="72%"
+            description="passed log & trace quiz"
+            icon={TrendingUp}
+            trend={{ value: 5, label: 'vs last month', positive: true }}
+          />
+          <KpiCard
+            title="MTTD Improvement"
+            value="35%"
+            description="reduction vs last quarter"
+            icon={TrendingUp}
+            trend={{ value: 12, label: 'points', positive: true }}
+          />
+          <KpiCard
+            title="Playbooks Covered"
+            value="14 / 20"
+            description="SRE runbooks with dashboards"
+            icon={BookOpen}
+          />
+        </div>
+      </div>
+
+      {/* Band 3 - Chart + Learning Path (2/3 + 1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left (2/3) - Weekly Automation Errors Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Weekly Automation Errors</CardTitle>
+            <CardDescription>Error counts over the last 4 weeks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={weeklyErrorData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip />
+                <Area type="monotone" dataKey="provisioning" stackId="1" stroke="#316CB8" fill="#316CB8" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="compliance" stackId="1" stroke="#4DB6AC" fill="#4DB6AC" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="other" stackId="1" stroke="#E0E0E0" fill="#E0E0E0" fillOpacity={0.6} />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div className="flex gap-4 mt-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-[#316CB8]" />
+                <span>Provisioning Failures</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-[#4DB6AC]" />
+                <span>Compliance Failures</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-[#E0E0E0]" />
+                <span>Other</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Right (1/3) - Your Learning Path */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Learning Path</CardTitle>
+            <CardDescription>Track your progress</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {learningPathSteps.map((step) => (
+                <div key={step.id} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-1">
+                    {step.status === 'completed' ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : step.status === 'in_progress' ? (
+                      <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
+                    )}
                   </div>
-                  <CardTitle className="flex items-center gap-2">
-                    {link.title}
-                    {link.external && <ExternalLink className="h-4 w-4 text-gray-400" />}
-                  </CardTitle>
-                  <CardDescription>{link.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            )
-          })}
-        </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">{step.title}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{step.status.replace('_', ' ')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" className="w-full mt-4" asChild>
+              <Link to="/netdev101">View Full Path</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Legacy Tools Section */}
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Legacy Tools</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card
-            className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-gray-400"
-            onClick={handleDataDogClick}
-          >
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mb-3">
-                <Dog className="h-6 w-6 text-purple-600" />
+      {/* Band 4 - Error Reports + Health Snapshot */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left (2/3) - Latest Error Reports */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Latest Error Reports</CardTitle>
+            <CardDescription>Recent internal error records</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-0">
+              <div className="grid grid-cols-6 gap-4 pb-2 border-b text-sm font-medium text-muted-foreground">
+                <div>Service</div>
+                <div>Type</div>
+                <div>Severity</div>
+                <div>Status</div>
+                <div>Owner</div>
+                <div>Link</div>
               </div>
-              <CardTitle className="flex items-center gap-2">
-                DataDog
-                <ExternalLink className="h-4 w-4 text-gray-400" />
-              </CardTitle>
-              <CardDescription>
-                The old observability platform (click if you dare...)
-              </CardDescription>
-            </CardHeader>
-          </Card>
+              {recentErrors.map((error, idx) => (
+                <div key={idx} className="grid grid-cols-6 gap-4 py-2 border-b last:border-0 text-sm">
+                  <div className="font-medium">{error.service}</div>
+                  <div>{error.type}</div>
+                  <div>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      error.severity === 'High' ? 'bg-red-500/20 text-red-500' :
+                      error.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                      'bg-green-500/20 text-green-500'
+                    }`}>
+                      {error.severity}
+                    </span>
+                  </div>
+                  <div>{error.status}</div>
+                  <div>{error.owner}</div>
+                  <div>
+                    <a href={error.link} className="text-[#1B6AC7] hover:underline">View</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" className="w-full mt-4" asChild>
+              <Link to="/seca-review">View All Errors</Link>
+            </Button>
+          </CardContent>
+        </Card>
 
-          <Card
-            className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-grafana-blue"
-            onClick={() => window.open('http://austx-mdso-logs-02.chtrse.com/', '_blank')}
-          >
-            <CardHeader>
-              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-3">
-                <Globe className="h-6 w-6 text-blue-600" />
-              </div>
-              <CardTitle className="flex items-center gap-2">
-                Meta Web Tool
-                <ExternalLink className="h-4 w-4 text-gray-400" />
-              </CardTitle>
-              <CardDescription>
-                Access the main MDSO web portal and tools
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+        {/* Right (1/3) - Automation Health Snapshot */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Automation Health Snapshot</CardTitle>
+            <CardDescription>Service status overview</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-0">
+              {healthServices.map((service, idx) => (
+                <HealthRow
+                  key={idx}
+                  service={service.service}
+                  status={service.status}
+                  description={service.description}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Learning Resources */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Getting Started</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <h3 className="font-semibold text-grafana-orange mb-2">Documentation</h3>
-            <p className="text-sm text-gray-600">
-              Explore comprehensive guides on TraceQL, PromQL, and application instrumentation
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-grafana-blue mb-2">Architecture</h3>
-            <p className="text-sm text-gray-600">
-              Learn about our distributed systems architecture and design patterns
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-grafana-green mb-2">SECA Reviews</h3>
-            <p className="text-sm text-gray-600">
-              Bi-weekly error analysis and resolution tracking for production issues
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* DataDog Modal with Tim Robinson Meme */}
+      {/* Datadog Confirmation Modal */}
       <Dialog open={dataDogModalOpen} onOpenChange={setDataDogModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl">Hold up!</DialogTitle>
-            <DialogDescription className="text-center">
-              Are you sure you want to use DataDog?
+            <DialogTitle>Leave Correlation Station?</DialogTitle>
+            <DialogDescription>
+              You're about to leave our open-source observability stack and go to Datadog.
+              Are you sure you want to continue?
             </DialogDescription>
           </DialogHeader>
-
-          <div className="flex flex-col items-center gap-4 py-4">
-            {/* Tim Robinson "Are you sure about that?" Meme */}
-            <div className="w-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-8 border-2 border-blue-200">
-              <div className="text-center space-y-4">
-                <div className="text-6xl font-bold text-blue-600">?!</div>
-                <div className="text-3xl font-bold text-blue-600">ARE YOU SURE</div>
-                <div className="text-3xl font-bold text-purple-600">ABOUT THAT?!</div>
-                <div className="text-sm text-gray-600 italic mt-4">
-                  (Tim Robinson would be disappointed)
-                </div>
-              </div>
-            </div>
-
-            <p className="text-center text-sm text-gray-600">
-              We have all these cool open-source observability tools...
-            </p>
-          </div>
-
-          <DialogFooter className="flex-col sm:flex-col gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="destructive"
               onClick={handleConfirmDataDog}
-              className="w-full"
+              className="w-full sm:w-auto"
             >
-              Yes, I'm sure (take me to DataDog)
+              Yes, take me to Datadog
             </Button>
             <Button
               variant="default"
               onClick={() => setDataDogModalOpen(false)}
-              className="w-full bg-grafana-orange hover:bg-grafana-orange/90"
+              className="w-full sm:w-auto"
             >
-              No, I'm sorry! I like cool OM tools
+              No, keep me in Correlation Station
             </Button>
           </DialogFooter>
         </DialogContent>
