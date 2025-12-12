@@ -180,7 +180,7 @@ Find our team calendar in Outlook. Regular meetings:
 ## Creating Tickets
 
 1. Go to Jira
-2. Create ticket in SEFA project
+2. Create ticket in SEEFA project
 3. Assign to appropriate team
 4. Link to related tickets/epics
 

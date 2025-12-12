@@ -50,7 +50,7 @@ export function AppSidebar() {
       icon: BookOpen,
     },
     {
-      title: "SEFA Architecture",
+      title: "SEEFA Architecture",
       url: "/architecture",
       icon: Network,
     },

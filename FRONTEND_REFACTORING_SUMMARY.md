@@ -10,7 +10,7 @@
 ### 2. Sidebar & Layout (dashboard-01 pattern)
 - ✅ Created `sidebar.tsx` component (shadcn/ui pattern)
 - ✅ Created `AppSidebar` with navigation structure:
-  - Overview: Home, Documentation, SEFA Architecture, SECA Review, NetDev101
+  - Overview: Home, Documentation, SEEFA Architecture, SECA Review, NetDev101
   - Tools: Grafana, Correlation Engine, Pyroscope, Prometheus, Meta Web Tool, Datadog
   - Learning & Quality: Learning Path, Error Reports, Weekly Automation Errors
 - ✅ Created `SiteHeader` with search, API Docs link, and user menu
