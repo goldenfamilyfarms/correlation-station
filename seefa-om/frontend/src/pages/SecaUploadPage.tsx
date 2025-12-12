@@ -92,8 +92,8 @@ export default function SecaUploadPage() {
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">SECA Error Analysis</h1>
-        <p className="text-gray-600">
+        <h1 className="text-4xl font-bold mb-2">SECA Error Analysis</h1>
+        <p className="text-[#6C757D]">
           Upload your SECA XLSX file for automated error analysis, traceback extraction, and report generation
         </p>
       </div>
@@ -114,7 +114,7 @@ export default function SecaUploadPage() {
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
               dragActive
-                ? 'border-grafana-orange bg-orange-50'
+                ? 'border-[#1B6AC7] bg-blue-50'
                 : 'border-gray-300 hover:border-gray-400'
             }`}
           >
@@ -122,8 +122,8 @@ export default function SecaUploadPage() {
               <div className="space-y-4">
                 <FileSpreadsheet className="h-16 w-16 mx-auto text-green-500" />
                 <div>
-                  <p className="font-medium text-gray-900">{file.name}</p>
-                  <p className="text-sm text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
+                  <p className="font-medium">{file.name}</p>
+                  <p className="text-sm text-[#6C757D]">{(file.size / 1024).toFixed(2)} KB</p>
                 </div>
                 <Button
                   variant="outline"
@@ -137,10 +137,10 @@ export default function SecaUploadPage() {
               <div className="space-y-4">
                 <Upload className="h-16 w-16 mx-auto text-gray-400" />
                 <div>
-                  <p className="text-lg font-medium text-gray-700">
+                  <p className="text-lg font-medium">
                     Drop your XLSX file here
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">or</p>
+                  <p className="text-sm text-[#6C757D] mt-1">or</p>
                 </div>
                 <label>
                   <input
@@ -162,7 +162,6 @@ export default function SecaUploadPage() {
             <div className="mt-6 flex justify-center">
               <Button
                 onClick={handleUpload}
-                className="bg-grafana-orange hover:bg-grafana-orange/90"
                 size="lg"
               >
                 <Upload className="h-5 w-5 mr-2" />
@@ -173,11 +172,11 @@ export default function SecaUploadPage() {
 
           {uploading && (
             <div className="mt-6 text-center">
-              <Loader2 className="h-8 w-8 mx-auto animate-spin text-grafana-orange mb-2" />
-              <p className="text-sm text-gray-600">
+              <Loader2 className="h-8 w-8 mx-auto animate-spin text-[#1B6AC7] mb-2" />
+              <p className="text-sm text-[#6C757D]">
                 Processing XLSX, scraping reports, and generating analysis...
               </p>
-              <p className="text-xs text-gray-500 mt-1">This may take a few minutes</p>
+              <p className="text-xs text-[#6C757D] mt-1">This may take a few minutes</p>
             </div>
           )}
         </CardContent>
@@ -206,22 +205,22 @@ export default function SecaUploadPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-[#1B6AC7]">
                       {result.total_errors}
                     </div>
-                    <div className="text-sm text-gray-600">Total Errors</div>
+                    <div className="text-sm text-[#6C757D]">Total Errors</div>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
                       {result.scraped_errors}
                     </div>
-                    <div className="text-sm text-gray-600">Scraped Reports</div>
+                    <div className="text-sm text-[#6C757D]">Scraped Reports</div>
                   </div>
                   <div className="bg-orange-50 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-2xl font-bold text-[#FF9800]">
                       {result.error_groups}
                     </div>
-                    <div className="text-sm text-gray-600">Error Groups</div>
+                    <div className="text-sm text-[#6C757D]">Error Groups</div>
                   </div>
                 </div>
 
@@ -243,7 +242,7 @@ export default function SecaUploadPage() {
                       Reformatted XLSX
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-[#6C757D] mt-2">
                     Files should download automatically. Click above if they don't.
                   </p>
                 </div>
@@ -261,9 +260,9 @@ export default function SecaUploadPage() {
       {/* Info */}
       <Card className="mt-6 bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-blue-900">What happens during processing?</CardTitle>
+          <CardTitle className="text-[#1B6AC7]">What happens during processing?</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-blue-800 space-y-2">
+        <CardContent className="text-sm text-[#6C757D] space-y-2">
           <p>1. <strong>Parse XLSX:</strong> Extract circuit IDs, dates, and error messages</p>
           <p>2. <strong>Scrape Reports:</strong> Selenium automation fetches detailed logs from MDSO</p>
           <p>3. <strong>Extract Tracebacks:</strong> Python error traces are identified and categorized</p>

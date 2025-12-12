@@ -46,7 +46,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
               required
             />
           </div>
-          <Button type="submit" className="w-full bg-grafana-orange hover:bg-grafana-orange/90">
+          <Button type="submit" className="w-full">
             Login
           </Button>
         </form>

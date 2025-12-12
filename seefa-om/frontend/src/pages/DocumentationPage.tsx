@@ -1,1032 +1,379 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { BookOpen, Code, Zap, Database } from 'lucide-react'
+import { DocsSidebar } from '@/components/DocsSidebar'
+import { TableOfContents } from '@/components/TableOfContents'
+import CodeBlock from '@/components/CodeBlock'
 
 export default function DocumentationPage() {
+  const [currentSection, setCurrentSection] = useState('overview')
+  const [currentSubsection, setCurrentSubsection] = useState('what-is')
+
+  // Handle hash changes for navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1)
+      if (hash) {
+        setCurrentSubsection(hash)
+        // Find which section this subsection belongs to
+        const sections = [
+          {
+            id: 'overview',
+            subsections: [{ id: 'what-is' }, { id: 'problems' }, { id: 'architecture-diagram' }],
+          },
+          {
+            id: 'architecture',
+            subsections: [
+              { id: 'why-grafana' },
+              { id: 'why-alloy' },
+              { id: 'constraints' },
+              { id: 'correlation-engine' },
+              { id: 'redis-caching' },
+              { id: 'horizontal-scaling' },
+            ],
+          },
+          {
+            id: 'query-reference',
+            subsections: [{ id: 'logql' }, { id: 'traceql' }, { id: 'promql' }],
+          },
+        ]
+        const section = sections.find((s) => s.subsections.some((sub: { id: string }) => sub.id === hash))
+        if (section) {
+          setCurrentSection(section.id)
+        }
+      }
+    }
+
+    handleHashChange()
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Documentation</h1>
-        <p className="text-lg text-gray-600">
-          Comprehensive guides for mastering observability tools and practices
-        </p>
-      </div>
-
-      <Tabs defaultValue="traceql" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="traceql">TraceQL</TabsTrigger>
-          <TabsTrigger value="promql">PromQL</TabsTrigger>
-          <TabsTrigger value="logql">LogQL</TabsTrigger>
-          <TabsTrigger value="instrumentation">Instrumentation</TabsTrigger>
-          <TabsTrigger value="opentelemetry">OpenTelemetry SDK</TabsTrigger>
-          <TabsTrigger value="matrices">Signal Matrices</TabsTrigger>
-        </TabsList>
-
-        {/* TraceQL Tab */}
-        <TabsContent value="traceql" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>TraceQL - Trace Query Language</CardTitle>
-              </div>
-              <CardDescription>
-                Query and analyze distributed traces in Grafana Tempo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">What is TraceQL?</h3>
-                <p className="text-gray-600 mb-4">
-                  TraceQL is a query language designed for selecting traces in Grafana Tempo.
-                  It allows you to filter traces based on span attributes, duration, errors, and more.
-                </p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Basic Syntax</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Find all traces for a specific service</div>
-                    <div>{'{ .service.name = "auth-service" }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Find traces with errors</div>
-                    <div>{'{ status = error }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Find slow traces (duration {'>'} 1s)</div>
-                    <div>{'{ duration > 1s }'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Advanced Queries</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Combine multiple conditions</div>
-                    <div>{'{ .service.name = "api-gateway" && status = error && duration > 500ms }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Filter by resource attributes</div>
-                    <div>{'{ resource.deployment.environment = "production" && .http.status_code >= 500 }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Search for specific span names</div>
-                    <div>{'{ name = "database-query" && duration > 100ms }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Aggregate functions</div>
-                    <div>{'{ .service.name = "payment-service" } | rate() by (.http.method)'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Common Selectors</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">.service.name</code>
-                    <p className="text-sm text-gray-600 mt-1">Service name attribute</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">status</code>
-                    <p className="text-sm text-gray-600 mt-1">Span status (ok, error, unset)</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">duration</code>
-                    <p className="text-sm text-gray-600 mt-1">Span duration</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">.http.status_code</code>
-                    <p className="text-sm text-gray-600 mt-1">HTTP response status</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">name</code>
-                    <p className="text-sm text-gray-600 mt-1">Span name</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">resource.*</code>
-                    <p className="text-sm text-gray-600 mt-1">Resource-level attributes</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Pro Tips</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">&&</code> for AND conditions, <code className="bg-gray-100 px-2 py-1 rounded">||</code> for OR</li>
-                  <li>Duration units: <code className="bg-gray-100 px-2 py-1 rounded">ms</code>, <code className="bg-gray-100 px-2 py-1 rounded">s</code>, <code className="bg-gray-100 px-2 py-1 rounded">m</code>, <code className="bg-gray-100 px-2 py-1 rounded">h</code></li>
-                  <li>Use regex with <code className="bg-gray-100 px-2 py-1 rounded">=~</code> operator: <code className="bg-gray-100 px-2 py-1 rounded">{'{ .service.name =~ ".*-service" }'}</code></li>
-                  <li>Trace-level queries use <code className="bg-gray-100 px-2 py-1 rounded">{'{}'}</code>, span-level use <code className="bg-gray-100 px-2 py-1 rounded">span</code> selector</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* PromQL Tab */}
-        <TabsContent value="promql" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>PromQL - Prometheus Query Language</CardTitle>
-              </div>
-              <CardDescription>
-                Query and aggregate metrics in Prometheus and Grafana
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">What is PromQL?</h3>
-                <p className="text-gray-600 mb-4">
-                  PromQL is a functional query language that allows you to select, aggregate, and analyze
-                  time series data collected in Prometheus.
-                </p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Basic Queries</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Get current value of a metric</div>
-                    <div>http_requests_total</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Filter by labels</div>
-                    <div>{'http_requests_total{method="GET", status="200"}'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Rate of requests over 5 minutes</div>
-                    <div>rate(http_requests_total[5m])</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Aggregation Functions</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Sum requests across all services</div>
-                    <div>{'sum(rate(http_requests_total[5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Average CPU usage by service</div>
-                    <div>{'avg by (service) (cpu_usage_percent)'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// 95th percentile latency</div>
-                    <div>{'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Count of unique services</div>
-                    <div>{'count(count by (service) (up))'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Common Functions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">rate()</code>
-                    <p className="text-sm text-gray-600 mt-1">Per-second rate over time range</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">irate()</code>
-                    <p className="text-sm text-gray-600 mt-1">Instant rate (last 2 points)</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">increase()</code>
-                    <p className="text-sm text-gray-600 mt-1">Total increase over time range</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">sum()</code>
-                    <p className="text-sm text-gray-600 mt-1">Sum values across series</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">avg()</code>
-                    <p className="text-sm text-gray-600 mt-1">Average values across series</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">max()/min()</code>
-                    <p className="text-sm text-gray-600 mt-1">Maximum/minimum values</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Advanced Examples</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Error rate percentage</div>
-                    <div>{'100 * sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Top 5 services by request rate</div>
-                    <div>{'topk(5, sum by (service) (rate(http_requests_total[5m])))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Alert if service is down</div>
-                    <div>{'up{job="api-server"} == 0'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Pro Tips</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Always use <code className="bg-gray-100 px-2 py-1 rounded">rate()</code> with counters, never raw counter values</li>
-                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">by (label)</code> to preserve labels in aggregations</li>
-                  <li>Range selectors like <code className="bg-gray-100 px-2 py-1 rounded">[5m]</code> must be at least 2x scrape interval</li>
-                  <li>Regex matching: <code className="bg-gray-100 px-2 py-1 rounded">=~</code> for match, <code className="bg-gray-100 px-2 py-1 rounded">!~</code> for not match</li>
-                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">offset</code> to compare with past: <code className="bg-gray-100 px-2 py-1 rounded">metric offset 1h</code></li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* LogQL Tab */}
-        <TabsContent value="logql" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>LogQL - Log Query Language</CardTitle>
-              </div>
-              <CardDescription>
-                Query and analyze logs in Grafana Loki
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">What is LogQL?</h3>
-                <p className="text-gray-600 mb-4">
-                  LogQL is Grafana Loki's query language, inspired by PromQL. It allows you to query,
-                  filter, and aggregate log data using label selectors and line filters.
-                </p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Basic Syntax</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Get logs for a specific service</div>
-                    <div>{'{ service_name="auth-service" }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Filter logs containing "error"</div>
-                    <div>{'{ service_name="api" } |= "error"'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm">
-                    <div className="text-grafana-orange">// Exclude logs containing "debug"</div>
-                    <div>{'{ job="app" } != "debug"'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Log Stream Selectors</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Multiple label matchers</div>
-                    <div>{'{ service_name="api", environment="production", level="error" }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Regex matching</div>
-                    <div>{'{ service_name=~"api.*", level!~"debug|trace" }'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Using or operator (|)</div>
-                    <div>{'{ service_name="api" } | { service_name="gateway" }'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Line Filter Operators</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">|=</code>
-                    <p className="text-sm text-gray-600 mt-1">Line contains string (case-sensitive)</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">!=</code>
-                    <p className="text-sm text-gray-600 mt-1">Line does not contain string</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">|~</code>
-                    <p className="text-sm text-gray-600 mt-1">Line matches regex</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-blue">!~</code>
-                    <p className="text-sm text-gray-600 mt-1">Line does not match regex</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Parser Expressions</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Parse JSON logs</div>
-                    <div>{'{ service_name="api" } | json'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Parse specific JSON fields</div>
-                    <div>{'{ job="app" } | json level, message, user_id'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Parse logfmt format</div>
-                    <div>{'{ service_name="gateway" } | logfmt'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Parse with regex and extract labels</div>
-                    <div>{'{ job="nginx" } | regexp `(?P<ip>\\S+) - (?P<user>\\S+) \\[(?P<timestamp>[^]]+)\\]`'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Label Filter Expressions</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Filter after parsing</div>
-                    <div>{'{ job="app" } | json | level="error" and status_code >= 500'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Using comparison operators</div>
-                    <div>{'{ service_name="api" } | json | duration > 1000 and user_id != ""'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Aggregation Functions</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Count logs per second by service</div>
-                    <div>{'sum by (service_name) (rate({ job="app" }[5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Count error logs</div>
-                    <div>{'sum(count_over_time({ service_name="api" } |= "error" [5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Calculate bytes processed</div>
-                    <div>{'sum(bytes_over_time({ job="nginx" }[1h]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Average of extracted values</div>
-                    <div>{'avg_over_time({ job="api" } | json | unwrap duration [5m])'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Common Aggregation Functions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">rate()</code>
-                    <p className="text-sm text-gray-600 mt-1">Calculate per-second rate</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">count_over_time()</code>
-                    <p className="text-sm text-gray-600 mt-1">Count log lines</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">bytes_over_time()</code>
-                    <p className="text-sm text-gray-600 mt-1">Sum log bytes</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">sum()</code>
-                    <p className="text-sm text-gray-600 mt-1">Sum values across series</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">avg()</code>
-                    <p className="text-sm text-gray-600 mt-1">Average values</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <code className="font-semibold text-grafana-green">max()/min()</code>
-                    <p className="text-sm text-gray-600 mt-1">Maximum/minimum values</p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Advanced Examples</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Error rate by service</div>
-                    <div>{'sum by (service_name) (rate({ level="error" }[5m]))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Top 10 error messages</div>
-                    <div>{'topk(10, sum by (message) (count_over_time({ level="error" } | json [1h])))'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// 95th percentile response time</div>
-                    <div>{'quantile_over_time(0.95, { job="api" } | json | unwrap duration [5m])'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Logs per minute with formatting</div>
-                    <div>{'{ service_name="api" } | json | line_format "{{.timestamp}} [{{.level}}] {{.message}}"'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Unwrap for Metrics Extraction</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Extract and aggregate numeric values</div>
-                    <div>{'sum_over_time({ job="api" } | json | unwrap bytes_sent [5m])'}</div>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Convert duration labels to metrics</div>
-                    <div>{'avg_over_time({ service_name="payment" } | json | unwrap request_duration_ms [10m])'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Pro Tips</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Use label selectors first for efficient queries - they leverage Loki's index</li>
-                  <li>Chain filters for better performance: <code className="bg-gray-100 px-2 py-1 rounded">{'{ } |= "error" |= "timeout"'}</code></li>
-                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">| json</code> to parse structured logs and filter on fields</li>
-                  <li>Keep label cardinality low - use line filters for high-cardinality data</li>
-                  <li>Use <code className="bg-gray-100 px-2 py-1 rounded">unwrap</code> to extract metrics from logs for aggregation</li>
-                  <li>Combine with <code className="bg-gray-100 px-2 py-1 rounded">line_format</code> to customize log output</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Instrumentation Tab */}
-        <TabsContent value="instrumentation" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Code className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>Application Instrumentation</CardTitle>
-              </div>
-              <CardDescription>
-                Learn how to instrument your applications for observability
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">Why Instrument?</h3>
-                <p className="text-gray-600 mb-4">
-                  Instrumentation adds observability to your code by emitting logs, metrics, and traces.
-                  This data helps you understand system behavior, debug issues, and monitor performance.
-                </p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Python (FastAPI) Example</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <pre>{`from opentelemetry import trace
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from fastapi import FastAPI
-
-# Create tracer
-tracer = trace.get_tracer(__name__)
-
-app = FastAPI()
-
-# Auto-instrument FastAPI
-FastAPIInstrumentor.instrument_app(app)
-
-@app.get("/api/users/{user_id}")
-async def get_user(user_id: int):
-    # Create custom span
-    with tracer.start_as_current_span("fetch_user_from_db") as span:
-        span.set_attribute("user.id", user_id)
-        # Your database query here
-        user = await db.get_user(user_id)
-        span.set_attribute("user.email", user.email)
-        return user`}</pre>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Key Instrumentation Concepts</h3>
-                <div className="space-y-4">
-                  <div className="border-l-4 border-grafana-orange pl-4">
-                    <h4 className="font-semibold mb-1">Spans</h4>
-                    <p className="text-sm text-gray-600">
-                      Represent a unit of work. Add custom spans for important operations like database queries or external API calls.
+    <div className="flex flex-1 h-full bg-white">
+      <DocsSidebar currentSection={currentSection} currentSubsection={currentSubsection} />
+      <main className="flex-1 overflow-y-auto bg-white">
+        <div className="max-w-4xl mx-auto p-8 space-y-8 prose prose-slate max-w-none">
+          {/* Overview Section */}
+          <section id="overview" className="space-y-6">
+            <div>
+              <h1 id="overview-title" className="text-4xl font-bold mb-2">Observability & Correlation Engine Handbook</h1>
+              <p className="text-lg text-muted-foreground">
+                Comprehensive guide to our observability stack and practices
+              </p>
+            </div>
+
+            <div id="what-is">
+              <h2 id="what-is-correlation-station" className="text-2xl font-semibold mb-4">What is Correlation Station</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="mb-4">
+                    Correlation Station is our internal developer portal and observability hub that provides:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Centralized access to Grafana dashboards (Loki, Tempo, Prometheus, Pyroscope)</li>
+                    <li>Automated SECA (Service Engineering & Compliance Automation) error analysis</li>
+                    <li>Learning modules for onboarding engineers to observability tools</li>
+                    <li>Documentation and runbooks for troubleshooting production issues</li>
+                    <li>Real-time monitoring of the Correlation Engine service</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="problems">
+              <h2 id="problems-solving" className="text-2xl font-semibold mb-4">Problems we were solving</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Fragmented Observability</h3>
+                    <p className="text-muted-foreground">
+                      Multiple tools (DataDog, internal logs, Grafana) with no unified view. Engineers spent
+                      too much time context-switching between tools.
                     </p>
                   </div>
-                  <div className="border-l-4 border-grafana-blue pl-4">
-                    <h4 className="font-semibold mb-1">Attributes</h4>
-                    <p className="text-sm text-gray-600">
-                      Key-value pairs that add context to spans. Include user IDs, operation types, error messages, etc.
+                  <div>
+                    <h3 className="font-semibold mb-2">Manual SECA Analysis</h3>
+                    <p className="text-muted-foreground">
+                      Weekly SECA reviews required manual Excel parsing, Selenium scraping, and traceback
+                      extraction. This took hours per week.
                     </p>
                   </div>
-                  <div className="border-l-4 border-grafana-green pl-4">
-                    <h4 className="font-semibold mb-1">Context Propagation</h4>
-                    <p className="text-sm text-gray-600">
-                      Pass trace context between services using W3C Trace Context headers (traceparent, tracestate).
+                  <div>
+                    <h3 className="font-semibold mb-2">Limited Telemetry</h3>
+                    <p className="text-muted-foreground">
+                      Sense apps and MDSO lacked comprehensive OpenTelemetry instrumentation, making
+                      debugging distributed workflows difficult.
                     </p>
                   </div>
-                  <div className="border-l-4 border-grafana-yellow pl-4">
-                    <h4 className="font-semibold mb-1">Semantic Conventions</h4>
-                    <p className="text-sm text-gray-600">
-                      Use standard attribute names (http.method, db.system, etc.) for consistency across services.
+                  <div>
+                    <h3 className="font-semibold mb-2">Storage Constraints</h3>
+                    <p className="text-muted-foreground">
+                      META server storage limits required intelligent log reduction and enrichment before
+                      sending to Loki/Tempo.
                     </p>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
+            </div>
 
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Best Practices</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Use auto-instrumentation libraries when available (FastAPI, Flask, Express, etc.)</li>
-                  <li>Add custom spans for business-critical operations</li>
-                  <li>Include meaningful attributes (user_id, operation_type, error_code)</li>
-                  <li>Use structured logging with correlation IDs</li>
-                  <li>Don't add PII (passwords, SSNs) to span attributes</li>
-                  <li>Don't create too many spans (keep cardinality reasonable)</li>
-                  <li>Don't forget to handle errors and set span status</li>
-                </ul>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Common Patterns</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Error handling</div>
-                    <pre>{`try:
-    result = await risky_operation()
-except Exception as e:
-    span.set_status(Status(StatusCode.ERROR))
-    span.record_exception(e)
-    raise`}</pre>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange">// Adding events</div>
-                    <pre>{`span.add_event("user_authenticated", {
-    "user.id": user_id,
-    "auth.method": "oauth2"
-})`}</pre>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* OpenTelemetry SDK Tab */}
-        <TabsContent value="opentelemetry" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>OpenTelemetry SDK</CardTitle>
-              </div>
-              <CardDescription>
-                Configure and use the OpenTelemetry SDK in your applications
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">What is OpenTelemetry?</h3>
-                <p className="text-gray-600 mb-4">
-                  OpenTelemetry (OTel) is a vendor-neutral, open-source observability framework.
-                  It provides APIs, SDKs, and tools to instrument, generate, collect, and export telemetry data.
-                </p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Python SDK Setup</h3>
-                <div className="space-y-4">
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange"># Install packages</div>
-                    <pre>{`pip install opentelemetry-api \\
-    opentelemetry-sdk \\
-    opentelemetry-exporter-otlp-proto-grpc \\
-    opentelemetry-instrumentation-fastapi`}</pre>
-                  </div>
-
-                  <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    <div className="text-grafana-orange"># Configure exporter</div>
-                    <pre>{`from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-
-# Set up tracer provider
-trace.set_tracer_provider(TracerProvider())
-
-# Configure OTLP exporter
-otlp_exporter = OTLPSpanExporter(
-    endpoint="http://otel-gateway:4317",
-    insecure=True
-)
-
-# Add span processor
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(otlp_exporter)
-)`}</pre>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Environment Variables</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <pre>{`# OTLP Exporter Configuration
-OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-gateway:4318
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-
-# Service Configuration
-OTEL_SERVICE_NAME=my-service
-OTEL_SERVICE_VERSION=1.0.0
-
-# Resource Attributes
-OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.namespace=api
-
-# Sampling (1.0 = 100%)
-OTEL_TRACES_SAMPLER=parentbased_traceidratio
-OTEL_TRACES_SAMPLER_ARG=1.0`}</pre>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Exporters</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-grafana-orange mb-2">OTLP (Recommended)</h4>
-                    <p className="text-sm text-gray-600">
-                      OpenTelemetry Protocol - works with Tempo, Jaeger, and most backends
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-grafana-blue mb-2">Jaeger</h4>
-                    <p className="text-sm text-gray-600">
-                      Native Jaeger exporter for direct export to Jaeger
-                    </p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-grafana-green mb-2">Zipkin</h4>
-                    <p className="text-sm text-gray-600">
-                      Export to Zipkin-compatible backends
-                    </p>
-                  </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-grafana-yellow mb-2">Console</h4>
-                    <p className="text-sm text-gray-600">
-                      Debug exporter that prints to stdout
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">SDK Components</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-grafana-orange rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold">TracerProvider</h4>
-                      <p className="text-sm text-gray-600">Factory for creating tracers</p>
+            <div id="architecture-diagram">
+              <h2 id="architecture-diagram-title" className="text-2xl font-semibold mb-4">High-level architecture diagram</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="bg-muted rounded-lg p-8 text-center">
+                    <p className="text-muted-foreground mb-4">Architecture Diagram</p>
+                    <div className="space-y-4 text-sm">
+                      <div className="flex justify-center gap-8">
+                        <div className="bg-card p-4 rounded border">Sense Apps<br/>(ARDA, BEORN, PALANTIR)</div>
+                        <div className="bg-card p-4 rounded border">MDSO</div>
+                      </div>
+                      <div className="text-[#1B6AC7]">↓ OTEL Spans/Logs/Metrics</div>
+                      <div className="bg-card p-4 rounded border mx-auto w-fit">Grafana Alloy Agent</div>
+                      <div className="text-[#1B6AC7]">↓</div>
+                      <div className="bg-card p-4 rounded border mx-auto w-fit">OTEL Collector (META)</div>
+                      <div className="text-[#1B6AC7]">↓</div>
+                      <div className="bg-card p-4 rounded border mx-auto w-fit">Correlation Engine</div>
+                      <div className="text-[#1B6AC7]">↓</div>
+                      <div className="flex justify-center gap-4">
+                        <div className="bg-card p-4 rounded border">Loki</div>
+                        <div className="bg-card p-4 rounded border">Tempo</div>
+                        <div className="bg-card p-4 rounded border">Prometheus</div>
+                        <div className="bg-card p-4 rounded border">Pyroscope</div>
+                      </div>
+                      <div className="text-[#1B6AC7]">↓</div>
+                      <div className="bg-card p-4 rounded border mx-auto w-fit">Grafana Dashboards</div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-grafana-blue rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold">Tracer</h4>
-                      <p className="text-sm text-gray-600">Creates and manages spans</p>
-                    </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Architecture & Design Decisions */}
+          <section id="architecture" className="space-y-6">
+            <h1 id="architecture-design" className="text-3xl font-bold">Architecture & Design Decisions</h1>
+
+            <div id="why-grafana">
+              <h2 id="why-grafana-title" className="text-2xl font-semibold mb-4">Why Grafana (Loki/Tempo/Prometheus/Pyroscope)</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li><strong>Open Source:</strong> No vendor lock-in, full control over data</li>
+                    <li><strong>Unified Platform:</strong> Single UI for logs, traces, metrics, and profiles</li>
+                    <li><strong>Cost Effective:</strong> Self-hosted on META server, no per-GB pricing</li>
+                    <li><strong>Query Languages:</strong> LogQL, TraceQL, PromQL provide powerful querying</li>
+                    <li><strong>Community:</strong> Active development and large ecosystem</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="why-alloy">
+              <h2 id="why-alloy-title" className="text-2xl font-semibold mb-4">Why Grafana Alloy agent on MDSO</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p>
+                    MDSO runs in proprietary Solution Manager containers. We needed a low-invasiveness
+                    solution that could collect telemetry without modifying container images.
+                  </p>
+                  <p>
+                    <strong>Alloy agent</strong> runs on the host and tails log files, eliminating the need
+                    to hook into each container. This approach:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Requires no container modifications</li>
+                    <li>Works with existing log file outputs</li>
+                    <li>Can be deployed via systemd service</li>
+                    <li>Supports OTLP, Prometheus, and Loki protocols</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="constraints">
+              <h2 id="constraints-title" className="text-2xl font-semibold mb-4">Constraints of Solution Manager / proprietary containers</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Cannot modify container images</li>
+                    <li>Limited ability to inject sidecars</li>
+                    <li>Log files are written to host filesystem</li>
+                    <li>Network access to META server required</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="correlation-engine">
+              <h2 id="correlation-engine-title" className="text-2xl font-semibold mb-4">Why a Correlation Engine before data stores</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p>
+                    <strong>META storage limits</strong> require intelligent log reduction. The Correlation Engine:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Shrinks logs by removing redundant information</li>
+                    <li>Normalizes fields across different services</li>
+                    <li>Enriches with correlation IDs and metadata</li>
+                    <li>Compacts related events into single log entries</li>
+                    <li>Filters noise before sending to Loki/Tempo</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="redis-caching">
+              <h2 id="redis-caching-title" className="text-2xl font-semibold mb-4">Redis caching & backpressure handling</h2>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <p>
+                    The Correlation Engine uses Redis to cache <strong>partial traces</strong> until they
+                    are complete. This enables:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Correlating spans from multiple services</li>
+                    <li>Handling backpressure when data stores are slow</li>
+                    <li>Preventing queue buildup in the engine</li>
+                    <li>TTL-based expiration of stale traces (48 hours)</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="horizontal-scaling">
+              <h2 id="horizontal-scaling-title" className="text-2xl font-semibold mb-4">Horizontal scaling with multiple correlation engine instances + gateway</h2>
+              <Card>
+                <CardContent className="pt-6">
+                  <p>
+                    Multiple Correlation Engine instances can run behind a gateway. The gateway:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Load balances OTLP traffic</li>
+                    <li>Routes to available engine instances</li>
+                    <li>Handles health checks and failover</li>
+                    <li>Shares Redis cache across instances</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Query Reference - Keep existing content but reorganize */}
+          <section id="query-reference" className="space-y-6">
+            <h1 id="query-reference-title" className="text-3xl font-bold">Query Reference</h1>
+
+            <div id="traceql">
+              <h2 id="traceql-examples" className="text-2xl font-semibold mb-4">TraceQL Examples</h2>
+              <Card>
+                <CardHeader>
+                  <CardTitle>TraceQL - Trace Query Language</CardTitle>
+                  <CardDescription>Query and analyze distributed traces in Grafana Tempo</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Basic Syntax</h3>
+                    <CodeBlock language="traceql" code={`// Find all traces for a specific service
+{ .service.name = "auth-service" }
+
+// Find traces with errors
+{ status = error }
+
+// Find slow traces (duration > 1s)
+{ duration > 1s }`} />
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-grafana-green rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold">SpanProcessor</h4>
-                      <p className="text-sm text-gray-600">Processes spans before export (batching, sampling)</p>
-                    </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Advanced Queries</h3>
+                    <CodeBlock language="traceql" code={`// Combine multiple conditions
+{ .service.name = "api-gateway" && status = error && duration > 500ms }
+
+// Filter by resource attributes
+{ resource.deployment.environment = "production" && .http.status_code >= 500 }
+
+// Search for specific span names
+{ name = "database-query" && duration > 100ms }`} />
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-grafana-yellow rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold">Exporter</h4>
-                      <p className="text-sm text-gray-600">Sends telemetry data to backends</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-grafana-purple rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold">Resource</h4>
-                      <p className="text-sm text-gray-600">Service identity and metadata</p>
-                    </div>
-                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="logql">
+              <h2 id="logql-examples" className="text-2xl font-semibold mb-4">LogQL Examples</h2>
+              <Card>
+                <CardHeader>
+                  <CardTitle>LogQL - Log Query Language</CardTitle>
+                  <CardDescription>Query logs in Grafana Loki</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <CodeBlock language="logql" code={`// Simple log stream selector
+{service="arda"} |= "error"
+
+// Filter by log level
+{service="beorn"} | json | level="ERROR"
+
+// Extract fields and aggregate
+{service="palantir"} | json | sum(count_over_time({service="palantir"}[5m])) by (circuit_id)
+
+// Rate queries
+rate({service="correlation-engine"}[5m])`} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div id="promql">
+              <h2 id="promql-examples" className="text-2xl font-semibold mb-4">PromQL Examples</h2>
+              <Card>
+                <CardHeader>
+                  <CardTitle>PromQL - Prometheus Query Language</CardTitle>
+                  <CardDescription>Query metrics in Prometheus</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <CodeBlock language="promql" code={`// Simple metric query
+http_requests_total{service="arda"}
+
+// Rate calculation
+rate(http_requests_total[5m])
+
+// Aggregation
+sum(rate(http_requests_total[5m])) by (service)
+
+// Percentiles
+histogram_quantile(0.95, http_request_duration_seconds_bucket)`} />
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Add more sections as needed - keeping it concise for now */}
+          <section id="faq" className="space-y-6">
+            <h1 id="faq-glossary" className="text-3xl font-bold">FAQ & Glossary</h1>
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <div>
+                  <h3 id="what-is-span" className="font-semibold mb-2">What is a span?</h3>
+                  <p className="text-muted-foreground">
+                    A span represents a single operation within a trace. It has a start time, duration,
+                    and attributes.
+                  </p>
                 </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Pro Tips</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Use environment variables for configuration to avoid hardcoding endpoints</li>
-                  <li>Always use BatchSpanProcessor in production for better performance</li>
-                  <li>Set meaningful resource attributes (service.name, deployment.environment)</li>
-                  <li>Configure sampling to reduce costs in high-volume environments</li>
-                  <li>Test with Console exporter during development</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Signal Matrices Tab */}
-        <TabsContent value="matrices" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-grafana-orange" />
-                <CardTitle>Container & Signal Matrices</CardTitle>
-              </div>
-              <CardDescription>
-                MDSO container instrumentation and signal design patterns
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">MDSO Container Instrumentation Matrix</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse border border-gray-300">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Container</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Signals</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Collection Method</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Attributes</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Rationale</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-700">
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">bpocore</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/bpocore/*.log</code>, prometheus scrape <code>:9090</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code>resource_id</code>, <code>product_id</code>, <code>circuit_id</code>, <code>tenant</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Core orchestration engine</td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">scriptplan-*</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Traces</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/scriptplan/*.log</code>, OTel SDK</td>
-                        <td className="border border-gray-300 px-3 py-2"><code>resource_id</code>, <code>circuit_id</code>, <code>plan_name</code>, <code>state</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Workflow execution tracking</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">ra-*</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/ra/*.log</code>, prometheus scrape</td>
-                        <td className="border border-gray-300 px-3 py-2"><code>device_fqdn</code>, <code>vendor</code>, <code>resource_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Resource adapter operations</td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">tracelogs</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail <code>/bp2/log/tracelogs/*.log</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code>orchestration_trace</code>, <code>resource_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Orchestration state tracking</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">prometheus</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: remote_write endpoint</td>
-                        <td className="border border-gray-300 px-3 py-2">All MDSO metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Existing metrics aggregation</td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">api-gateway</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, prometheus scrape</td>
-                        <td className="border border-gray-300 px-3 py-2"><code>api_endpoint</code>, <code>method</code>, <code>status_code</code></td>
-                        <td className="border border-gray-300 px-3 py-2">API interaction tracking</td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">kafka</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, JMX metrics</td>
-                        <td className="border border-gray-300 px-3 py-2"><code>topic</code>, <code>partition</code>, <code>offset</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Event streaming tracking</td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2"><code className="bg-gray-100 px-1 rounded">postgres</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Logs, Metrics</td>
-                        <td className="border border-gray-300 px-3 py-2">Alloy: file tail, pg_exporter</td>
-                        <td className="border border-gray-300 px-3 py-2"><code>query_time</code>, <code>table</code>, <code>operation</code></td>
-                        <td className="border border-gray-300 px-3 py-2">Database performance</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div>
+                  <h3 id="what-is-trace" className="font-semibold mb-2">What is a trace?</h3>
+                  <p className="text-muted-foreground">
+                    A trace is a collection of spans that represent a request as it flows through
+                    multiple services.
+                  </p>
                 </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Signal Design Matrix</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse border border-gray-300">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Communication Path</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Spans</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Logs</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Metrics</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Baggage</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Events</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-700">
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2 font-semibold">Sense → MDSO</td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div className="space-y-1">
-                            <div><strong>Name:</strong> <code className="text-xs">sense.mdso.api.call</code></div>
-                            <div><strong>Attrs:</strong> <code className="text-xs">service.name, http.method, http.url, circuit_id, resource_id</code></div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><strong>Fields:</strong> <code className="text-xs">timestamp, level, message, circuit_id, trace_id, span_id</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div className="space-y-1">
-                            <div><code className="text-xs">sense_mdso_api_duration_ms</code></div>
-                            <div><strong>Labels:</strong> <code className="text-xs">source, target, endpoint</code></div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id, product_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">api_call_start, api_call_complete</code></td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2 font-semibold">MDSO → Sense</td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div className="space-y-1">
-                            <div><strong>Name:</strong> <code className="text-xs">mdso.sense.callback</code></div>
-                            <div><strong>Attrs:</strong> <code className="text-xs">callback_url, resource_id, status</code></div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><strong>Fields:</strong> <code className="text-xs">timestamp, callback_type, payload_size</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><code className="text-xs">mdso_callback_duration_ms</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">callback_initiated, callback_delivered</code></td>
-                      </tr>
-                      <tr>
-                        <td className="border border-gray-300 px-3 py-2 font-semibold">MDSO Internal</td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div className="space-y-1">
-                            <div><strong>Name:</strong> <code className="text-xs">mdso.scriptplan.execute</code></div>
-                            <div><strong>Attrs:</strong> <code className="text-xs">plan_name, resource_id, state</code></div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><strong>Fields:</strong> <code className="text-xs">orchestration_trace, elapsed_time</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><code className="text-xs">scriptplan_execution_time_ms</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id, resource_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">plan_start, state_change, plan_complete</code></td>
-                      </tr>
-                      <tr className="bg-gray-50">
-                        <td className="border border-gray-300 px-3 py-2 font-semibold">Sense → Sense</td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div className="space-y-1">
-                            <div><strong>Name:</strong> <code className="text-xs">sense.internal.call</code></div>
-                            <div><strong>Attrs:</strong> <code className="text-xs">source.service, target.service</code></div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><strong>Fields:</strong> <code className="text-xs">correlation_id, operation</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2">
-                          <div><code className="text-xs">sense_internal_call_duration_ms</code></div>
-                        </td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">circuit_id</code></td>
-                        <td className="border border-gray-300 px-3 py-2"><code className="text-xs">internal_call_start, internal_call_end</code></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Key Observations</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li><strong>Correlation Keys:</strong> <code className="bg-gray-100 px-1 rounded">circuit_id</code> and <code className="bg-gray-100 px-1 rounded">resource_id</code> are propagated via baggage across all services</li>
-                  <li><strong>Span Naming:</strong> Use hierarchical naming: <code className="bg-gray-100 px-1 rounded">system.subsystem.operation</code></li>
-                  <li><strong>Log Enrichment:</strong> All logs include <code className="bg-gray-100 px-1 rounded">trace_id</code> and <code className="bg-gray-100 px-1 rounded">span_id</code> for correlation</li>
-                  <li><strong>Metrics Cardinality:</strong> Keep metric labels low-cardinality (source, target, endpoint only)</li>
-                  <li><strong>Events:</strong> Use span events for point-in-time occurrences within operations</li>
-                  <li><strong>Baggage Propagation:</strong> Critical identifiers flow through distributed traces automatically</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+      </main>
+      <TableOfContents contentSelector="main" />
     </div>
   )
 }
+

@@ -4,8 +4,9 @@ import HomePage from './pages/HomePage'
 import DocumentationPage from './pages/DocumentationPage'
 import ArchitecturePage from './pages/ArchitecturePage'
 import SecaReviewsPage from './pages/SecaReviewsPage'
-import TutorialsPageNew from './pages/TutorialsPageNew'
+import NetDev101Page from './pages/NetDev101Page'
 import SecaUploadPage from './pages/SecaUploadPage'
+import CorrelationEnginePage from './pages/CorrelationEnginePage'
 
 function App() {
   return (
@@ -15,9 +16,10 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="docs" element={<DocumentationPage />} />
           <Route path="architecture" element={<ArchitecturePage />} />
-          <Route path="seca-reviews" element={<SecaReviewsPage />} />
-          <Route path="tutorials" element={<TutorialsPageNew />} />
+          <Route path="seca-review" element={<SecaReviewsPage />} />
           <Route path="seca-upload" element={<SecaUploadPage />} />
+          <Route path="netdev101" element={<NetDev101Page />} />
+          <Route path="correlation-engine" element={<CorrelationEnginePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

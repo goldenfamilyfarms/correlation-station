@@ -1,439 +1,462 @@
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { Server, Database, Activity, Layers, GitBranch, Zap } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Database, 
+  Activity, 
+  Network, 
+  Zap, 
+  ExternalLink
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+
+interface Service {
+  name: string
+  category: 'Orchestration' | 'Web App' | 'Gateway' | 'Observability' | 'Control Plane'
+  description: string
+  responsibilities: string[]
+  integrations: string[]
+  observability: string
+  repo?: string
+  api?: string
+  dashboard?: string
+}
+
+const services: Service[] = [
+  {
+    name: 'MDSO',
+    category: 'Orchestration',
+    description: 'Multi-Domain Service Orchestrator - Manages product lifecycle and service provisioning',
+    responsibilities: ['Product lifecycle management', 'Service orchestration', 'Compliance validation'],
+    integrations: ['Sense apps', 'IP Control', 'Kong', 'Granite'],
+    observability: 'OTEL spans via Alloy agent, logs tailed from host filesystem',
+    dashboard: 'http://159.56.4.94:3000',
+  },
+  {
+    name: 'Sense',
+    category: 'Orchestration',
+    description: 'Service Engineering Automation - ARDA, BEORN, PALANTIR microservices',
+    responsibilities: ['Circuit design (ARDA)', 'Eligibility checks (BEORN)', 'Device provisioning (PALANTIR)'],
+    integrations: ['MDSO', 'IP Control', 'Kong', 'Granite', 'TACACS', 'SNMP'],
+    observability: 'OTEL SDK instrumentation, traces/logs/metrics exported to Correlation Engine',
+    repo: 'https://gitlab.com/service-engineering-automation/sense',
+  },
+  {
+    name: 'IP Control',
+    category: 'Control Plane',
+    description: 'IP Address Management (IPAM) system',
+    responsibilities: ['IP allocation', 'Subnet management', 'DNS record management'],
+    integrations: ['Sense apps', 'MDSO'],
+    observability: 'API call tracing via Sense apps',
+  },
+  {
+    name: 'Kong',
+    category: 'Gateway',
+    description: 'API Gateway for authentication and routing',
+    responsibilities: ['API authentication', 'Request routing', 'Rate limiting'],
+    integrations: ['All services'],
+    observability: 'Access logs, metrics exported to Prometheus',
+  },
+  {
+    name: 'Expo',
+    category: 'Web App',
+    description: 'Order capture and management system',
+    responsibilities: ['Order entry', 'Customer portal', 'Order tracking'],
+    integrations: ['Kong', 'MDSO'],
+    observability: 'Application logs, API metrics',
+  },
+  {
+    name: 'Moonshot',
+    category: 'Web App',
+    description: 'Strategic application for service management',
+    responsibilities: ['Service management', 'Customer portal'],
+    integrations: ['Kong', 'MDSO', 'Sense'],
+    observability: 'Application logs, API traces',
+  },
+  {
+    name: 'Titan',
+    category: 'Web App',
+    description: 'Strategic application for network operations',
+    responsibilities: ['Network operations', 'Service management'],
+    integrations: ['Kong', 'MDSO'],
+    observability: 'Application logs, API traces',
+  },
+  {
+    name: 'Temple',
+    category: 'Web App',
+    description: 'Strategic application for service delivery',
+    responsibilities: ['Service delivery', 'Customer management'],
+    integrations: ['Kong', 'MDSO'],
+    observability: 'Application logs, API traces',
+  },
+  {
+    name: 'Galaxy',
+    category: 'Web App',
+    description: 'Strategic application for service catalog',
+    responsibilities: ['Service catalog', 'Product management'],
+    integrations: ['Kong', 'MDSO'],
+    observability: 'Application logs, API traces',
+  },
+  {
+    name: 'Correlation Engine',
+    category: 'Observability',
+    description: 'Custom service that correlates, enriches, and compacts telemetry before data stores',
+    responsibilities: ['Log correlation', 'Trace enrichment', 'Data compaction', 'Backpressure handling'],
+    integrations: ['OTEL Collector', 'Redis', 'Loki', 'Tempo', 'Prometheus'],
+    observability: 'Self-monitoring via Prometheus metrics, logs in Loki',
+    dashboard: 'http://159.56.4.94:3000',
+  },
+  {
+    name: 'Grafana Stack',
+    category: 'Observability',
+    description: 'LGTM stack: Loki, Grafana, Tempo, Mimir/Prometheus, Pyroscope',
+    responsibilities: ['Log storage (Loki)', 'Trace storage (Tempo)', 'Metrics (Prometheus)', 'Profiling (Pyroscope)'],
+    integrations: ['Correlation Engine', 'OTEL Collector'],
+    observability: 'Self-monitoring dashboards',
+    dashboard: 'http://159.56.4.94:3000',
+  },
+]
+
+const systemMapNodes = [
+  { id: 'mdso', name: 'MDSO', x: 50, y: 20, category: 'Orchestration' },
+  { id: 'sense', name: 'Sense', x: 50, y: 40, category: 'Orchestration' },
+  { id: 'ip-control', name: 'IP Control', x: 20, y: 40, category: 'Control Plane' },
+  { id: 'kong', name: 'Kong', x: 80, y: 40, category: 'Gateway' },
+  { id: 'expo', name: 'Expo', x: 10, y: 60, category: 'Web App' },
+  { id: 'moonshot', name: 'Moonshot', x: 30, y: 60, category: 'Web App' },
+  { id: 'titan', name: 'Titan', x: 50, y: 60, category: 'Web App' },
+  { id: 'temple', name: 'Temple', x: 70, y: 60, category: 'Web App' },
+  { id: 'galaxy', name: 'Galaxy', x: 90, y: 60, category: 'Web App' },
+  { id: 'correlation-engine', name: 'Correlation Engine', x: 50, y: 80, category: 'Observability' },
+  { id: 'grafana-stack', name: 'Grafana Stack', x: 50, y: 100, category: 'Observability' },
+]
+
+const lifecycleSteps = [
+  { step: 1, name: 'Order Capture', systems: ['Expo', 'Galaxy', 'Moonshot', 'Titan', 'Temple'] },
+  { step: 2, name: 'Kong API Gateway', systems: ['Kong'] },
+  { step: 3, name: 'Orchestration', systems: ['MDSO', 'Sense'] },
+  { step: 4, name: 'Network Provisioning', systems: ['IP Control'] },
+  { step: 5, name: 'Compliance & Validation', systems: ['MDSO', 'Sense'] },
+  { step: 6, name: 'Monitoring & Feedback', systems: ['Correlation Engine', 'Grafana Stack'] },
+]
 
 export default function ArchitecturePage() {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Orchestration':
+        return 'bg-primary/20 text-primary border-primary'
+      case 'Web App':
+        return 'bg-accent/20 text-accent border-accent'
+      case 'Gateway':
+        return 'bg-[#1B6AC7]/20 text-[#1B6AC7] border-[#1B6AC7]'
+      case 'Observability':
+        return 'bg-green-500/20 text-green-500 border-green-500'
+      case 'Control Plane':
+        return 'bg-purple-500/20 text-purple-500 border-purple-500'
+      default:
+        return 'bg-muted text-muted-foreground border-border'
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-1 flex-col gap-6">
+      {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">System Architecture</h1>
-        <p className="text-lg text-gray-600">
-          Comprehensive overview of our distributed observability platform
+        <h1 className="text-3xl font-bold mb-2">SEFA Architecture</h1>
+        <p className="text-muted-foreground">
+          How our automation platforms, web apps, and observability stack fit together
         </p>
       </div>
 
-      {/* High-Level Architecture */}
+      {/* System Map */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-grafana-orange" />
-            <CardTitle>High-Level Architecture</CardTitle>
-          </div>
-          <CardDescription>
-            Our observability stack follows the LGTM pattern (Loki, Grafana, Tempo, Mimir/Prometheus)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
-            <pre className="text-sm overflow-x-auto">
-{`
-┌───────────────────────────────────────────────────────────────────────┐
-│                         Application Layer                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                 │
-│  │   Service A  │  │   Service B  │  │   Service C  │                 │
-│  │  (FastAPI)   │  │   (FastAPI)  │  │   (FastAPI)  │                 │
-│  └──────┬───────┘  └───────┬──────┘  └────────┬─────┘                 │
-│         │ OTLP             │ OTLP             │ OTLP                  │
-└─────────┼──────────────────┼──────────────────┼───────────────────────┘
-          │                  │                  │
-          └──────────────────┼──────────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  OTel Gateway   │ ← Receives all telemetry
-                    │   (Collector)   │
-                    └────────┬────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          │                  │                  │
-          ▼                  ▼                  ▼
-  ┌───────────────┐  ┌──────────────┐  ┌─────────────┐
-  │  Grafana Loki │  │ Grafana Tempo│  │ Prometheus  │
-  │    (Logs)     │  │   (Traces)   │  │  (Metrics)  │
-  └───────┬───────┘  └───────┬──────┘  └────────┬────┘
-          │                  │                  │
-          └──────────────────┼──────────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │     Grafana     │ ← Visualization & Queries
-                    │       UI        │
-                    └─────────────────┘`}
-            </pre>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-grafana-orange mb-2 flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Correlation Engine
-              </h4>
-              <p className="text-sm text-gray-600">
-                Custom service that correlates logs and traces by trace_id within 60-second windows.
-                Enriches data and exports to multiple backends.
-              </p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-grafana-blue mb-2 flex items-center gap-2">
-                <Server className="h-4 w-4" />
-                OTel Gateway
-              </h4>
-              <p className="text-sm text-gray-600">
-                Central collector for all OpenTelemetry data. Handles protocol conversion,
-                batching, and routing to appropriate backends.
-              </p>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-grafana-green mb-2 flex items-center gap-2">
-                <Database className="h-4 w-4" />
-                Storage Backends
-              </h4>
-              <p className="text-sm text-gray-600">
-                Loki for logs, Tempo for traces, Prometheus for metrics. Each optimized for
-                their respective data types with low-cardinality designs.
-              </p>
-            </div>
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-grafana-yellow mb-2 flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Grafana UI
-              </h4>
-              <p className="text-sm text-gray-600">
-                Unified interface for querying and visualizing all telemetry data.
-                Supports TraceQL, LogQL, and PromQL queries.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Service Details */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Server className="h-5 w-5 text-grafana-orange" />
-            <CardTitle>Service Components</CardTitle>
-          </div>
-          <CardDescription>
-            Detailed breakdown of each service in our observability stack
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Grafana */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-grafana-orange/10 rounded-lg flex items-center justify-center">
-                <Activity className="h-5 w-5 text-grafana-orange" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Grafana 10.2.0</h3>
-                <p className="text-sm text-gray-500">Visualization & Dashboards</p>
-              </div>
-            </div>
-            <div className="ml-13 space-y-2 text-sm text-gray-600">
-              <p><strong>Port:</strong> 8443</p>
-              <p><strong>Purpose:</strong> Unified UI for querying logs, traces, and metrics</p>
-              <p><strong>Features:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>Pre-configured dashboards for correlation analysis</li>
-                <li>Trace-to-logs navigation with automatic correlation</li>
-                <li>TraceQL, LogQL, and PromQL query editors</li>
-                <li>Alert management and notification channels</li>
-              </ul>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Loki */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-grafana-green/10 rounded-lg flex items-center justify-center">
-                <Database className="h-5 w-5 text-grafana-green" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Loki 2.9.2</h3>
-                <p className="text-sm text-gray-500">Log Aggregation System</p>
-              </div>
-            </div>
-            <div className="ml-13 space-y-2 text-sm text-gray-600">
-              <p><strong>Port:</strong> 3100</p>
-              <p><strong>Purpose:</strong> Horizontally scalable log aggregation inspired by Prometheus</p>
-              <p><strong>Design:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>Only 3 labels: service, level, trace_id (low-cardinality)</li>
-                <li>Stores log content as compressed chunks</li>
-                <li>Index-free for cost efficiency</li>
-                <li>15-day retention policy</li>
-              </ul>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Tempo */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-grafana-blue/10 rounded-lg flex items-center justify-center">
-                <GitBranch className="h-5 w-5 text-grafana-blue" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Tempo 2.3.0</h3>
-                <p className="text-sm text-gray-500">Distributed Tracing Backend</p>
-              </div>
-            </div>
-            <div className="ml-13 space-y-2 text-sm text-gray-600">
-              <p><strong>Port:</strong> 3200 (HTTP), 4317 (OTLP gRPC), 4318 (OTLP HTTP)</p>
-              <p><strong>Purpose:</strong> Cost-effective distributed tracing storage</p>
-              <p><strong>Features:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>Native OTLP ingestion (gRPC and HTTP)</li>
-                <li>TraceQL support for advanced queries</li>
-                <li>Service graph generation</li>
-                <li>Integration with Loki for trace-to-logs correlation</li>
-              </ul>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Prometheus */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-grafana-red/10 rounded-lg flex items-center justify-center">
-                <Zap className="h-5 w-5 text-grafana-red" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Prometheus 2.48.0</h3>
-                <p className="text-sm text-gray-500">Metrics & Monitoring</p>
-              </div>
-            </div>
-            <div className="ml-13 space-y-2 text-sm text-gray-600">
-              <p><strong>Port:</strong> 9090</p>
-              <p><strong>Purpose:</strong> Time-series metrics storage and querying</p>
-              <p><strong>Configuration:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>15-day retention period</li>
-                <li>Scrapes correlation engine /metrics endpoint</li>
-                <li>Tracks request rates, latencies, error rates</li>
-                <li>PromQL for queries and alerting</li>
-              </ul>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Pyroscope */}
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-grafana-purple/10 rounded-lg flex items-center justify-center">
-                <Activity className="h-5 w-5 text-grafana-purple" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Pyroscope (Latest)</h3>
-                <p className="text-sm text-gray-500">Continuous Profiling</p>
-              </div>
-            </div>
-            <div className="ml-13 space-y-2 text-sm text-gray-600">
-              <p><strong>Port:</strong> 4040</p>
-              <p><strong>Purpose:</strong> Performance profiling and optimization</p>
-              <p><strong>Capabilities:</strong></p>
-              <ul className="list-disc list-inside ml-4">
-                <li>CPU profiling for identifying bottlenecks</li>
-                <li>Memory profiling for leak detection</li>
-                <li>Flame graphs for visualization</li>
-                <li>Tag-based filtering by service and environment</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Flow */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <GitBranch className="h-5 w-5 text-grafana-orange" />
-            <CardTitle>Telemetry Data Flow</CardTitle>
-          </div>
-          <CardDescription>
-            How observability data flows through the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-orange rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                1
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Instrumentation</h4>
-                <p className="text-sm text-gray-600">
-                  Applications use OpenTelemetry SDKs to generate logs, traces, and metrics.
-                  Auto-instrumentation libraries capture HTTP requests, database queries, and more.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-blue rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                2
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Export via OTLP</h4>
-                <p className="text-sm text-gray-600">
-                  Telemetry data is exported using the OpenTelemetry Protocol (OTLP) over gRPC or HTTP.
-                  All services send data to a single endpoint: the OTel Gateway.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-green rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                3
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Gateway Processing</h4>
-                <p className="text-sm text-gray-600">
-                  The OTel Collector receives OTLP data, batches it, and routes to appropriate backends.
-                  It can also filter, transform, and sample data before export.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-yellow rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                4
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Correlation Engine</h4>
-                <p className="text-sm text-gray-600">
-                  A custom service correlates logs and traces by trace_id within 60-second windows.
-                  It enriches data with correlation metadata and exports to Loki/Tempo.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-red rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                5
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Storage</h4>
-                <p className="text-sm text-gray-600">
-                  Data is stored in specialized backends: Loki (logs), Tempo (traces), Prometheus (metrics).
-                  Each backend is optimized for its data type with retention policies.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 bg-grafana-purple rounded-full flex items-center justify-center flex-shrink-0 font-bold text-white">
-                6
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Visualization</h4>
-                <p className="text-sm text-gray-600">
-                  Grafana queries all backends using their respective query languages (LogQL, TraceQL, PromQL).
-                  Pre-built dashboards provide instant visibility into system behavior.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Design Principles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Design Principles</CardTitle>
-          <CardDescription>
-            Key architectural decisions and their rationale
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border-l-4 border-grafana-orange pl-4">
-              <h4 className="font-semibold mb-1">Low Cardinality</h4>
-              <p className="text-sm text-gray-600">
-                Limited label sets (only 3 in Loki) prevent metric explosion and keep costs low
-                while maintaining queryability.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-grafana-blue pl-4">
-              <h4 className="font-semibold mb-1">Vendor Neutrality</h4>
-              <p className="text-sm text-gray-600">
-                OpenTelemetry standard ensures no vendor lock-in. Can switch backends without
-                changing instrumentation.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-grafana-green pl-4">
-              <h4 className="font-semibold mb-1">Correlation-First</h4>
-              <p className="text-sm text-gray-600">
-                trace_id links logs and traces automatically. Navigate from trace spans to related
-                logs seamlessly.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-grafana-yellow pl-4">
-              <h4 className="font-semibold mb-1">Horizontal Scalability</h4>
-              <p className="text-sm text-gray-600">
-                All components can scale horizontally. Add more collectors, storage nodes, or
-                query frontends as needed.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-grafana-red pl-4">
-              <h4 className="font-semibold mb-1">Cost Efficiency</h4>
-              <p className="text-sm text-gray-600">
-                Open-source stack, efficient storage formats, and smart retention policies keep
-                costs predictable and low.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-grafana-purple pl-4">
-              <h4 className="font-semibold mb-1">Developer Experience</h4>
-              <p className="text-sm text-gray-600">
-                Auto-instrumentation libraries, comprehensive docs, and intuitive UIs make
-                observability accessible to all engineers.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Network Diagram */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Network Configuration</CardTitle>
-          <CardDescription>
-            Docker network topology and port mappings
-          </CardDescription>
+          <CardTitle>System Map</CardTitle>
+          <CardDescription>Interactive diagram of all systems and their relationships</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-            <div className="space-y-2 text-sm font-mono">
-              <p><strong>Network:</strong> observability (bridge) - 172.20.0.0/23</p>
-              <Separator className="my-2" />
-              <p><strong>Exposed Ports:</strong></p>
-              <ul className="ml-4 space-y-1">
-                <li>• 8443 → Grafana UI</li>
-                <li>• 3100 → Loki API</li>
-                <li>• 9000 → Tempo HTTP API</li>
-                <li>• 9090 → Prometheus UI</li>
-                <li>• 4040 → Pyroscope UI</li>
-                <li>• 8080 → Correlation Engine API</li>
-                <li>• 55681 → OTel Gateway OTLP HTTP</li>
-                <li>• 8888 → OTel Gateway Metrics</li>
-                <li>• 3000 → Correlation Station UI</li>
-              </ul>
-              <Separator className="my-2" />
-              <p><strong>Internal Only:</strong></p>
-              <ul className="ml-4 space-y-1">
-                <li>• 4317 → OTel Gateway OTLP gRPC (internal)</li>
-                <li>• 4318 → Tempo OTLP HTTP (internal)</li>
-              </ul>
+          <div className="relative bg-muted rounded-lg p-8 min-h-[400px]">
+            <svg className="w-full h-full absolute inset-0" viewBox="0 0 100 100" preserveAspectRatio="none">
+              {/* Draw connections */}
+              {systemMapNodes.map((node) => {
+                if (node.id === 'correlation-engine' || node.id === 'grafana-stack') return null
+                return (
+                  <line
+                    key={`line-${node.id}`}
+                    x1={node.x}
+                    y1={node.y}
+                    x2={50}
+                    y2={80}
+                    stroke="currentColor"
+                    strokeWidth="0.5"
+                    className="text-muted-foreground opacity-30"
+                  />
+                )
+              })}
+            </svg>
+            <div className="relative grid grid-cols-5 gap-4">
+              {systemMapNodes.map((node) => {
+                const service = services.find((s) => s.name.toLowerCase().replace(/\s+/g, '-') === node.id)
+                return (
+                  <TooltipProvider key={node.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                            hoveredNode === node.id
+                              ? 'scale-105 shadow-lg'
+                              : 'hover:scale-102'
+                          } ${getCategoryColor(node.category)}`}
+                          onMouseEnter={() => setHoveredNode(node.id)}
+                          onMouseLeave={() => setHoveredNode(null)}
+                          onClick={() => {
+                            const svc = services.find((s) => s.name.toLowerCase().replace(/\s+/g, '-') === node.id)
+                            if (svc) {
+                              setSelectedService(svc)
+                              document.getElementById('service-catalog')?.scrollIntoView({ behavior: 'smooth' })
+                            }
+                          }}
+                        >
+                          <div className="font-semibold text-sm">{node.name}</div>
+                          <div className="text-xs mt-1 opacity-70">{node.category}</div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="max-w-xs">
+                          <p className="font-semibold">{node.name}</p>
+                          {service && <p className="text-xs mt-1">{service.description}</p>}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 h-6 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const svc = services.find((s) => s.name.toLowerCase().replace(/\s+/g, '-') === node.id)
+                              if (svc) setSelectedService(svc)
+                            }}
+                          >
+                            View details
+                          </Button>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )
+              })}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Service Catalog */}
+      <div id="service-catalog">
+        <h2 className="text-2xl font-semibold mb-4">Service Catalog</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {services.map((service) => (
+            <Card
+              key={service.name}
+              className={`cursor-pointer transition-all hover:shadow-lg ${
+                selectedService?.name === service.name ? 'ring-2 ring-primary' : ''
+              }`}
+              onClick={() => setSelectedService(service)}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{service.name}</CardTitle>
+                    <Badge className={`mt-2 ${getCategoryColor(service.category)}`}>
+                      {service.category}
+                    </Badge>
+                  </div>
+                </div>
+                <CardDescription className="mt-2">{service.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <div className="text-sm font-semibold mb-1">Primary Responsibilities</div>
+                  <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                    {service.responsibilities.map((resp, idx) => (
+                      <li key={idx}>{resp}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold mb-1">Integrations</div>
+                  <div className="flex flex-wrap gap-1">
+                    {service.integrations.map((int, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {int}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold mb-1">Observability Hooks</div>
+                  <p className="text-xs text-muted-foreground">{service.observability}</p>
+                </div>
+                <div className="flex gap-2 pt-2 border-t">
+                  {service.dashboard && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      asChild
+                    >
+                      <a href={service.dashboard} target="_blank" rel="noopener noreferrer">
+                        Dashboard <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    </Button>
+                  )}
+                  {service.repo && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      asChild
+                    >
+                      <a href={service.repo} target="_blank" rel="noopener noreferrer">
+                        Repo <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Product Lifecycle Flow */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Product Lifecycle Flow</CardTitle>
+          <CardDescription>How a product/order moves through the system</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {lifecycleSteps.map((step, idx) => (
+              <div key={step.step} className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                  {step.step}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold mb-2">{step.name}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {step.systems.map((system) => (
+                      <Badge key={system} variant="outline">
+                        {system}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                {idx < lifecycleSteps.length - 1 && (
+                  <div className="absolute left-4 top-12 w-0.5 h-8 bg-primary/30" />
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Observability Touchpoints */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Observability Touchpoints</CardTitle>
+          <CardDescription>How telemetry flows through the observability stack</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Alloy Agents
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Run on MDSO host, tail log files, export OTLP
+                </p>
+              </div>
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  OTEL Emitters
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Sense apps instrumented with OTel SDK
+                </p>
+              </div>
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Network className="h-4 w-4" />
+                  Correlation Engine
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Correlates, enriches, compacts telemetry
+                </p>
+              </div>
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="font-semibold mb-2 flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Data Stores
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Loki, Tempo, Prometheus, Pyroscope
+                </p>
+              </div>
+            </div>
+            <div className="pt-4 border-t">
+              <Button variant="outline" asChild>
+                <a href="/docs#observability-touchpoints">View detailed documentation</a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Strategic Applications */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Strategic Applications</CardTitle>
+          <CardDescription>Moonshot, Titan, Temple, Galaxy - Key web applications</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {['Moonshot', 'Titan', 'Temple', 'Galaxy'].map((app) => {
+              const service = services.find((s) => s.name === app)
+              return (
+                <Card key={app} className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{app}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">{service?.description}</p>
+                    <div>
+                      <div className="text-sm font-semibold mb-2">Where it sits:</div>
+                      <p className="text-xs text-muted-foreground">
+                        Web application layer, integrates with Kong API Gateway and MDSO for service
+                        orchestration. Emits application logs and API traces to the observability stack.
+                      </p>
+                    </div>
+                    <div className="mt-3">
+                      <div className="text-sm font-semibold mb-2">Observability Integration:</div>
+                      <p className="text-xs text-muted-foreground">
+                        Application logs collected via Alloy agent or direct OTLP export. API traces
+                        captured through Kong gateway instrumentation. Metrics available in Prometheus.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
