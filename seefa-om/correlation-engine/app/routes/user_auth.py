@@ -167,6 +167,23 @@ async def login_user(request: UserLoginRequest):
         )
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_current_user():
+    """
+    Get current authenticated user profile
+    
+    Blueprint Feature 5: GET /api/me endpoint
+    TODO: Implement proper auth middleware to extract user from token
+    For now, returns a test user or requires user_id in query param
+    """
+    # TODO: Extract user from JWT token or session
+    # For now, this is a placeholder - should be protected by auth middleware
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="Auth middleware not yet implemented. Use /api/auth/user/{user_id} instead."
+    )
+
+
 @router.get("/user/{user_id}", response_model=UserResponse)
 async def get_user(user_id: str):
     """
