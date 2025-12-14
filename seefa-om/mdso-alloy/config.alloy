@@ -196,7 +196,136 @@ otelcol.receiver.loki "default" {
   }
 }
 
-// Export to Meta server OTel Gateway
+// ========================================
+// OTLP Receiver for Traces (from instrumentation.py)
+// Mode 1: Direct OTLP (when containers can reach Alloy)
+// ========================================
+
+// Receive OTLP traces from MDSO instrumentation (direct connection)
+otelcol.receiver.otlp "traces_direct" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  
+  output {
+    traces = [otelcol.processor.batch.traces_direct.input]
+  }
+}
+
+// Batch processor for direct OTLP traces
+otelcol.processor.batch "traces_direct" {
+  timeout             = "10s"
+  send_batch_size     = 512
+  send_batch_max_size = 1024
+  
+  output {
+    traces = [otelcol.exporter.otlphttp.meta_traces.input]
+  }
+}
+
+// ========================================
+// File-based Trace Receiver (for isolated containers)
+// Mode 2: File tailing (when containers are isolated)
+// 
+// Note: Alloy's filelog receiver outputs logs, not traces.
+// We'll tail the trace files and forward them as structured logs
+// that include trace context. The OTel Gateway can then process
+// these as trace-aware logs or convert them to traces.
+// ========================================
+
+// Discover trace log files from isolated containers
+local.file_match "trace_files" {
+  path_targets = [
+    {"__path__" = "/opt/ciena/bp2/alloy-collector/traces.ndjson"},
+  ]
+}
+
+// Tail trace log files written by isolated containers
+loki.source.file "traces_file" {
+  targets    = local.file_match.trace_files.targets
+  forward_to = [loki.process.parse_traces.receiver]
+}
+
+// Parse trace JSON and extract fields for correlation
+loki.process "parse_traces" {
+  forward_to = [otelcol.receiver.loki.traces.receiver]
+
+  // Parse JSON from each line (NDJSON format)
+  stage.json {
+    expressions = {
+      timestamp        = "timestamp",
+      trace_id         = "trace_id",
+      span_id          = "span_id",
+      name             = "name",
+      kind             = "kind",
+      start_time       = "start_time",
+      end_time         = "end_time",
+      duration_ns      = "duration_ns",
+      status_code      = "status.code",
+      status_message   = "status.message",
+      // Extract attributes (will be flattened)
+      attributes       = "attributes",
+      resource         = "resource",
+      events           = "events",
+    }
+  }
+
+  // Add trace context as labels (for filtering/correlation)
+  stage.labels {
+    values = {
+      service = "mdso-scriptplan",
+      env     = "dev",
+      // Note: trace_id and span_id are too high-cardinality for labels
+      // They'll be in structured metadata instead
+    }
+  }
+
+  // Add trace data as structured metadata (for OTLP conversion)
+  stage.structured_metadata {
+    values = {
+      trace_id       = "",
+      span_id        = "",
+      span_name      = "",
+      span_kind      = "",
+      status_code    = "",
+      status_message = "",
+      // Attributes and resource will be in the JSON body
+    }
+  }
+}
+
+// Convert trace logs to OTLP format
+otelcol.receiver.loki "traces" {
+  output {
+    logs = [otelcol.exporter.otlphttp.meta_traces_logs.input]
+  }
+}
+
+// Export trace logs to Meta server (as logs with trace context)
+// The gateway can process these as trace-aware logs
+otelcol.exporter.otlphttp "meta_traces_logs" {
+  client {
+    endpoint = "http://159.56.4.94:55681"
+    timeout  = "30s"
+  }
+}
+
+// Export traces to Meta server OTel Gateway
+otelcol.exporter.otlphttp "meta_traces" {
+  client {
+    endpoint = "http://159.56.4.94:55681"  // Base URL - Alloy appends /v1/traces automatically
+    timeout  = "30s"
+  }
+}
+
+// ========================================
+// Log Export (existing)
+// ========================================
+
+// Export logs to Meta server OTel Gateway
 otelcol.exporter.otlphttp "meta" {
   client {
     endpoint = "http://159.56.4.94:55681"

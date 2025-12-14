@@ -1,0 +1,125 @@
+"""
+Documentation API endpoints
+Blueprint Feature 5: Backend + Database for Correlation Station
+"""
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from typing import List, Optional
+import aiosqlite
+import structlog
+
+logger = structlog.get_logger()
+
+router = APIRouter(prefix="/api/docs", tags=["docs"])
+
+# ===== MODELS =====
+
+class DocPage(BaseModel):
+    id: str
+    slug: str
+    title: str
+    section: Optional[str]
+    content_md: str
+    display_order: int
+    created_at: str
+    updated_at: str
+
+
+# ===== DEPENDENCIES =====
+
+async def get_db():
+    """Get database connection"""
+    from app.database import DATABASE_PATH
+    db = await aiosqlite.connect(DATABASE_PATH)
+    db.row_factory = aiosqlite.Row
+    try:
+        yield db
+    finally:
+        await db.close()
+
+
+# ===== ENDPOINTS =====
+
+@router.get("/{slug}", response_model=DocPage)
+async def get_doc_page(
+    slug: str,
+    db: aiosqlite.Connection = Depends(get_db)
+):
+    """
+    Get a documentation page by slug
+    
+    Returns documentation content in Markdown format
+    """
+    try:
+        async with db.execute(
+            "SELECT * FROM docs_pages WHERE slug = ?",
+            (slug,)
+        ) as cursor:
+            row = await cursor.fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Documentation page '{slug}' not found")
+
+        page = DocPage(
+            id=row["id"],
+            slug=row["slug"],
+            title=row["title"],
+            section=row["section"],
+            content_md=row["content_md"],
+            display_order=row["display_order"],
+            created_at=row["created_at"],
+            updated_at=row["updated_at"]
+        )
+
+        logger.info("Fetched docs page", slug=slug)
+        return page
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching docs page", slug=slug, error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to fetch documentation page")
+
+
+@router.get("/", response_model=List[DocPage])
+async def list_docs_pages(
+    section: Optional[str] = None,
+    db: aiosqlite.Connection = Depends(get_db)
+):
+    """
+    List all documentation pages
+    
+    Optional filter by section
+    """
+    try:
+        if section:
+            query = "SELECT * FROM docs_pages WHERE section = ? ORDER BY display_order ASC"
+            params = (section,)
+        else:
+            query = "SELECT * FROM docs_pages ORDER BY display_order ASC"
+            params = ()
+
+        async with db.execute(query, params) as cursor:
+            rows = await cursor.fetchall()
+
+        pages = [
+            DocPage(
+                id=row["id"],
+                slug=row["slug"],
+                title=row["title"],
+                section=row["section"],
+                content_md=row["content_md"],
+                display_order=row["display_order"],
+                created_at=row["created_at"],
+                updated_at=row["updated_at"]
+            )
+            for row in rows
+        ]
+
+        logger.info("Fetched docs pages", count=len(pages), section=section)
+        return pages
+
+    except Exception as e:
+        logger.error("Error fetching docs pages", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to fetch documentation pages")
+

@@ -51,6 +51,9 @@ services:
       # RA Access logs
       - /opt/ciena/bp2/raccess_6.1.1_0/log:/opt/ciena/bp2/raccess_6.1.1_0/log:ro
 
+      # Trace log directory (for isolated containers that write traces to file)
+      - /opt/ciena/bp2/alloy-collector:/opt/ciena/bp2/alloy-collector:ro
+
     command:
       - run
       - /etc/alloy/config.alloy
