@@ -1,5 +1,7 @@
 """Unit tests for OTel Mixin"""
 import pytest
+import os
+import tempfile
 from unittest.mock import Mock, patch, MagicMock
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -35,11 +37,23 @@ class TestOTelMixin:
     """Test suite for OTel Mixin"""
 
     def setup_method(self):
-        """Setup test tracer provider"""
+        """Setup test tracer provider and temp directory for trace logs"""
+        # Create a temporary directory for trace logs
+        self.temp_dir = tempfile.mkdtemp()
+        os.environ['OTEL_TRACE_LOG_DIR'] = self.temp_dir
+        
         provider = TracerProvider()
         processor = SimpleSpanProcessor(ConsoleSpanExporter())
         provider.add_span_processor(processor)
         trace.set_tracer_provider(provider)
+    
+    def teardown_method(self):
+        """Clean up temporary directory"""
+        if hasattr(self, 'temp_dir') and os.path.exists(self.temp_dir):
+            import shutil
+            shutil.rmtree(self.temp_dir)
+        # Remove environment variable
+        os.environ.pop('OTEL_TRACE_LOG_DIR', None)
 
     def test_init_otel(self):
         """Test OTel initialization"""

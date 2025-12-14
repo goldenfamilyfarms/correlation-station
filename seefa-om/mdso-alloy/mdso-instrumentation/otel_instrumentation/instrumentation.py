@@ -270,32 +270,7 @@ def setup_otel(
         )
         export_info = f"otlp:{endpoint}"
 
-    # Create resource with service metadata
-    resource = Resource.create({
-        "service.name": service_name,
-        "service.version": version,
-        "deployment.environment": environment,
-        "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.language": "python",
-        "telemetry.sdk.version": "1.20.0",
-    })
-
-    # Create tracer provider
-    provider = TracerProvider(resource=resource)
-
-    # Configure OTLP exporter
-    otlp_exporter = OTLPSpanExporter(
-        endpoint=f"{endpoint}/v1/traces",
-        timeout=30,
-    )
-
-    # Add batch span processor
-    processor = BatchSpanProcessor(
-        otlp_exporter,
-        max_queue_size=2048,
-        max_export_batch_size=512,
-        schedule_delay_millis=5000,
-    )
+    # Add processor to provider
     provider.add_span_processor(processor)
 
     # Set global tracer provider
@@ -303,7 +278,7 @@ def setup_otel(
 
     logger.info(f"OTel initialized: service={service_name}, export={export_info}, env={environment}")
 
-    return trace.get_tracer(__name__, version=version)
+    return trace.get_tracer(__name__)
 
 
 def get_otel_logger(service_name: str = "mdso-scriptplan") -> structlog.BoundLogger:
