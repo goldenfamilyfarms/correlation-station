@@ -17,6 +17,7 @@ Usage:
 """
 import logging
 import os
+import time
 from typing import Optional, List, Union
 
 from opentelemetry import trace, metrics, baggage, context
@@ -118,6 +119,15 @@ def setup_observability(
         metric_export_interval_ms=metric_export_interval_ms,
     )
 
+    # ===== METRICS INITIALIZATION =====
+    # Initialize RED metrics if metrics are enabled
+    if enable_metrics and meter_provider:
+        try:
+            from .metrics import initialize_metrics
+            initialize_metrics(metrics.get_meter(__name__))
+        except Exception as e:
+            logging.warning(f"Failed to initialize RED metrics: {e}")
+
     # ===== AUTO-INSTRUMENTATION =====
     # Framework-specific instrumentation
     if app_framework == "flask":
@@ -199,6 +209,9 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
     @app.before_request
     def inject_correlation_keys():
         """Extract correlation keys from request and inject into trace context"""
+        # Record request start time for duration metrics
+        g.start_time = time.perf_counter_ns()
+        
         # Extract from headers (case-insensitive)
         extracted_keys = {}
         for key in baggage_keys:
@@ -251,11 +264,31 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
 
     @app.after_request
     def inject_trace_id_header(response):
-        """Inject trace ID into response headers for debugging"""
+        """Inject trace ID into response headers and record RED metrics"""
         span = trace.get_current_span()
         if span and span.is_recording():
             trace_id = format(span.get_span_context().trace_id, '032x')
             response.headers["X-Trace-Id"] = trace_id
+        
+        # Record RED metrics
+        try:
+            from .metrics import record_http_request
+            if hasattr(g, 'start_time'):
+                duration_ms = (time.perf_counter_ns() - g.start_time) / 1_000_000  # Convert to ms
+            else:
+                duration_ms = 0.0
+            
+            # Get route template (normalized)
+            route = request.endpoint or _normalize_route(request.path)
+            record_http_request(
+                method=request.method,
+                route=route,
+                status_code=response.status_code,
+                duration_ms=duration_ms,
+            )
+        except Exception as e:
+            logging.debug(f"Failed to record HTTP metrics: {e}")
+        
         return response
 
     logging.info(f"Flask app instrumented: {service_name}")
