@@ -12,7 +12,9 @@ from arda_app.common import app_config
 from arda_app.common.http_auth import verify_password
 from arda_app.common.regres_testing import regression_testing_check
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from common_sense.common.errors import abort
 from arda_app.api._routers import v3_isp_router
 

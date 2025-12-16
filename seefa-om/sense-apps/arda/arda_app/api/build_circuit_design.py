@@ -6,7 +6,9 @@ from arda_app.common.http_auth import verify_password
 from arda_app.data.mock_circuits.mc_build_circuit_design import bcd_test_case_response
 from arda_app.common.build_circuit_design_template import build_circuit_design_main
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 from arda_app.api._routers import v1_design_router
 

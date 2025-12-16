@@ -8,7 +8,9 @@ from arda_app.bll.net_new.ip_reclamation import delete_ip_subnet_block_by_cid, g
 from common_sense.common.errors import abort
 from arda_app.common.http_auth import verify_password
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from arda_app.dll.ipc import create_subnet_block
 from ._routers import v1_tools_router
 

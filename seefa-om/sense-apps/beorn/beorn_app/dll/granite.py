@@ -8,7 +8,9 @@ from common_sense.common.errors import abort
 from beorn_app.common.endpoints import GRANITE_ELEMENTS, GRANITE_PATHS, GRANITE_UDA
 from beorn_app.dll.hydra import get_headers
 from sense_common.observability import get_tracer, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 LOGGER = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

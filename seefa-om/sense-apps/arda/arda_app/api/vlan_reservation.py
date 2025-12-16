@@ -9,7 +9,9 @@ from arda_app.bll.net_new.vlan_reservation.vlan_reservation_main import vlan_res
 from arda_app.common.http_auth import verify_password
 from arda_app.data.mock_circuits.mc_vlan_reservation import vr_test_case_responses
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from arda_app.api._routers import v1_design_new_router
 from common_sense.common.errors import abort
 

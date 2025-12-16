@@ -7,7 +7,9 @@ import json
 from arda_app.common import url_config, endpoints
 from arda_app.dll.utils import get_hydra_headers
 from sense_common.observability import get_tracer, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from common_sense.common.errors import abort
 
 logger = logging.getLogger(__name__)

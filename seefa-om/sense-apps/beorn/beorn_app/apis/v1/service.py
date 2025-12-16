@@ -14,7 +14,9 @@ from beorn_app.common.mdso_operations import (
     service_id_lookup,
 )
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 api = Namespace("v1/service", description="Create, delete, update, and check status of a service")
 

@@ -7,7 +7,9 @@ from beorn_app.bll.cpe import activate_cpe, cpe_activation_state
 from common_sense.common.errors import abort
 from beorn_app.common.http_auth import auth
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 api = Namespace("v3/cpe", description="CRUD operations for a CPE")
 tracer = get_tracer(__name__)

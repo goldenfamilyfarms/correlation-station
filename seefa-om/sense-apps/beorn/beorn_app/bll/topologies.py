@@ -25,6 +25,7 @@ from common_sense.common.network_devices import VOICE_GATEWAY_MODELS
 
 # Import OTEL utilities for topology instrumentation
 from sense_common.observability import (
+from opentelemetry.trace import Status, StatusCode
     get_tracer,
     set_mdso_correlation,
     add_span_event,
@@ -32,6 +33,7 @@ from sense_common.observability import (
     add_topology_span_attrs,
 )
 from sense_common.observability.mdso_patterns import MDSOPatterns, ErrorCategorizer, extract_vendor_from_beorn_node
+from opentelemetry.trace import Status, StatusCode
 from opentelemetry import trace, baggage, context
 
 try:

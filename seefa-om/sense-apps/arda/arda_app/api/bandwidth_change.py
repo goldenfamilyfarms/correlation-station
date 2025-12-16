@@ -5,7 +5,9 @@ from arda_app.bll.circuit_design.bandwidth_change.bw_change_main import bandwidt
 from arda_app.bll.models.payloads import BandwidthChangePayloadModel
 from arda_app.common.http_auth import verify_password
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from arda_app.api._routers import v1_design_mac_router
 
 logger = logging.getLogger(__name__)

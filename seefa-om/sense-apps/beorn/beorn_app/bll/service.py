@@ -28,6 +28,7 @@ from common_sense.common.errors import (
     get_standard_error_summary,
 )
 from sense_common.observability import (
+from opentelemetry.trace import Status, StatusCode
     traced,
     get_tracer,
     set_mdso_correlation,
@@ -36,6 +37,7 @@ from sense_common.observability import (
     add_topology_span_attrs,
 )
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)
