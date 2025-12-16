@@ -13,6 +13,7 @@ from palantir_app.bll.isin import is_tid_in_isin
 from sense_common.observability import get_tracer, add_span_event, set_span_error
 from sense_common.observability.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
+from opentelemetry.trace import Status, StatusCode
 
 
 api: Namespace = Namespace("v3/ise", description="Locate ISE records for network devices")
@@ -111,12 +112,14 @@ class IDLookup(Resource):
                 span.set_attribute("ise.ids_count", len(ise_ids) if ise_ids else 0)
                 span.set_attribute("ise.results_count", len(results) if results else 0)
                 add_span_event("ise.id_lookup.complete", ids_count=len(ise_ids) if ise_ids else 0)
+                span.set_status(Status(StatusCode.OK))
                 return {"results": results, "ids": ise_ids}
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "ISE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 
@@ -149,12 +152,14 @@ class Device(Resource):
                 span.set_attribute("ise.onboard.success", success)
                 add_span_event("ise.onboard.complete", tid=tid, success=success)
                 status_code = 200 if success else 400
+                span.set_status(Status(StatusCode.OK if success else StatusCode.ERROR))
                 return result, status_code
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "ISE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
     @api.response(200, "OK", ok_request)
@@ -173,12 +178,14 @@ class Device(Resource):
                 add_span_event("ise.get_record.start", ise_id=ise_id)
                 result = get_ise_record_by_id_cluster(ise_id)
                 add_span_event("ise.get_record.complete", ise_id=ise_id)
+                span.set_status(Status(StatusCode.OK))
                 return result, 200
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "ISE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
     @api.response(200, "OK")
@@ -220,10 +227,12 @@ class Isin(Resource):
                 isin = is_tid_in_isin(ip, tid)
                 span.set_attribute("ise.isin.found", isin)
                 add_span_event("ise.isin_check.complete", found=isin)
+                span.set_status(Status(StatusCode.OK))
                 return ("Found in ISE", 200) if isin else ("Not Found Remediation Started", 201)
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "ISE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise

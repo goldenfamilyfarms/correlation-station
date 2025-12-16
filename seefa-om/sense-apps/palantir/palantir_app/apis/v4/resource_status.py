@@ -9,6 +9,7 @@ from common_sense.common.errors import abort
 from palantir_app.common.regres_testing import mock_resource_status_response
 from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
 from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 
 api = Namespace("v4/resourcestatus", description="Status of MDSO resources")
@@ -123,10 +124,12 @@ class ResourceStatus(Resource):
                             span.set_attribute("mdso.circuit_id", label)
                 
                 add_span_event("resource_status.query.complete", resource_id=resource_id, status=result.get("status", "unknown"))
+                span.set_status(Status(StatusCode.OK))
                 return result
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise

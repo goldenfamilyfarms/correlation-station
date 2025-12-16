@@ -222,6 +222,7 @@ class ProvisioningComplianceStatus(Resource):
                     compliance_stages.set_pass_through_status()
                     span.set_attribute("compliance.pass_through", True)
                     add_span_event("compliance.provisioning.pass_through", circuit_id=cid)
+                    span.set_status(Status(StatusCode.OK))
                     return compliance_stages.status, 200
 
                 span.set_attribute("compliance.pass_through", False)
@@ -241,14 +242,16 @@ class ProvisioningComplianceStatus(Resource):
                 if isinstance(compliance_stages.status, dict):
                     compliant = compliance_stages.status.get(COMPLIANT, False)
                     span.set_attribute("compliance.compliant", compliant)
-                
+
                 add_span_event("compliance.provisioning.status.check.complete", circuit_id=cid)
+                span.set_status(Status(StatusCode.OK))
                 return compliance_stages.status, 200
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 
