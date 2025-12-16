@@ -9,22 +9,39 @@ Versions:
 """
 import re
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the initial updation of the
     Network Service bandwidth.  The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process(self):
-        self.operation = self.properties["operation"]
-        self.circuit_id = self.properties["circuit_id"]
-        self.circuit_res_id = self.properties["circuit_details_resource_id"]
-        circuit_details = self.get_resource(self.circuit_res_id)
-        self.logger.info("circuit_details: {}".format(circuit_details))
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for bandwidth update
+        with self.create_root_span(operation_name="bandwidth_update"):
+            self.operation = self.properties["operation"]
+            self.circuit_id = self.properties["circuit_id"]
+            self.circuit_res_id = self.properties["circuit_details_resource_id"]
+            circuit_details = self.get_resource(self.circuit_res_id)
+            self.logger.info("circuit_details: {}".format(circuit_details))
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.extract_and_set_topology_context(circuit_details["properties"])
+                bandwidth_value = self.properties.get("bandwidthValue", "N/A")
+                self.record_span_event_from_instance("bandwidth.update.started", {
+                    "circuit_id": self.circuit_id,
+                    "bandwidth_value": bandwidth_value,
+                    "operation": self.operation
+                })
 
         pe_list = []
         agg_list = []
@@ -73,47 +90,57 @@ class Activate(CommonPlan):
                     )
                     self.exit_error(msg)
 
-        if self.operation != "SERVICE_MAPPER":
-            for pe in pe_list:
+            if self.operation != "SERVICE_MAPPER":
+                for pe in pe_list:
+                    try:
+                        with self.timed_operation("bandwidth.update_pe", {"pe": pe["Host Name"], "vendor": pe.get("Vendor", "unknown")}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                            self.update_pe_bw(circuit_details, pe)
+                            if getattr(self, '_otel_initialized', False):
+                                self.record_span_event_from_instance("bandwidth.pe_updated", {"pe": pe["Host Name"]})
+                    except Exception as ex:
+                        self.logger.info(str(ex))
+                        msg = "Error while trying to update bw on Pe device %s" % pe["Host Name"]
+                        if getattr(self, '_otel_initialized', False):
+                            self.otel_error_handler(msg, ex)
+                        self.categorized_error = (
+                            self.ERROR_CATEGORY["MDSO"].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
+                        )
+                        self.exit_error(msg)
+
+        self.logger.info("cpe_list contains: {}".format(cpe_list))
+
+            for cpe in cpe_list:
                 try:
-                    self.update_pe_bw(circuit_details, pe)
+                    context = cpe["Role"]
+                    node_vendor = cpe["Vendor"]
+                    device_role = cpe["Role"]
+                    node_model = cpe["Model"]
+
+                    # check if we need to skip applying policer to particular device role
+                    self.logger.debug("Checking update BW skip policer:")
+                    self.logger.debug(
+                        "context:{}|node_vendor:{}|device_role:{}|node_model:{}".format(
+                            context, node_vendor, device_role, node_model
+                        )
+                    )
+                    if self.is_skip_bw_policer(context, node_vendor, device_role, node_model):
+                        self.logger.debug(
+                            "skip update vendor {}, role {}, model {}".format(node_vendor, device_role, node_model)
+                        )
+                        continue
+                    with self.timed_operation("bandwidth.update_cpe", {"cpe": cpe["Host Name"], "vendor": node_vendor}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                        self.update_cpe_bw(circuit_details, cpe)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("bandwidth.cpe_updated", {"cpe": cpe["Host Name"]})
                 except Exception as ex:
                     self.logger.info(str(ex))
-                    msg = "Error while trying to update bw on Pe device %s" % pe["Host Name"]
+                    msg = "Error while trying to update bw on Cpe device %s" % cpe["Host Name"]
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(msg, ex)
                     self.categorized_error = (
                         self.ERROR_CATEGORY["MDSO"].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
                     )
                     self.exit_error(msg)
-
-        self.logger.info("cpe_list contains: {}".format(cpe_list))
-
-        for cpe in cpe_list:
-            try:
-                context = cpe["Role"]
-                node_vendor = cpe["Vendor"]
-                device_role = cpe["Role"]
-                node_model = cpe["Model"]
-
-                # check if we need to skip applying policer to particular device role
-                self.logger.debug("Checking update BW skip policer:")
-                self.logger.debug(
-                    "context:{}|node_vendor:{}|device_role:{}|node_model:{}".format(
-                        context, node_vendor, device_role, node_model
-                    )
-                )
-                if self.is_skip_bw_policer(context, node_vendor, device_role, node_model):
-                    self.logger.debug(
-                        "skip update vendor {}, role {}, model {}".format(node_vendor, device_role, node_model)
-                    )
-                    continue
-                self.update_cpe_bw(circuit_details, cpe)
-            except Exception as ex:
-                self.logger.info(str(ex))
-                msg = "Error while trying to update bw on Cpe device %s" % cpe["Host Name"]
-                self.categorized_error = (
-                    self.ERROR_CATEGORY["MDSO"].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
-                )
-                self.exit_error(msg)
 
     def update_pe_bw(self, circuit_details, pe):
         """

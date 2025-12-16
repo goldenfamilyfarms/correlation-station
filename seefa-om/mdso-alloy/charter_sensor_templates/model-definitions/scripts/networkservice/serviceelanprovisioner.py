@@ -9,15 +9,17 @@ Versions:
 """
 
 import sys
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from copy import deepcopy
 
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
 from scripts.networkservice.peprovisioner import PeProvisioner
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CompleteAndTerminatePlan, PeProvisioner):
+class Activate(CompleteAndTerminatePlan, PeProvisioner, OTelMixin):
     CUSTOMER_NAME_TO_VPLS_SUB_STRING = "[^0-9a-zA-Z_-]"
 
     """
@@ -25,20 +27,33 @@ class Activate(CompleteAndTerminatePlan, PeProvisioner):
     """
 
     def process(self):
-        operation = self.properties.get("operation", self.ACTIVATE_OPERATION_STRING)
-        circuit_details_id = self.properties["circuit_details_id"]
-        context = self.properties["context"]
-        stage = self.properties["stage"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for ELAN service provisioning
+        with self.create_root_span(operation_name="elan_service_provisioner"):
+            operation = self.properties.get("operation", self.ACTIVATE_OPERATION_STRING)
+            circuit_details_id = self.properties["circuit_details_id"]
+            context = self.properties["context"]
+            stage = self.properties["stage"]
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
 
-        if not stage == "PRODUCTION":
-            return
+            if not stage == "PRODUCTION":
+                return
 
-        # Get the circuit details and network service
-        self.circuit_details = self.get_resource(circuit_details_id)
-        # return without doing anything if service is not ELAN
-        if not self.circuit_details["properties"]["serviceType"] == "ELAN" or context != "PE":
-            self.logger.warning("ELAN Service provisioner called for a service it should not have been.")
-            return
+            # Get the circuit details and network service
+            self.circuit_details = self.get_resource(circuit_details_id)
+            
+            # Extract and set topology context
+            if getattr(self, '_otel_initialized', False):
+                self.extract_and_set_topology_context(self.circuit_details["properties"])
+            
+            # return without doing anything if service is not ELAN
+            if not self.circuit_details["properties"]["serviceType"] == "ELAN" or context != "PE":
+                self.logger.warning("ELAN Service provisioner called for a service it should not have been.")
+                return
 
         pe = self.get_pe_details()
         if not pe:
@@ -64,15 +79,22 @@ class Activate(CompleteAndTerminatePlan, PeProvisioner):
         self.logger.info("elan_object: %s" % elan_object)
         self.logger.info("elan_plugin_product: %s" % elan_plugin_product)
 
-        if operation == self.ACTIVATE_OPERATION_STRING:
-            self.do_activate(pe, nf_resource, elan_object, elan_plugin_product)
-            self.update_devices_prop_value([pe["Host Name"]], circuit_details_id, "Provisioned", "True")
-        elif operation == self.UPDATE_OPERATION_STRING:
-            self.do_update(pe, elan_object, elan_plugin_product)
-        elif operation == self.TERMINATE_OPERATION_STRING:
-            self.do_terminate(pe, nf_resource, self.circuit_details, elan_object, elan_plugin_product)
-        else:
-            self.exit_error("Invalid command received " + operation)
+            if operation == self.ACTIVATE_OPERATION_STRING:
+                with self.timed_operation("elan.activate", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_activate(pe, nf_resource, elan_object, elan_plugin_product)
+                    self.update_devices_prop_value([pe["Host Name"]], circuit_details_id, "Provisioned", "True")
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("elan.activated", {"pe": pe["Host Name"]})
+            elif operation == self.UPDATE_OPERATION_STRING:
+                with self.timed_operation("elan.update", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_update(pe, elan_object, elan_plugin_product)
+            elif operation == self.TERMINATE_OPERATION_STRING:
+                with self.timed_operation("elan.terminate", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_terminate(pe, nf_resource, self.circuit_details, elan_object, elan_plugin_product)
+            else:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Invalid command received: {operation}")
+                self.exit_error("Invalid command received " + operation)
 
     def do_activate(self, pe, nf_resource, elan_object, elan_plugin_product):
         """Process activate of the PE resources"""

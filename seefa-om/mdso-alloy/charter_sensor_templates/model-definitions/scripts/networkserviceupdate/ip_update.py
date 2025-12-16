@@ -10,30 +10,43 @@ Versions:
 
 import time
 import sys
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the initial updation of the
     Network Service IP. The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process(self):
-        self.circuit_id = self.properties["circuit_id"]
-        self.circuit_res_id = self.properties["circuit_details_resource_id"]
-        # self.changes = self.get_circuit_changes(self.circuit_id)
-        circuit_details = self.get_resource(self.circuit_res_id)
-        evc = circuit_details["properties"]["service"][0]["data"]["evc"][0]
-        svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
-        service_type = circuit_details["properties"]["serviceType"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for IP update
+        with self.create_root_span(operation_name="ip_update"):
+            self.circuit_id = self.properties["circuit_id"]
+            self.circuit_res_id = self.properties["circuit_details_resource_id"]
+            # self.changes = self.get_circuit_changes(self.circuit_id)
+            circuit_details = self.get_resource(self.circuit_res_id)
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.extract_and_set_topology_context(circuit_details["properties"])
+                self.record_span_event_from_instance("ip.update.started", {"circuit_id": self.circuit_id})
+            
+            evc = circuit_details["properties"]["service"][0]["data"]["evc"][0]
+            svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
+            service_type = circuit_details["properties"]["serviceType"]
 
-        if not service_type == "FIA":
-            return {}
-        else:
-            try:
+            if not service_type == "FIA":
+                return {}
+            else:
+                try:
                 pe_list = []
                 spoke_list = self.create_device_dict_from_circuit_details(circuit_details)
 
@@ -42,13 +55,14 @@ class Activate(CommonPlan):
                         if values["Role"].upper() == "PE":
                             pe_list.append(values)
 
-                for pe in pe_list:
-                    pe_device = self.get_network_function_for_spoke_device(pe)
-                    interface_name = pe["Client Interface"]
-                    device_pid = pe_device["productId"]
-                    device_prid = pe_device["providerResourceId"]
-                    self.domain_id = self.bpo.market.get(f"/products/{device_pid}")["domainId"]
-                    fia_obj_properties = self.get_fia_service_object_from_details(pe, circuit_details)["properties"]
+                    for pe in pe_list:
+                        with self.timed_operation("ip.update_pe", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                            pe_device = self.get_network_function_for_spoke_device(pe)
+                            interface_name = pe["Client Interface"]
+                            device_pid = pe_device["productId"]
+                            device_prid = pe_device["providerResourceId"]
+                            self.domain_id = self.bpo.market.get(f"/products/{device_pid}")["domainId"]
+                            fia_obj_properties = self.get_fia_service_object_from_details(pe, circuit_details)["properties"]
 
                     ipv4_res = self.bpo.resources.get_by_provider_resource_id(
                         self.domain_id, f"{device_prid}::RIB::GlobalRouter"
@@ -119,14 +133,16 @@ class Activate(CommonPlan):
                                 fre_res = self.refresh_resource_differences(ipv6_res, device_prid, "ipv6")
                                 self.update_fia_static_fre(fre_res, fia_obj_properties, "ipv6")
 
-            except Exception as e:
-                msg = self.error_formatter(
-                    self.SYSTEM_ERROR_TYPE,
-                    self.RESOURCE_GET_SUBCATEGORY,
-                    str(e),
-                )
-                self.categorized_error = msg
-                self.exit_error()
+                except Exception as e:
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(f"Error during IP update: {e}", e)
+                    msg = self.error_formatter(
+                        self.SYSTEM_ERROR_TYPE,
+                        self.RESOURCE_GET_SUBCATEGORY,
+                        str(e),
+                    )
+                    self.categorized_error = msg
+                    self.exit_error()
 
     def refresh_resource_differences(self, fre_res, device_prid, route_type):
         self.logger.info("refresh_resource_differences")

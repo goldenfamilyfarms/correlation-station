@@ -4,45 +4,63 @@ import sys
 
 sys.path.append("model-definitions")
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 from ra_plugins.ra_cutthrough import RaCutThrough
 from ping3 import ping
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """
     Activation Class for Firmware Updater
     """
 
     def process(self):
-        self.enter_exit_log(message="Firmware Updater")
-        # STEP 1. Build Equipment Dictionaries Based on Input
-        self.status_update("Step 1: Preparing Data for Firmware Updater")
-        self.logger.info("STEP 1. Build Equipment Dictionaries Based on Input")
-        self.cutthrough = RaCutThrough()
-        self.Adva114pro = "FSP 150-GE114PRO-C"
-        self.Adva116pro = "FSP 150-XG116PRO"
-        self.Adva108 = "FSP 150-XG108"
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for the entire firmware update process
+        with self.create_root_span(operation_name="firmware_updater"):
+            self.enter_exit_log(message="Firmware Updater")
+            # STEP 1. Build Equipment Dictionaries Based on Input
+            self.status_update("Step 1: Preparing Data for Firmware Updater")
+            self.logger.info("STEP 1. Build Equipment Dictionaries Based on Input")
+            self.cutthrough = RaCutThrough()
+            self.Adva114pro = "FSP 150-GE114PRO-C"
+            self.Adva116pro = "FSP 150-XG116PRO"
+            self.Adva108 = "FSP 150-XG108"
 
-        self.logger.info("================= SELF.PROPERTIES : ============================")
-        self.logger.info(self.properties)
+            self.logger.info("================= SELF.PROPERTIES : ============================")
+            self.logger.info(self.properties)
 
-        try:
-            target_device = {
-                "fqdn": self.properties["target_FQDN"].upper(),
-                "vendor": self.properties["target_vendor"].upper(),
-                "model": self.properties["target_model"].upper(),
-                "ip": self.properties["target_ip"],
-                "tid": self.properties["target_FQDN"].split(".")[0].upper(),
-            }
+            try:
+                target_device = {
+                    "fqdn": self.properties["target_FQDN"].upper(),
+                    "vendor": self.properties["target_vendor"].upper(),
+                    "model": self.properties["target_model"].upper(),
+                    "ip": self.properties["target_ip"],
+                    "tid": self.properties["target_FQDN"].split(".")[0].upper(),
+                }
 
-            firmware = self.properties["firmware"]
-            vendor = target_device["vendor"]
-            model = "ETX-2I" if "ETX-2I" in target_device["model"] else target_device["model"]
-            ip_address = target_device["ip"]
-            tid = target_device["tid"]
-        except Exception:
-            self.status_update("Unable to Process Provided Data", True, "FIRMUP10100")
-            self.exit_error("Unable to Process Provided Data: %s" % self.properties)
+                firmware = self.properties["firmware"]
+                vendor = target_device["vendor"]
+                model = "ETX-2I" if "ETX-2I" in target_device["model"] else target_device["model"]
+                ip_address = target_device["ip"]
+                tid = target_device["tid"]
+                
+                # Set correlation baggage and add device attributes
+                if getattr(self, '_otel_initialized', False):
+                    self.set_correlation_baggage_from_instance()
+                    self.record_span_event_from_instance("firmware.update.started", {
+                        "target_fqdn": target_device["fqdn"],
+                        "vendor": vendor,
+                        "model": model,
+                        "firmware": firmware
+                    })
+            except Exception as ex:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler("Unable to Process Provided Data", ex)
+                self.status_update("Unable to Process Provided Data", True, "FIRMUP10100")
+                self.exit_error("Unable to Process Provided Data: %s" % self.properties)
 
         self.logger.info("================= target_device: ============================")
         self.logger.info(target_device)
@@ -54,31 +72,48 @@ class Activate(CommonPlan):
         # Check for Onboard CPE and Delete if There
 
         if vendor.upper() not in ["RAD", "ADVA"]:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Vendor Unsupported: {vendor.upper()}")
             self.status_update("Vendor Unsupported", True, "FIRMUP10200")
             self.exit_error("Vendor Unsupported: %s" % vendor.upper())
         try:
-            network_functions = self.find_network_functions(target_device)
-            if network_functions:
-                self.delete_nfs(network_functions)
-            time.sleep(10)
-            network_functions = self.find_network_functions(target_device)
-            if network_functions:
-                ob_nfs = []
-                for net_func in network_functions:
-                    ob_nfs.append(net_func["label"])
-                ob_nf_set = set(ob_nfs)
-                status_mesg = str(ob_nf_set) + " - still onboard and unable to delete"
-                self.status_update(status_mesg, True, "FIRMUP10201")
-                self.exit_error(status_mesg)
+            from contextlib import nullcontext
+            timed_ctx = self.timed_operation("firmware.device_offboard_onboard", {"vendor": vendor, "model": model}) if getattr(self, '_otel_initialized', False) else nullcontext()
+            with timed_ctx:
+                network_functions = self.find_network_functions(target_device)
+                if network_functions:
+                    self.delete_nfs(network_functions)
+                time.sleep(10)
+                network_functions = self.find_network_functions(target_device)
+                if network_functions:
+                    ob_nfs = []
+                    for net_func in network_functions:
+                        ob_nfs.append(net_func["label"])
+                    ob_nf_set = set(ob_nfs)
+                    status_mesg = str(ob_nf_set) + " - still onboard and unable to delete"
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(status_mesg)
+                    self.status_update(status_mesg, True, "FIRMUP10201")
+                    self.exit_error(status_mesg)
 
-            # Onboard CPE
-            onboard_results = self.onboard_device(target_device, False)
-            self.logger.info("*9*9*9*9*9* ONBOARD_RESULTS *9*9*9*9*9*")
-            self.logger.info(onboard_results)
-            target_nf = self.get_network_function_by_host_or_ip(ip=ip_address)
-            self.logger.info(f"Target_NF: {target_nf}")
+                # Onboard CPE
+                span_ctx = self.create_network_function_span_context(tid, target_device["fqdn"], "onboard") if getattr(self, '_otel_initialized', False) else nullcontext()
+                with span_ctx:
+                    onboard_results = self.onboard_device(target_device, False)
+                    self.logger.info("*9*9*9*9*9* ONBOARD_RESULTS *9*9*9*9*9*")
+                    self.logger.info(onboard_results)
+                    target_nf = self.get_network_function_by_host_or_ip(ip=ip_address)
+                    self.logger.info(f"Target_NF: {target_nf}")
+                    if getattr(self, '_otel_initialized', False) and target_nf:
+                        self.add_network_function_attributes_to_span(
+                            self.tracer.get_current_span() if hasattr(self.tracer, 'get_current_span') else None,
+                            vendor=vendor,
+                            ip_address=ip_address
+                        )
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Unable to Obtain, Onboard, and/or Offboard Device: {tid}", ex)
             self.status_update("Unable to Obtain, Onboard, and/or Offboard Device", True, "FIRMUP10202")
             self.exit_error("Unable to Obtain, Onboard, and/or Offboard Device:%s" % (tid))
 
@@ -87,19 +122,27 @@ class Activate(CommonPlan):
         self.logger.info("STEP 3. Check Current Firmware")
 
         try:
-            target_prid = target_nf["providerResourceId"]
-            orig_firmware = target_nf["properties"]["swVersion"]
-            target_id = target_nf["id"]
-            cmd_file = self.get_ra_command_data("show_sw_versions", vendor, model)
-            self.logger.info(f"target_prid: {target_prid}")
-            self.logger.info(f"orig_firmware: {orig_firmware}")
-            self.logger.info(f"cmd_file: {cmd_file}")
-            fw_files = self.check_firmware_files(target_prid, vendor, model)["result"]
-            self.logger.info(f"FW_FILES: {fw_files}")
-            rad_sw_packs = self.get_rad_sw_packs(fw_files) if vendor == "RAD" else None
-            self.logger.info(f"@@@@@@@@@@ RAD_SW_PACKS: {rad_sw_packs}")
+            with self.timed_operation("firmware.check_current", {"vendor": vendor, "model": model}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                target_prid = target_nf["providerResourceId"]
+                orig_firmware = target_nf["properties"]["swVersion"]
+                target_id = target_nf["id"]
+                cmd_file = self.get_ra_command_data("show_sw_versions", vendor, model)
+                self.logger.info(f"target_prid: {target_prid}")
+                self.logger.info(f"orig_firmware: {orig_firmware}")
+                self.logger.info(f"cmd_file: {cmd_file}")
+                fw_files = self.check_firmware_files(target_prid, vendor, model)["result"]
+                self.logger.info(f"FW_FILES: {fw_files}")
+                rad_sw_packs = self.get_rad_sw_packs(fw_files) if vendor == "RAD" else None
+                self.logger.info(f"@@@@@@@@@@ RAD_SW_PACKS: {rad_sw_packs}")
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("firmware.current_version", {
+                        "current_firmware": orig_firmware,
+                        "target_firmware": firmware
+                    })
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Unable to Access Device or Obtain Current Firmware", ex)
             self.status_update("Unable to Access Device or Obtain Current Firmware", True, "FIRMUP10300")
             self.exit_error("Unable to Access Device or Obtain Current Firmware")
 
@@ -131,6 +174,7 @@ class Activate(CommonPlan):
         self.status_update("Step 5: Firmware File Transfer")
         self.logger.info("STEP 5. Firmware File Transfer")
         try:
+            with self.timed_operation("firmware.file_transfer", {"firmware": firmware, "vendor": vendor}) if getattr(self, '_otel_initialized', False) else nullcontext():
             self.transfer_file_sftp(firmware, target_prid, vendor, model, rad_sw_packs)
             progress = self.get_progress(vendor, model, target_prid)
             fw_dl_time = 31
@@ -182,6 +226,7 @@ class Activate(CommonPlan):
         self.logger.info("STEP 7. Install New Firmware")
 
         try:
+            with self.timed_operation("firmware.install", {"firmware": firmware, "vendor": vendor}) if getattr(self, '_otel_initialized', False) else nullcontext():
             cmd_file = self.get_ra_command_data("install", vendor, model)
             if vendor == "ADVA":
                 self.cutthrough.execute_ra_command_file(target_prid, cmd_file)
@@ -290,6 +335,7 @@ class Activate(CommonPlan):
         self.logger.info("Step 11. Confirm Firmware Installed and Active")
 
         try:
+            with self.timed_operation("firmware.verify", {"firmware": firmware, "vendor": vendor}) if getattr(self, '_otel_initialized', False) else nullcontext():
             fw_after_activate = self.check_firmware_files(target_prid, vendor, model)["result"]
             activated_fw = self.identify_firmware(model, vendor, fw_after_activate, "active_fw")
             self.logger.info(f"0@0@0@0@0@0@0@0 fw_after_activate: {fw_after_activate}")

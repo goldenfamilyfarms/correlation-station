@@ -9,57 +9,88 @@ Versions:
 """
 
 import sys
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the initial updation of the
     Network Service bandwidth. The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process(self):
-        self.circuit_id = self.properties["circuit_id"]
-        self.circuit_res_id = self.properties["circuit_details_resource_id"]
-        self.required_state = "ENABLED" if self.properties["required_state"] == "enable" else "DISABLED"
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for state toggle
+        with self.create_root_span(operation_name="state_toggle"):
+            self.circuit_id = self.properties["circuit_id"]
+            self.circuit_res_id = self.properties["circuit_details_resource_id"]
+            self.required_state = "ENABLED" if self.properties["required_state"] == "enable" else "DISABLED"
 
-        self.circuit_details = self.get_resource(self.circuit_res_id)
-        evc = self.circuit_details["properties"]["service"][0]["data"]["evc"][0]
-        svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
+            self.circuit_details = self.get_resource(self.circuit_res_id)
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.extract_and_set_topology_context(self.circuit_details["properties"])
+                self.record_span_event_from_instance("state.toggle.started", {
+                    "circuit_id": self.circuit_id,
+                    "required_state": self.required_state
+                })
+            
+            evc = self.circuit_details["properties"]["service"][0]["data"]["evc"][0]
+            svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
 
-        spoke_list = self.create_device_dict_from_circuit_details(self.circuit_details)
+            spoke_list = self.create_device_dict_from_circuit_details(self.circuit_details)
 
-        for spoke in spoke_list:
-            ordered_spoke_list = self.get_ordered_topology(spoke)
-            terminating_node = ordered_spoke_list[-1]
+            for spoke in spoke_list:
+                ordered_spoke_list = self.get_ordered_topology(spoke)
+                terminating_node = ordered_spoke_list[-1]
 
-            for device, values in terminating_node.items():
-                if values["Role"] == "CPE" or (
-                    values["Role"] == "MTU"
-                    and str(values["Client Neighbor Interface"].lower()) == "none"
-                    and ("EX" not in values["Model"])
-                ):
-                    cvlan = self.get_cvlans_for_uni_ep(
-                        self.circuit_details, values["Host Name"] + "-" + values["Client Interface"]
-                    )
-                    self.toggle_service_CPE(values["Host Name"], self.required_state, svlan, cvlan)
-                else:
-                    self.toggle_service(self.circuit_details, values, self.required_state, svlan)
+                for device, values in terminating_node.items():
+                    if values["Role"] == "CPE" or (
+                        values["Role"] == "MTU"
+                        and str(values["Client Neighbor Interface"].lower()) == "none"
+                        and ("EX" not in values["Model"])
+                    ):
+                        cvlan = self.get_cvlans_for_uni_ep(
+                            self.circuit_details, values["Host Name"] + "-" + values["Client Interface"]
+                        )
+                        with self.timed_operation("state.toggle_cpe", {"device": values["Host Name"], "state": self.required_state}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                            self.toggle_service_CPE(values["Host Name"], self.required_state, svlan, cvlan)
+                            if getattr(self, '_otel_initialized', False):
+                                self.record_span_event_from_instance("state.cpe_toggled", {
+                                    "device": values["Host Name"],
+                                    "state": self.required_state
+                                })
+                    else:
+                        with self.timed_operation("state.toggle_device", {"device": values["Host Name"], "role": values["Role"], "state": self.required_state}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                            self.toggle_service(self.circuit_details, values, self.required_state, svlan)
+                            if getattr(self, '_otel_initialized', False):
+                                self.record_span_event_from_instance("state.device_toggled", {
+                                    "device": values["Host Name"],
+                                    "role": values["Role"],
+                                    "state": self.required_state
+                                })
 
     def toggle_service(self, circuit_details, device, adminstate, svlan):
         """toggles service state on PE/AGG/MTU Juniper devices"""
         try:
             self.create_mef_segment_for_toggle_service(circuit_details, device, adminstate, svlan)
-        except Exception as err:
-            msg = self.error_formatter(
-                self.SYSTEM_ERROR_TYPE,
-                self.RESOURCE_GET_SUBCATEGORY,
-                f"Error- {err} raised while doing service-toggle for {device['Role']} - {device['Host Name']}",
-            )
-            self.categorized_error = msg
-            self.exit_error(msg)
+            except Exception as err:
+                msg = self.error_formatter(
+                    self.SYSTEM_ERROR_TYPE,
+                    self.RESOURCE_GET_SUBCATEGORY,
+                    f"Error- {err} raised while doing service-toggle for {device['Role']} - {device['Host Name']}",
+                )
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(msg, err)
+                self.categorized_error = msg
+                self.exit_error(msg)
 
     def create_mef_segment_for_toggle_service(self, circuit_details, device_info, adminstate, svlan):
         """

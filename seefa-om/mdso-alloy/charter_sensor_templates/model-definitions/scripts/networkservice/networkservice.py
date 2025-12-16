@@ -15,9 +15,10 @@ sys.path.append("model-definitions")
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
 from scripts.common_plan import CommonPlan
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Terminate(CommonPlan):
+class Terminate(CommonPlan, OTelMixin):
     """This is the class that is called for the termination of a NetworkService resource."""
 
     """
@@ -29,12 +30,17 @@ class Terminate(CommonPlan):
     all_dependencies_ids = []
 
     def process(self):
-        self.soft_terminate_process()
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for network service termination
+        with self.create_root_span(operation_name="network_service_terminate"):
+            self.soft_terminate_process()
 
-        resource_types_to_delete_last = [self.BUILT_IN_CIRCUIT_DETAILS_TYPE]
+            resource_types_to_delete_last = [self.BUILT_IN_CIRCUIT_DETAILS_TYPE]
 
-        # WE WILL RUN THE SERVICE DEPENDENCY MDDIFIER LAST
-        try:
+            # WE WILL RUN THE SERVICE DEPENDENCY MDDIFIER LAST
+            try:
             dependencies = self.bpo.resources.get_dependencies(self.resource["id"])
             first_deps = []
             last_deps = []
@@ -76,63 +82,89 @@ class Terminate(CommonPlan):
                 }
                 self.bpo.resources.create(self.resource["id"], service_modifier)
 
-            self.logger.debug("Deleting second set of resources. " + str(len(last_deps)))
-            self.bpo.resources.delete_dependencies(self.resource["id"], None, last_deps, force_delete_relationship=True)
-        except Exception as ex:
-            self.logger.exception(ex)
-            raise Exception(ex)
+                self.logger.debug("Deleting second set of resources. " + str(len(last_deps)))
+                self.bpo.resources.delete_dependencies(self.resource["id"], None, last_deps, force_delete_relationship=True)
+            except Exception as ex:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Error during network service termination: {ex}", ex)
+                self.logger.exception(ex)
+                raise Exception(ex)
 
 
-class Update(CommonPlan):
+class Update(CommonPlan, OTelMixin):
     """This is the class that is called for the update of a NetworkService.
     This is not currently supported.
     """
 
     def process(self):
-        self.logger.info("DONE!")
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        with self.create_root_span(operation_name="network_service_update"):
+            self.logger.info("DONE!")
 
 
-class ActivateSite(CommonPlan, CliCutthrough):
+class ActivateSite(CommonPlan, CliCutthrough, OTelMixin):
     """This is the class called for the custom operation for a NetworkService
     when activating a site (CPE).
     """
 
     def process(self):
-        self.network_ser_res = self.mget("/resources/%s" % self.params["resourceId"]).json()
-        network_props = self.network_ser_res["properties"]
-        self.circuit_id = network_props["circuit_id"]
-        operation = self.bpo.resources.get_operation(self.params["resourceId"], self.params["operationId"])
-        if not operation:
-            self.exit_error("Unable to find operation for circuit_id: " + self.circuit_id)
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for site activation
+        with self.create_root_span(operation_name="network_service_activate_site"):
+            self.network_ser_res = self.mget("/resources/%s" % self.params["resourceId"]).json()
+            network_props = self.network_ser_res["properties"]
+            self.circuit_id = network_props["circuit_id"]
+            operation = self.bpo.resources.get_operation(self.params["resourceId"], self.params["operationId"])
+            if not operation:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Unable to find operation for circuit_id: {self.circuit_id}")
+                self.exit_error("Unable to find operation for circuit_id: " + self.circuit_id)
 
-        site = operation["inputs"]["site"]
-        port = operation["inputs"].get("port")
-        try:
-            cpe_ip = operation["inputs"].get("ip")
-        except NameError:
-            pass
+            site = operation["inputs"]["site"]
+            port = operation["inputs"].get("port")
+            try:
+                cpe_ip = operation["inputs"].get("ip")
+            except NameError:
+                pass
 
-        # Create an instance of a cpeActivator.
-        cpe_activator_product = self.get_built_in_product(self.BUILT_IN_CPE_ACTIVATOR_TYPE)
-        activator_details = {
-            "label": site + ".cpe_activator",
-            "productId": cpe_activator_product["id"],
-            "properties": {
-                "circuit_id": self.circuit_id,
-                "network_service_id": self.network_ser_res["id"],
-                "site": site,
-                "port": port,
-            },
-        }
-        try:
-            if cpe_ip:
-                activator_details["properties"]["ip"] = cpe_ip
-        except NameError:
-            pass
-        try:
+            # Create an instance of a cpeActivator.
+            cpe_activator_product = self.get_built_in_product(self.BUILT_IN_CPE_ACTIVATOR_TYPE)
+            activator_details = {
+                "label": site + ".cpe_activator",
+                "productId": cpe_activator_product["id"],
+                "properties": {
+                    "circuit_id": self.circuit_id,
+                    "network_service_id": self.network_ser_res["id"],
+                    "site": site,
+                    "port": port,
+                },
+            }
+            try:
+                if cpe_ip:
+                    activator_details["properties"]["ip"] = cpe_ip
+            except NameError:
+                pass
+            try:
             self.logger.info("Activating site %s, port %s, IP %s ..." % (site, port, cpe_ip))
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("site.activation.started", {
+                    "site": site,
+                    "port": port,
+                    "ip": cpe_ip
+                })
             self.bpo.resources.create(self.network_ser_res["id"], activator_details, wait_active=True, wait_time=600)
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("site.activation.completed", {
+                    "site": site,
+                    "port": port,
+                    "ip": cpe_ip
+                })
         except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Exception raised when attempting to create cpeActivator for site {site}, port {port}, IP {cpe_ip}: {ex}", ex)
             self.exit_error(
                 "Exception %s raised when attempting to create cpeActivator for site %s, port %s, IP %s"
                 % (str(ex), site, port, cpe_ip)

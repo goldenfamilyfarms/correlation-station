@@ -1,14 +1,16 @@
 import json
 import time
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
 SFTP_SERVER_LABEL = "MRSA_SCP_ENDPOINT"
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     def process(self):
         """Update Firmware
 
@@ -18,37 +20,65 @@ class Activate(CommonPlan):
         4) Configure router to boot from approved firmware
         5) Reload router
         """
-        self.label = self.resource["label"]
-        props = self.resource["properties"]
-        self.ipAddress = props["ipAddress"]
-        self.firmware_version = props["firmwareVersion"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for firmware update
+        with self.create_root_span(operation_name="firmware_updater"):
+            self.label = self.resource["label"]
+            props = self.resource["properties"]
+            self.ipAddress = props["ipAddress"]
+            self.firmware_version = props["firmwareVersion"]
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("firmware.update.started", {
+                    "ip_address": self.ipAddress,
+                    "firmware_version": self.firmware_version
+                })
 
-        # Create connection to CPE
-        try:
-            msg = "1. Create Network Function"
-            self.logger.info(msg)
-            nf = self.onboard_network_function()
-            self.nf_res_id = nf["providerResourceId"]
-            self.logger.info("Device Onboarded: " + str(nf))
-        except Exception as err:
-            err_msg = "Failed Device Onboard: {}".format(err)
-            self.exit_error(err_msg)
+            # Create connection to CPE
+            try:
+                msg = "1. Create Network Function"
+                self.logger.info(msg)
+                with self.create_network_function_span_context(self.ipAddress, self.ipAddress, "update") if getattr(self, '_otel_initialized', False) else nullcontext():
+                    nf = self.onboard_network_function()
+                    self.nf_res_id = nf["providerResourceId"]
+                    self.logger.info("Device Onboarded: " + str(nf))
+                    if getattr(self, '_otel_initialized', False) and nf:
+                        self.add_network_function_attributes_to_span(
+                            self.tracer.get_current_span() if hasattr(self.tracer, 'get_current_span') else None,
+                            vendor="CISCO",
+                            ip_address=self.ipAddress
+                        )
+            except Exception as err:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Failed Device Onboard: {err}", err)
+                err_msg = "Failed Device Onboard: {}".format(err)
+                self.exit_error(err_msg)
 
         # Check for file on router and download file if not present
         try:
             msg = "2. Check for and download firmware file on router."
             self.logger.info(msg)
-            if not self.check_for_firmware_file():
-                sftp_props = self.get_sftp_constants(SFTP_SERVER_LABEL)
-                if sftp_props is None:
-                    raise Exception("No SFTP Server Resource Found")
-                sftp_props["dirpath"] += self.firmware_version
-                self.logger.info("Executing file-transfer.json: {}".format(sftp_props))
-                self.execute_ra_command_file(self.nf_res_id, "file-transfer.json", parameters=sftp_props)
-                # Check again for file and raise exception if still not found.
+            with self.timed_operation("firmware.file_check_download", {"firmware": self.firmware_version}) if getattr(self, '_otel_initialized', False) else nullcontext():
                 if not self.check_for_firmware_file():
-                    raise Exception("File not found")
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("firmware.file_not_found", {"firmware": self.firmware_version})
+                    sftp_props = self.get_sftp_constants(SFTP_SERVER_LABEL)
+                    if sftp_props is None:
+                        raise Exception("No SFTP Server Resource Found")
+                    sftp_props["dirpath"] += self.firmware_version
+                    self.logger.info("Executing file-transfer.json: {}".format(sftp_props))
+                    self.execute_ra_command_file(self.nf_res_id, "file-transfer.json", parameters=sftp_props)
+                    # Check again for file and raise exception if still not found.
+                    if not self.check_for_firmware_file():
+                        raise Exception("File not found")
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("firmware.file_downloaded", {"firmware": self.firmware_version})
         except Exception as err:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Failed File Download: {err}", err)
             err_msg = "Failed File Download: {}".format(err)
             self.exit_error(err_msg)
 
@@ -56,26 +86,31 @@ class Activate(CommonPlan):
         try:
             msg = "3. Configure router to reload into new firmware"
             self.logger.info(msg)
-            if "test" in self.firmware_version:
-                raise Exception("test file")
-            commands = [
-                "configure terminal",
-                "boot system flash bootflash:{}".format(self.firmware_version),
-                "no service private-config-encryption",
-                "end",
-                "write memory",
-                "show run | include boot",
-            ]
-            result = self.create_cli_manager(commands, ignore_errors=True)
-            bootconf = result[-1]["result"]
-            self.logger.info("bootconf: {}".format(bootconf))
-            if self.firmware_version not in bootconf:
-                raise Exception(bootconf)
-            self.logger.info("Sending Reload command.")
-            self.execute_ra_command_file(self.nf_res_id, "reload.json")
-            self.logger.info("Reload command sent, sleep 10s.")
-            time.sleep(10)
+            with self.timed_operation("firmware.configure_reload", {"firmware": self.firmware_version}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                if "test" in self.firmware_version:
+                    raise Exception("test file")
+                commands = [
+                    "configure terminal",
+                    "boot system flash bootflash:{}".format(self.firmware_version),
+                    "no service private-config-encryption",
+                    "end",
+                    "write memory",
+                    "show run | include boot",
+                ]
+                result = self.create_cli_manager(commands, ignore_errors=True)
+                bootconf = result[-1]["result"]
+                self.logger.info("bootconf: {}".format(bootconf))
+                if self.firmware_version not in bootconf:
+                    raise Exception(bootconf)
+                self.logger.info("Sending Reload command.")
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("firmware.reload.initiated", {"firmware": self.firmware_version})
+                self.execute_ra_command_file(self.nf_res_id, "reload.json")
+                self.logger.info("Reload command sent, sleep 10s.")
+                time.sleep(10)
         except Exception as err:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Failed to update boot config: {err}", err)
             err_msg = "Failed to update boot config: {}".format(err)
             self.exit_error(err_msg)
 

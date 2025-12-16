@@ -9,25 +9,41 @@ Versions:
 """
 
 import sys
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the initial updation of thes
     Network Service description.  The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process(self):
-        # added the operation flag options
-        self.operation = self.properties["operation"]
-        self.circuit_id = self.properties["circuit_id"]
-        self.circuit_res_id = self.properties["circuit_details_resource_id"]
-        circuit_details = self.get_resource(self.circuit_res_id)
-        evc = circuit_details["properties"]["service"][0]["data"]["evc"][0]
-        svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for description update
+        with self.create_root_span(operation_name="description_update"):
+            # added the operation flag options
+            self.operation = self.properties["operation"]
+            self.circuit_id = self.properties["circuit_id"]
+            self.circuit_res_id = self.properties["circuit_details_resource_id"]
+            circuit_details = self.get_resource(self.circuit_res_id)
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.extract_and_set_topology_context(circuit_details["properties"])
+                self.record_span_event_from_instance("description.update.started", {
+                    "circuit_id": self.circuit_id,
+                    "operation": self.operation
+                })
+            
+            evc = circuit_details["properties"]["service"][0]["data"]["evc"][0]
+            svlan = "0" if evc["sVlan"] in ["untagged", "Untagged"] else evc["sVlan"]
 
         pe_list = []
         cpe_list = []
@@ -72,28 +88,37 @@ class Activate(CommonPlan):
                     self.categorized_error = msg
                     self.exit_error(msg)
 
-        # mickey added the operation flag options
-        if self.operation != "SERVICE_MAPPER":
-            for pe in pe_list:
-                self.update_pe_descr(circuit_details, pe, svlan)
+            # mickey added the operation flag options
+            if self.operation != "SERVICE_MAPPER":
+                for pe in pe_list:
+                    with self.timed_operation("description.update_pe", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                        self.update_pe_descr(circuit_details, pe, svlan)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("description.pe_updated", {"pe": pe["Host Name"]})
 
-        self.logger.info("cpe_list contains: {}".format(cpe_list))
+            self.logger.info("cpe_list contains: {}".format(cpe_list))
 
-        for device in cpe_list:
-            device_nf = self.get_network_function_by_host_or_ip(hostname=device["FQDN"], ip=device["Management IP"])
-            if not device_nf:
-                msg = self.error_formatter(
-                    self.PROCESS_ERROR_TYPE,
-                    self.RESOURCE_GET_SUBCATEGORY,
-                    f"No Network Function Resource found with FQDN: {device['FQDN']} and/or IP: {device['Management IP']}",
-                )
-                self.categorized_error = msg
-                self.exit_error(msg)
-            self.update_description(circuit_details, device, svlan)
-        # service mapper only supports CPEs
-        if self.operation != "SERVICE_MAPPER":
-            for device in agg__mtu_list:
-                self.update_description(circuit_details, device, svlan)
+            for device in cpe_list:
+                device_nf = self.get_network_function_by_host_or_ip(hostname=device["FQDN"], ip=device["Management IP"])
+                if not device_nf:
+                    msg = self.error_formatter(
+                        self.PROCESS_ERROR_TYPE,
+                        self.RESOURCE_GET_SUBCATEGORY,
+                        f"No Network Function Resource found with FQDN: {device['FQDN']} and/or IP: {device['Management IP']}",
+                    )
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(msg)
+                    self.categorized_error = msg
+                    self.exit_error(msg)
+                with self.timed_operation("description.update_device", {"device": device["Host Name"], "role": device["Role"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.update_description(circuit_details, device, svlan)
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("description.device_updated", {"device": device["Host Name"]})
+            # service mapper only supports CPEs
+            if self.operation != "SERVICE_MAPPER":
+                for device in agg__mtu_list:
+                    with self.timed_operation("description.update_device", {"device": device["Host Name"], "role": device["Role"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                        self.update_description(circuit_details, device, svlan)
 
     def update_pe_descr(self, circuit_details, pe, svlan):
         """
@@ -125,14 +150,16 @@ class Activate(CommonPlan):
                 self.logger.info("pe update object %s" % str(pe_update_obj))
                 self.bpo.resources.create(self.params["resourceId"], pe_update_obj)
 
-        except Exception as err:
-            msg = self.error_formatter(
-                self.PROCESS_ERROR_TYPE,
-                self.RESOURCE_CREATE_SUBCATEGORY,
-                f"Failed to update description on PE Device: {pe['Host Name']} due to following error: {str(err)}",
-            )
-            self.categorized_error = msg
-            self.exit_error(msg)
+            except Exception as err:
+                msg = self.error_formatter(
+                    self.PROCESS_ERROR_TYPE,
+                    self.RESOURCE_CREATE_SUBCATEGORY,
+                    f"Failed to update description on PE Device: {pe['Host Name']} due to following error: {str(err)}",
+                )
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(msg, err)
+                self.categorized_error = msg
+                self.exit_error(msg)
 
     def update_description(self, circuit_details, device, svlan):
         """
@@ -142,14 +169,16 @@ class Activate(CommonPlan):
         try:
             self.create_mef_segment_for_descr_update(circuit_details, device, svlan)
 
-        except Exception as err:
-            msg = self.error_formatter(
-                self.PROCESS_ERROR_TYPE,
-                self.RESOURCE_CREATE_SUBCATEGORY,
-                f"Failed to update description on {device['Role']} Device: {device['Host Name']} due to following error: {str(err)}",
-            )
-            self.categorized_error = msg
-            self.exit_error(msg)
+            except Exception as err:
+                msg = self.error_formatter(
+                    self.PROCESS_ERROR_TYPE,
+                    self.RESOURCE_CREATE_SUBCATEGORY,
+                    f"Failed to update description on {device['Role']} Device: {device['Host Name']} due to following error: {str(err)}",
+                )
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(msg, err)
+                self.categorized_error = msg
+                self.exit_error(msg)
 
     def create_mef_segment_for_descr_update(self, circuit_details, device_info, svlan):
         """
