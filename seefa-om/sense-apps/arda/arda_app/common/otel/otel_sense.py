@@ -63,7 +63,10 @@ def setup_otel_sense(
 ) -> trace.Tracer:
     """
     Initialize OpenTelemetry for SENSE applications
-
+    
+    DEPRECATED: Use `setup_observability()` from `observability.py` instead.
+    This function is kept for backward compatibility but will be removed in a future version.
+    
     Optimized for performance - no heavy middleware
 
     Args:
@@ -79,6 +82,12 @@ def setup_otel_sense(
         >>> from common.otel_sense import setup_otel_sense
         >>> tracer = setup_otel_sense("beorn", "2408.0.244")
     """
+    import warnings
+    warnings.warn(
+        "setup_otel_sense() is deprecated. Use setup_observability() from observability.py instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     environment = environment or os.getenv("DEPLOYMENT_ENV", "dev")
     correlation_gateway = correlation_gateway or DEFAULT_CORRELATION_GATEWAY
 

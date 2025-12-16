@@ -1,39 +1,32 @@
 """
 OpenTelemetry Observability Setup for Sense Apps
-Initializes traces, metrics, logs with dual export to Correlation Engine + DataDog
+Initializes traces, metrics, logs with dual export to Datadog Agent (OTLP) + Correlation Engine (OTLP)
 
 Supports both Flask and FastAPI applications.
 
 Usage:
     # Flask app
-    from common.observability import setup_observability
+    from common.otel.observability import setup_observability
     app = Flask(__name__)
     setup_observability(app, service_name="beorn", service_version="1.0.0")
 
     # FastAPI app
-    from common.observability import setup_observability
+    from common.otel.observability import setup_observability
     app = FastAPI()
     setup_observability(app, service_name="arda", service_version="1.0.0")
 """
 import logging
 import os
+import time
 from typing import Optional, List, Union
 
 from opentelemetry import trace, metrics, baggage, context
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION, DEPLOYMENT_ENVIRONMENT
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.propagate import set_global_textmap
-from opentelemetry.propagators.composite import CompositeHTTPPropagator
-from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
-from opentelemetry.baggage.propagation import W3CBaggagePropagator
 import structlog
+
+# Import bootstrap module for unified OTel initialization
+from .bootstrap import bootstrap_otel
 
 # Try to import Flask instrumentation
 try:
@@ -49,19 +42,8 @@ try:
 except ImportError:
     FASTAPI_AVAILABLE = False
 
-# Try to import DataDog exporter
-try:
-    from opentelemetry.exporter.datadog import DatadogSpanExporter
-    DATADOG_AVAILABLE = True
-except ImportError:
-    DATADOG_AVAILABLE = False
-    logging.warning("DataDog exporter not available. Install with: pip install opentelemetry-exporter-datadog")
 
-
-# Default configuration
-DEFAULT_CORRELATION_ENGINE_URL = os.getenv("CORRELATION_ENGINE_URL", "http://159.56.4.94:8080")
-DEFAULT_DATADOG_AGENT_URL = os.getenv("DATADOG_AGENT_URL", "http://localhost:8126")
-DEFAULT_ENVIRONMENT = os.getenv("DEPLOYMENT_ENV", os.getenv("ENVIRONMENT", "production"))
+# Default baggage keys to propagate (can be overridden)
 
 # Default baggage keys to propagate (can be overridden)
 DEFAULT_BAGGAGE_KEYS = [
@@ -112,77 +94,39 @@ def setup_observability(
         >>> app = Flask(__name__)
         >>> setup_observability(app, "beorn", "1.0.0")
     """
-    # Resolve configuration
-    environment = environment or DEFAULT_ENVIRONMENT
-    correlation_engine_url = correlation_engine_url or DEFAULT_CORRELATION_ENGINE_URL
-    datadog_agent_url = datadog_agent_url or DEFAULT_DATADOG_AGENT_URL
+    # Set environment variables if provided (for bootstrap to pick up)
+    if service_name:
+        os.environ["OTEL_SERVICE_NAME"] = service_name
+    if service_version:
+        os.environ["OTEL_SERVICE_VERSION"] = service_version
+    if environment:
+        os.environ["DEPLOYMENT_ENV"] = environment
+    if correlation_engine_url:
+        os.environ["CORRELATION_ENGINE_URL"] = correlation_engine_url
+    
     baggage_keys = baggage_keys or DEFAULT_BAGGAGE_KEYS
 
     # Determine app framework
     app_framework = _detect_framework(app)
 
-    # Resource attributes (attached to all telemetry)
-    resource = Resource.create({
-        SERVICE_NAME: service_name,
-        SERVICE_VERSION: service_version,
-        DEPLOYMENT_ENVIRONMENT: environment,
-        "service.instance.id": os.getenv("HOSTNAME", "unknown"),
-        "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.language": "python",
-    })
-
-    # ===== TRACING =====
-    tracer_provider = TracerProvider(resource=resource)
-
-    # OTLP exporter to correlation-engine (HTTP/JSON)
-    otel_traces_endpoint = f"{correlation_engine_url}/api/otlp/v1/traces"
-    otlp_span_exporter = OTLPSpanExporter(endpoint=otel_traces_endpoint, timeout=30)
-    tracer_provider.add_span_processor(
-        BatchSpanProcessor(
-            otlp_span_exporter,
-            max_queue_size=2048,
-            max_export_batch_size=512,
-            schedule_delay_millis=5000,
-        )
+    # ===== BOOTSTRAP OTEL =====
+    # Use bootstrap module for unified initialization with dual export
+    # This sets up traces and metrics to both Datadog Agent (OTLP) and Correlation Engine (OTLP)
+    tracer_provider, meter_provider = bootstrap_otel(
+        service_name=service_name,
+        service_version=service_version,
+        enable_metrics=enable_metrics,
+        metric_export_interval_ms=metric_export_interval_ms,
     )
 
-    # DataDog exporter to local agent (port 8126)
-    if datadog_enabled and DATADOG_AVAILABLE:
+    # ===== METRICS INITIALIZATION =====
+    # Initialize RED metrics if metrics are enabled
+    if enable_metrics and meter_provider:
         try:
-            datadog_span_exporter = DatadogSpanExporter(
-                agent_url=datadog_agent_url,
-                service=service_name,
-            )
-            tracer_provider.add_span_processor(BatchSpanProcessor(datadog_span_exporter))
-            logging.info(f"DataDog exporter configured: {datadog_agent_url}")
+            from .metrics import initialize_metrics
+            initialize_metrics(metrics.get_meter(__name__))
         except Exception as e:
-            logging.warning(f"Failed to configure DataDog exporter: {e}")
-
-    trace.set_tracer_provider(tracer_provider)
-
-    # ===== METRICS =====
-    meter_provider = None
-    if enable_metrics:
-        otel_metrics_endpoint = f"{correlation_engine_url}/api/otlp/v1/metrics"
-        otlp_metric_reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(endpoint=otel_metrics_endpoint),
-            export_interval_millis=metric_export_interval_ms,
-        )
-
-        meter_provider = MeterProvider(
-            resource=resource,
-            metric_readers=[otlp_metric_reader],
-        )
-        metrics.set_meter_provider(meter_provider)
-
-    # ===== PROPAGATION =====
-    # Use W3C Trace Context + Baggage
-    set_global_textmap(
-        CompositeHTTPPropagator([
-            TraceContextTextMapPropagator(),  # traceparent, tracestate
-            W3CBaggagePropagator(),          # baggage header
-        ])
-    )
+            logging.warning(f"Failed to initialize RED metrics: {e}")
 
     # ===== AUTO-INSTRUMENTATION =====
     # Framework-specific instrumentation
@@ -206,10 +150,15 @@ def setup_observability(
     # Enhance existing structlog with trace context
     _enhance_structlog(baggage_keys)
 
+    # Get correlation engine URL from config for logging
+    from .config import OTelConfig
+    config = OTelConfig()
+    
     logging.info(f"✓ OpenTelemetry initialized for {service_name} v{service_version}")
-    logging.info(f"  - Correlation Engine: {correlation_engine_url}")
-    logging.info(f"  - DataDog: {'Enabled' if datadog_enabled and DATADOG_AVAILABLE else 'Disabled'}")
-    logging.info(f"  - Environment: {environment}")
+    logging.info(f"  - Datadog Agent (OTLP): {config.otlp_endpoint or 'Not configured'}")
+    logging.info(f"  - Correlation Engine: {config.correlation_engine_url}")
+    logging.info(f"  - Dual Export: {'Enabled' if config.is_dual_export_enabled() else 'Disabled'}")
+    logging.info(f"  - Environment: {config.deployment_environment}")
     logging.info(f"  - Framework: {app_framework}")
     logging.info(f"  - Metrics: {'Enabled' if enable_metrics else 'Disabled'}")
 
@@ -226,6 +175,26 @@ def _detect_framework(app) -> str:
     return "unknown"
 
 
+def _normalize_route(path: str) -> str:
+    """
+    Normalize route path to reduce cardinality by replacing IDs with placeholders
+    
+    Args:
+        path: Raw request path
+    
+    Returns:
+        Normalized route template
+    """
+    import re
+    # Replace UUIDs with {id}
+    path = re.sub(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', '{id}', path, flags=re.IGNORECASE)
+    # Replace numeric IDs with {id}
+    path = re.sub(r'/\d+', '/{id}', path)
+    # Replace alphanumeric IDs (like circuit IDs) with {id}
+    path = re.sub(r'/[a-z0-9]+\.[a-z0-9]+\.[a-z0-9]+', '/{id}', path, flags=re.IGNORECASE)
+    return path
+
+
 def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_provider):
     """Instrument Flask app with OTel"""
     if not FLASK_AVAILABLE:
@@ -240,6 +209,9 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
     @app.before_request
     def inject_correlation_keys():
         """Extract correlation keys from request and inject into trace context"""
+        # Record request start time for duration metrics
+        g.start_time = time.perf_counter_ns()
+        
         # Extract from headers (case-insensitive)
         extracted_keys = {}
         for key in baggage_keys:
@@ -280,15 +252,43 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
 
             # Add service-specific attributes
             span.set_attribute("sense.service", service_name)
-            span.set_attribute("http.route", request.endpoint or request.path)
+            # Use route template instead of raw path to avoid high cardinality
+            route = request.endpoint or request.path
+            # Normalize route to avoid IDs in span names
+            if route and route != request.path:
+                span.set_attribute("http.route", route)
+            else:
+                # Try to extract route template (remove IDs)
+                route_template = _normalize_route(request.path)
+                span.set_attribute("http.route", route_template)
 
     @app.after_request
     def inject_trace_id_header(response):
-        """Inject trace ID into response headers for debugging"""
+        """Inject trace ID into response headers and record RED metrics"""
         span = trace.get_current_span()
         if span and span.is_recording():
             trace_id = format(span.get_span_context().trace_id, '032x')
             response.headers["X-Trace-Id"] = trace_id
+        
+        # Record RED metrics
+        try:
+            from .metrics import record_http_request
+            if hasattr(g, 'start_time'):
+                duration_ms = (time.perf_counter_ns() - g.start_time) / 1_000_000  # Convert to ms
+            else:
+                duration_ms = 0.0
+            
+            # Get route template (normalized)
+            route = request.endpoint or _normalize_route(request.path)
+            record_http_request(
+                method=request.method,
+                route=route,
+                status_code=response.status_code,
+                duration_ms=duration_ms,
+            )
+        except Exception as e:
+            logging.debug(f"Failed to record HTTP metrics: {e}")
+        
         return response
 
     logging.info(f"Flask app instrumented: {service_name}")
@@ -303,8 +303,25 @@ def _instrument_fastapi(app, service_name: str, baggage_keys: List[str], tracer_
     from fastapi import Request
     from starlette.middleware.base import BaseHTTPMiddleware
 
-    # Auto-instrument FastAPI
-    FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer_provider)
+    # Exclude noisy endpoints from instrumentation
+    excluded_urls = [
+        "/health",
+        "/metrics",
+        "/ready",
+        "/docs",
+        "/openapi.json",
+        "/arda/openapi.json",
+        "/arda",
+        "/beorn",
+        "/palantir",
+    ]
+    
+    # Auto-instrument FastAPI with excluded URLs
+    FastAPIInstrumentor.instrument_app(
+        app,
+        tracer_provider=tracer_provider,
+        excluded_urls=",".join(excluded_urls) if excluded_urls else None,
+    )
 
     class CorrelationMiddleware(BaseHTTPMiddleware):
         """Middleware to inject correlation keys"""
