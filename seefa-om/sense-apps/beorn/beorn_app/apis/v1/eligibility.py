@@ -15,10 +15,14 @@ from beorn_app.bll.eligibility.automation_eligibility import (
 )
 from beorn_app.common.generic import ENG_ID_REGEX, MAC_ADDR_REGEX
 from beorn_app.bll.topologies import Topologies
+from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
 
 
 api = Namespace("v1/eligibility", description="Automation Eligibility Checks")
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 @api.route("/circuit_testing")
@@ -76,6 +80,7 @@ class CircuitTestingEligibility(Resource):
         username = request.args.get("username", "").strip().upper()
         fastpath_only = request.args.get("fastpath_only", False)
         cpe_planned_ineligible = request.args.get("cpe_planned_ineligible", False)
+        
         if isinstance(allow_ctbh, str):
             allow_ctbh = allow_ctbh.upper() == "TRUE"
         if isinstance(cap_eline_bandwidth, str):
@@ -88,17 +93,41 @@ class CircuitTestingEligibility(Resource):
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        circuit_test = circuit_test_eligibility.Eligibility(
-            circuit_id,
-            cpe_ip_address,
-            allow_ctbh,
-            cap_eline_bandwidth,
-            check_ssh,
-            username,
-            fastpath_only,
-            cpe_planned_ineligible,
-        )
-        return circuit_test.check_automation_eligibility()
+        with tracer.start_as_current_span("beorn.eligibility.circuit_test") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "circuit_test")
+            span.set_attribute("eligibility.allow_ctbh", allow_ctbh)
+            span.set_attribute("eligibility.cap_eline_bandwidth", cap_eline_bandwidth)
+            span.set_attribute("eligibility.check_ssh", check_ssh)
+            span.set_attribute("eligibility.fastpath_only", fastpath_only)
+            
+            try:
+                add_span_event("eligibility.check.start", circuit_id=circuit_id, type="circuit_test")
+                circuit_test = circuit_test_eligibility.Eligibility(
+                    circuit_id,
+                    cpe_ip_address,
+                    allow_ctbh,
+                    cap_eline_bandwidth,
+                    check_ssh,
+                    username,
+                    fastpath_only,
+                    cpe_planned_ineligible,
+                )
+                result = circuit_test.check_automation_eligibility()
+                
+                # Extract eligibility result
+                if isinstance(result, dict):
+                    eligible = result.get("eligible", False)
+                    span.set_attribute("eligibility.eligible", eligible)
+                    if not eligible and "data" in result:
+                        error_context = error_categorizer.extract_error_context(str(result["data"]))
+                        span.set_attribute("error.category", error_context.get("category", "ELIGIBILITY_ERROR"))
+                
+                add_span_event("eligibility.check.complete", circuit_id=circuit_id, eligible=result.get("eligible", False))
+                return result
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/provisioning_new")
@@ -111,29 +140,45 @@ class ProvisioningNewEligibility(Resource):
     @api.doc(params={"circuit_id": {"description": "Circuit ID", "type": "string", "default": None}})
     def get(self):
         # new provisioning orders
-        circuit_id = request.args.get("circuit_id").strip()
+        circuit_id = request.args.get("circuit_id", "").strip()
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        topology_data = Topologies(circuit_id)
-        topology = topology_data.create_topology()
-        circuit_elements = topology_data.circuit_elements
-        multi_leg = True if topology.get("PRIMARY") else False
-        if multi_leg:
-            primary_leg = Provisioning(topology["PRIMARY"], topology_data.primary_leg_elements)
-            primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
-            primary_eligibility["leg"] = "primary"
-            secondary_leg = Provisioning(topology["SECONDARY"], topology_data.secondary_leg_elements)
-            secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
-            secondary_eligibility["leg"] = "secondary"
-            status = 200
-            if primary_status != 200 or secondary_status != 200:
-                status = 418
-            provisioning_eligibility = [primary_eligibility, secondary_eligibility], status
-        else:
-            eligibility, status = Provisioning(topology, circuit_elements).check_automation_eligibility()
-            provisioning_eligibility = [eligibility], status
-        return provisioning_eligibility
+        with tracer.start_as_current_span("beorn.eligibility.provisioning_new") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "provisioning_new")
+            
+            try:
+                add_span_event("eligibility.provisioning_new.start", circuit_id=circuit_id)
+                topology_data = Topologies(circuit_id)
+                topology = topology_data.create_topology()
+                circuit_elements = topology_data.circuit_elements
+                multi_leg = True if topology.get("PRIMARY") else False
+                span.set_attribute("eligibility.multi_leg", multi_leg)
+                
+                if multi_leg:
+                    primary_leg = Provisioning(topology["PRIMARY"], topology_data.primary_leg_elements)
+                    primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
+                    primary_eligibility["leg"] = "primary"
+                    secondary_leg = Provisioning(topology["SECONDARY"], topology_data.secondary_leg_elements)
+                    secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
+                    secondary_eligibility["leg"] = "secondary"
+                    status = 200
+                    if primary_status != 200 or secondary_status != 200:
+                        status = 418
+                    span.set_attribute("eligibility.primary.eligible", primary_eligibility.get("eligible", False))
+                    span.set_attribute("eligibility.secondary.eligible", secondary_eligibility.get("eligible", False))
+                    provisioning_eligibility = [primary_eligibility, secondary_eligibility], status
+                else:
+                    eligibility, status = Provisioning(topology, circuit_elements).check_automation_eligibility()
+                    span.set_attribute("eligibility.eligible", eligibility.get("eligible", False))
+                    provisioning_eligibility = [eligibility], status
+                
+                add_span_event("eligibility.provisioning_new.complete", circuit_id=circuit_id, status=status)
+                return provisioning_eligibility
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/provisioning_change")
@@ -144,29 +189,45 @@ class ProvisioningNewEligibility(Resource):
 class ProvisioningChangeEligibility(Resource):
     def get(self):
         # change provisioning orders
-        circuit_id = request.args.get("circuit_id").strip()
+        circuit_id = request.args.get("circuit_id", "").strip()
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        topology_data = Topologies(circuit_id)
-        topology = topology_data.create_topology()
-        circuit_elements = topology_data.circuit_elements
-        multi_leg = True if topology.get("PRIMARY") else False
-        if multi_leg:
-            primary_leg = ProvisioningChange(topology["PRIMARY"], topology_data.primary_leg_elements)
-            primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
-            primary_eligibility["leg"] = "primary"
-            secondary_leg = ProvisioningChange(topology["SECONDARY"], topology_data.secondary_leg_elements)
-            secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
-            secondary_eligibility["leg"] = "secondary"
-            status = 200
-            if primary_status != 200 or secondary_status != 200:
-                status = 418
-            provisioning_eligibility = [primary_eligibility, secondary_eligibility], status
-        else:
-            eligibility, status = ProvisioningChange(topology, circuit_elements).check_automation_eligibility()
-            provisioning_eligibility = [eligibility], status
-        return provisioning_eligibility
+        with tracer.start_as_current_span("beorn.eligibility.provisioning_change") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "provisioning_change")
+            
+            try:
+                add_span_event("eligibility.provisioning_change.start", circuit_id=circuit_id)
+                topology_data = Topologies(circuit_id)
+                topology = topology_data.create_topology()
+                circuit_elements = topology_data.circuit_elements
+                multi_leg = True if topology.get("PRIMARY") else False
+                span.set_attribute("eligibility.multi_leg", multi_leg)
+                
+                if multi_leg:
+                    primary_leg = ProvisioningChange(topology["PRIMARY"], topology_data.primary_leg_elements)
+                    primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
+                    primary_eligibility["leg"] = "primary"
+                    secondary_leg = ProvisioningChange(topology["SECONDARY"], topology_data.secondary_leg_elements)
+                    secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
+                    secondary_eligibility["leg"] = "secondary"
+                    status = 200
+                    if primary_status != 200 or secondary_status != 200:
+                        status = 418
+                    span.set_attribute("eligibility.primary.eligible", primary_eligibility.get("eligible", False))
+                    span.set_attribute("eligibility.secondary.eligible", secondary_eligibility.get("eligible", False))
+                    provisioning_eligibility = [primary_eligibility, secondary_eligibility], status
+                else:
+                    eligibility, status = ProvisioningChange(topology, circuit_elements).check_automation_eligibility()
+                    span.set_attribute("eligibility.eligible", eligibility.get("eligible", False))
+                    provisioning_eligibility = [eligibility], status
+                
+                add_span_event("eligibility.provisioning_change.complete", circuit_id=circuit_id, status=status)
+                return provisioning_eligibility
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/compliance_new")
@@ -177,29 +238,45 @@ class ProvisioningChangeEligibility(Resource):
 class ComplianceNewEligibility(Resource):
     def get(self):
         # new and change compliance orders
-        circuit_id = request.args.get("circuit_id").strip()
+        circuit_id = request.args.get("circuit_id", "").strip()
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        topology_data = Topologies(circuit_id)
-        topology = topology_data.create_topology()
-        circuit_elements = topology_data.circuit_elements
-        multi_leg = True if topology.get("PRIMARY") else False
-        if multi_leg:
-            primary_leg = ComplianceNew(topology["PRIMARY"], topology_data.primary_leg_elements)
-            primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
-            primary_eligibility["leg"] = "primary"
-            secondary_leg = ComplianceNew(topology["SECONDARY"], topology_data.secondary_leg_elements)
-            secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
-            secondary_eligibility["leg"] = "secondary"
-            status = 200
-            if primary_status != 200 or secondary_status != 200:
-                status = 418
-            compliance_eligibility = [primary_eligibility, secondary_eligibility], status
-        else:
-            eligibility, status = ComplianceNew(topology, circuit_elements).check_automation_eligibility()
-            compliance_eligibility = [eligibility], status
-        return compliance_eligibility
+        with tracer.start_as_current_span("beorn.eligibility.compliance_new") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "compliance_new")
+            
+            try:
+                add_span_event("eligibility.compliance_new.start", circuit_id=circuit_id)
+                topology_data = Topologies(circuit_id)
+                topology = topology_data.create_topology()
+                circuit_elements = topology_data.circuit_elements
+                multi_leg = True if topology.get("PRIMARY") else False
+                span.set_attribute("eligibility.multi_leg", multi_leg)
+                
+                if multi_leg:
+                    primary_leg = ComplianceNew(topology["PRIMARY"], topology_data.primary_leg_elements)
+                    primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
+                    primary_eligibility["leg"] = "primary"
+                    secondary_leg = ComplianceNew(topology["SECONDARY"], topology_data.secondary_leg_elements)
+                    secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
+                    secondary_eligibility["leg"] = "secondary"
+                    status = 200
+                    if primary_status != 200 or secondary_status != 200:
+                        status = 418
+                    span.set_attribute("eligibility.primary.eligible", primary_eligibility.get("eligible", False))
+                    span.set_attribute("eligibility.secondary.eligible", secondary_eligibility.get("eligible", False))
+                    compliance_eligibility = [primary_eligibility, secondary_eligibility], status
+                else:
+                    eligibility, status = ComplianceNew(topology, circuit_elements).check_automation_eligibility()
+                    span.set_attribute("eligibility.eligible", eligibility.get("eligible", False))
+                    compliance_eligibility = [eligibility], status
+                
+                add_span_event("eligibility.compliance_new.complete", circuit_id=circuit_id, status=status)
+                return compliance_eligibility
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/compliance_change")
@@ -210,29 +287,45 @@ class ComplianceNewEligibility(Resource):
 class ComplianceChangeEligibility(Resource):
     def get(self):
         # new and change compliance orders
-        circuit_id = request.args.get("circuit_id").strip()
+        circuit_id = request.args.get("circuit_id", "").strip()
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        topology_data = Topologies(circuit_id)
-        topology = topology_data.create_topology()
-        circuit_elements = topology_data.circuit_elements
-        multi_leg = True if topology.get("PRIMARY") else False
-        if multi_leg:
-            primary_leg = ComplianceChange(topology["PRIMARY"], topology_data.primary_leg_elements)
-            primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
-            primary_eligibility["leg"] = "primary"
-            secondary_leg = ComplianceChange(topology["SECONDARY"], topology_data.secondary_leg_elements)
-            secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
-            secondary_eligibility["leg"] = "secondary"
-            status = 200
-            if primary_status != 200 or secondary_status != 200:
-                status = 418
-            compliance_eligibility = [primary_eligibility, secondary_eligibility], status
-        else:
-            eligibility, status = ComplianceChange(topology, circuit_elements).check_automation_eligibility()
-            compliance_eligibility = [eligibility], status
-        return compliance_eligibility
+        with tracer.start_as_current_span("beorn.eligibility.compliance_change") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "compliance_change")
+            
+            try:
+                add_span_event("eligibility.compliance_change.start", circuit_id=circuit_id)
+                topology_data = Topologies(circuit_id)
+                topology = topology_data.create_topology()
+                circuit_elements = topology_data.circuit_elements
+                multi_leg = True if topology.get("PRIMARY") else False
+                span.set_attribute("eligibility.multi_leg", multi_leg)
+                
+                if multi_leg:
+                    primary_leg = ComplianceChange(topology["PRIMARY"], topology_data.primary_leg_elements)
+                    primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
+                    primary_eligibility["leg"] = "primary"
+                    secondary_leg = ComplianceChange(topology["SECONDARY"], topology_data.secondary_leg_elements)
+                    secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
+                    secondary_eligibility["leg"] = "secondary"
+                    status = 200
+                    if primary_status != 200 or secondary_status != 200:
+                        status = 418
+                    span.set_attribute("eligibility.primary.eligible", primary_eligibility.get("eligible", False))
+                    span.set_attribute("eligibility.secondary.eligible", secondary_eligibility.get("eligible", False))
+                    compliance_eligibility = [primary_eligibility, secondary_eligibility], status
+                else:
+                    eligibility, status = ComplianceChange(topology, circuit_elements).check_automation_eligibility()
+                    span.set_attribute("eligibility.eligible", eligibility.get("eligible", False))
+                    compliance_eligibility = [eligibility], status
+                
+                add_span_event("eligibility.compliance_change.complete", circuit_id=circuit_id, status=status)
+                return compliance_eligibility
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/compliance_disconnect")
@@ -243,29 +336,45 @@ class ComplianceChangeEligibility(Resource):
 class ComplianceDisconnectEligibility(Resource):
     def get(self):
         # new and change compliance orders
-        circuit_id = request.args.get("circuit_id").strip()
+        circuit_id = request.args.get("circuit_id", "").strip()
         if not circuit_id:
             abort(400, "Bad request - missing CID")
 
-        topology_data = Topologies(circuit_id)
-        topology = topology_data.create_topology()
-        circuit_elements = topology_data.circuit_elements
-        multi_leg = True if topology.get("PRIMARY") else False
-        if multi_leg:
-            primary_leg = ComplianceDisconnect(topology["PRIMARY"], topology_data.primary_leg_elements)
-            primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
-            primary_eligibility["leg"] = "primary"
-            secondary_leg = ComplianceDisconnect(topology["SECONDARY"], topology_data.secondary_leg_elements)
-            secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
-            secondary_eligibility["leg"] = "secondary"
-            status = 200
-            if primary_status != 200 or secondary_status != 200:
-                status = 418
-            compliance_eligibility = [primary_eligibility, secondary_eligibility], status
-        else:
-            eligibility, status = ComplianceDisconnect(topology, circuit_elements).check_automation_eligibility()
-            compliance_eligibility = [eligibility], status
-        return compliance_eligibility
+        with tracer.start_as_current_span("beorn.eligibility.compliance_disconnect") as span:
+            set_mdso_correlation(circuit_id=circuit_id)
+            span.set_attribute("eligibility.type", "compliance_disconnect")
+            
+            try:
+                add_span_event("eligibility.compliance_disconnect.start", circuit_id=circuit_id)
+                topology_data = Topologies(circuit_id)
+                topology = topology_data.create_topology()
+                circuit_elements = topology_data.circuit_elements
+                multi_leg = True if topology.get("PRIMARY") else False
+                span.set_attribute("eligibility.multi_leg", multi_leg)
+                
+                if multi_leg:
+                    primary_leg = ComplianceDisconnect(topology["PRIMARY"], topology_data.primary_leg_elements)
+                    primary_eligibility, primary_status = primary_leg.check_automation_eligibility()
+                    primary_eligibility["leg"] = "primary"
+                    secondary_leg = ComplianceDisconnect(topology["SECONDARY"], topology_data.secondary_leg_elements)
+                    secondary_eligibility, secondary_status = secondary_leg.check_automation_eligibility()
+                    secondary_eligibility["leg"] = "secondary"
+                    status = 200
+                    if primary_status != 200 or secondary_status != 200:
+                        status = 418
+                    span.set_attribute("eligibility.primary.eligible", primary_eligibility.get("eligible", False))
+                    span.set_attribute("eligibility.secondary.eligible", secondary_eligibility.get("eligible", False))
+                    compliance_eligibility = [primary_eligibility, secondary_eligibility], status
+                else:
+                    eligibility, status = ComplianceDisconnect(topology, circuit_elements).check_automation_eligibility()
+                    span.set_attribute("eligibility.eligible", eligibility.get("eligible", False))
+                    compliance_eligibility = [eligibility], status
+                
+                add_span_event("eligibility.compliance_disconnect.complete", circuit_id=circuit_id, status=status)
+                return compliance_eligibility
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/rphy_activation")

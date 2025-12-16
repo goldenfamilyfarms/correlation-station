@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common')
 
 # Import comprehensive OTEL observability (replaces resource-intensive middleware)
 try:
-    from observability import setup_observability
+    from palantir_app.common.otel.observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False

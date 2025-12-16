@@ -30,11 +30,15 @@ from palantir_app.common.compliance_utils import (
 from palantir_app.bll import compliance_disconnect
 from palantir_app.bll.compliance_disconnect_housekeeping import DisconnectHousekeeping, DisconnectServiceIPs
 from palantir_app.bll.mdso import get_active_resource, get_resource_by_type_and_label
+from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 from palantir_app.common.http_auth import auth
 
 logger = logging.getLogger(__name__)
 api = Namespace("v1/compliance", description="Circuit Compliance API")
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 UNSUPPORTED_ERROR = api.model("unsupported", {"message": fields.String(example="Use case unsupported")})
 
@@ -66,13 +70,36 @@ class DisconnectCompliance(Resource):
     def post(self, cid):
         """Create disconnect mapper resource to identify any remnant configurations on network"""
         body = request.get_json()
+        order_type = body.get("order_type", "").upper()
+        
+        with tracer.start_as_current_span("palantir.compliance.disconnect.create") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("compliance.operation", "disconnect_create")
+            span.set_attribute("compliance.order_type", order_type)
+            
+            try:
+                add_span_event("compliance.disconnect.create.start", circuit_id=cid, order_type=order_type)
+                compliance = compliance_disconnect.Initialize(cid, body, order_type)
+                if compliance.is_pass_through():
+                    span.set_attribute("compliance.pass_through", True)
+                    add_span_event("compliance.disconnect.pass_through", circuit_id=cid)
+                    return {"resource_id": PASS_THROUGH}, 211
 
-        compliance = compliance_disconnect.Initialize(cid, body, body["order_type"].upper())
-        if compliance.is_pass_through():
-            return {"resource_id": PASS_THROUGH}, 211
-
-        response = compliance.create_disconnect_mapper()
-        return response, 201
+                span.set_attribute("compliance.pass_through", False)
+                add_span_event("compliance.disconnect_mapper.create.start", circuit_id=cid)
+                response = compliance.create_disconnect_mapper()
+                
+                if isinstance(response, dict) and "resource_id" in response:
+                    span.set_attribute("mdso.resource_id", response["resource_id"])
+                
+                add_span_event("compliance.disconnect.create.complete", circuit_id=cid, resource_id=response.get("resource_id") if isinstance(response, dict) else None)
+                return response, 201
+            except Exception as e:
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                raise
 
 
 # Disconnect Compliance Evaluation of Mapping
@@ -130,39 +157,82 @@ class DisconnectComplianceStatus(Resource):
         :rtype: dict
         """
         body = request.get_json()
-        resource_id = body["resource_id"]
-        product_name = body["product_name"]
-        order_type = translate_eng_job_type(body["order_type"])
-        # make sure the right endpoint was called for the order type
-        if not compliance_disconnect.is_valid_request(order_type):
-            abort(400, f"Incorrect order type submitted for disconnect compliance request: {body['order_type']}")
+        resource_id = body.get("resource_id")
+        product_name = body.get("product_name")
+        order_type_raw = body.get("order_type", "")
+        
+        with tracer.start_as_current_span("palantir.compliance.disconnect.status") as span:
+            set_mdso_correlation(circuit_id=cid, resource_id=resource_id)
+            span.set_attribute("compliance.operation", "disconnect_status")
+            span.set_attribute("compliance.product_name", product_name or "unknown")
+            span.set_attribute("compliance.order_type", order_type_raw)
+            
+            try:
+                add_span_event("compliance.disconnect.status.check.start", circuit_id=cid, resource_id=resource_id)
+                order_type = translate_eng_job_type(order_type_raw)
+                span.set_attribute("compliance.order_type_translated", order_type)
+                
+                # make sure the right endpoint was called for the order type
+                if not compliance_disconnect.is_valid_request(order_type):
+                    error_msg = f"Incorrect order type submitted for disconnect compliance request: {order_type_raw}"
+                    error_context = error_categorizer.extract_error_context(error_msg)
+                    span.set_attribute("error.category", error_context.get("category", "VALIDATION_ERROR"))
+                    abort(400, error_msg)
 
-        compliance_required = is_compliance_required(resource_id)
-        # allow pass through orders to flow directly to housekeeping
-        if not compliance_required:
-            compliance_stages = ComplianceStages(order_type, product_name=product_name)
-            compliance_stages.set_pass_through_status()
-            return compliance_stages.status, 200
+                compliance_required = is_compliance_required(resource_id)
+                span.set_attribute("compliance.required", compliance_required)
+                
+                # allow pass through orders to flow directly to housekeeping
+                if not compliance_required:
+                    compliance_stages = ComplianceStages(order_type, product_name=product_name)
+                    compliance_stages.set_pass_through_status()
+                    span.set_attribute("compliance.pass_through", True)
+                    add_span_event("compliance.disconnect.pass_through", circuit_id=cid)
+                    return compliance_stages.status, 200
 
-        network_data = get_active_resource(resource_id)
-        if not network_data:
-            abort(400, "Unable to get required network data for evaluation, no active DisconnectMapper resource found")
-        endpoint_data = compliance_disconnect.get_endpoint_data(network_data)
+                span.set_attribute("compliance.pass_through", False)
+                add_span_event("compliance.network_data.fetch.start", circuit_id=cid, resource_id=resource_id)
+                network_data = get_active_resource(resource_id)
+                if not network_data:
+                    error_msg = "Unable to get required network data for evaluation, no active DisconnectMapper resource found"
+                    error_context = error_categorizer.extract_error_context(error_msg)
+                    span.set_attribute("error.category", error_context.get("category", "DATA_ERROR"))
+                    abort(400, error_msg)
+                
+                add_span_event("compliance.network_data.fetch.complete", circuit_id=cid)
+                endpoint_data = compliance_disconnect.get_endpoint_data(network_data)
 
-        # get true order type by evaluating designed paths
-        order_type = compliance_disconnect.get_order_type_by_impact_analysis(endpoint_data, order_type)
+                # get true order type by evaluating designed paths
+                order_type = compliance_disconnect.get_order_type_by_impact_analysis(endpoint_data, order_type)
+                span.set_attribute("compliance.order_type_final", order_type)
+                span.set_attribute("compliance.is_full_disconnect", order_type == FULL_DISCO_ORDER_TYPE)
 
-        # initialize compliance stages for order type
-        compliance_stages = ComplianceStages(order_type, product_name=product_name)
-        logger.debug(f"{cid} Initial Compliance Stages: {compliance_stages.status}")
+                # initialize compliance stages for order type
+                compliance_stages = ComplianceStages(order_type, product_name=product_name)
+                logger.debug(f"{cid} Initial Compliance Stages: {compliance_stages.status}")
 
-        validate_network_data_exists(compliance_stages.status, resource_id, network_data)
+                validate_network_data_exists(compliance_stages.status, resource_id, network_data)
 
-        # check compliance
-        compliance_disconnect.check_compliance(cid, product_name, network_data, compliance_stages.status)
+                # check compliance
+                add_span_event("compliance.check.start", circuit_id=cid, order_type=order_type)
+                compliance_disconnect.check_compliance(cid, product_name, network_data, compliance_stages.status)
+                add_span_event("compliance.check.complete", circuit_id=cid)
 
-        compliance_stages.set_next_stage_to_ready()
-        return {"message": compliance_stages.status, COMPLIANT: True}, 200
+                compliance_stages.set_next_stage_to_ready()
+                
+                # Extract compliance status
+                if isinstance(compliance_stages.status, dict):
+                    compliant = compliance_stages.status.get(COMPLIANT, False)
+                    span.set_attribute("compliance.compliant", compliant)
+                
+                add_span_event("compliance.disconnect.status.check.complete", circuit_id=cid)
+                return {"message": compliance_stages.status, COMPLIANT: True}, 200
+            except Exception as e:
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                raise
 
 
 # Disconnect Compliance Housekeeping Tasks (only called if /disconnect/status/<cid> response status 200)

@@ -173,6 +173,6 @@ class Logs_Main(Environment_Setup):
         logger.info(f'Sending {dir} - {resource_id} to bash script to gather {directory_name} - ' + date_start)
 
 if __name__ == '__main__':
-    Logs_Main(Environment_Setup).main()
+    Logs_Main('network_service').main()
 
 

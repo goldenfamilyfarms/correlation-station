@@ -13,10 +13,14 @@ from beorn_app.common.mdso_operations import (
     service_details,
     service_id_lookup,
 )
+from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
 
 api = Namespace("v1/service", description="Create, delete, update, and check status of a service")
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 @api.route("")
@@ -60,38 +64,65 @@ class Service(Resource):
     )
     def get(self):
         """Check status of a service"""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, "Missing CID")
 
-        cid = request.args["cid"]
-        token = create_token()
+        with tracer.start_as_current_span("beorn.service.v1.get_status") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "get_status")
+            span.set_attribute("service.api_version", "v1")
+            
+            try:
+                add_span_event("service.status.query.start", circuit_id=cid)
+                token = create_token()
 
-        headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
+                headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
 
-        err_msg, items = service_details(headers, cid, "charter.resourceTypes.NetworkService")
-        if err_msg:
-            abort(500, err_msg)
+                err_msg, items = service_details(headers, cid, "charter.resourceTypes.NetworkService")
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                    abort(500, err_msg)
 
-        msg = ""
-        if items:
-            for i in items:
-                site_msgs = []
-                if "site_status" in i["properties"]:
-                    for site in i["properties"]["site_status"]:
-                        site_msgs.append({"Host": site["host"], "Site": site["site"], "State": site["state"]})
-                msg = {
-                    "MDSO service ID": i["id"],
-                    "Stage": i["properties"]["stage"],
-                    "Site state": i["properties"]["state"],
-                    "Site status": site_msgs,
-                    "Current service state": i["orchState"],
-                    "Desired service state": i["desiredOrchState"],
-                    "Reason": i["reason"],
-                }
-        else:
-            abort(404, "No service found")
-        delete_token(token)
-        return msg
+                msg = ""
+                if items:
+                    for i in items:
+                        span.set_attribute("mdso.resource_id", i["id"])
+                        span.set_attribute("service.stage", i["properties"]["stage"])
+                        span.set_attribute("service.state", i["properties"]["state"])
+                        span.set_attribute("service.orch_state", i["orchState"])
+                        span.set_attribute("service.desired_state", i["desiredOrchState"])
+                        
+                        site_msgs = []
+                        if "site_status" in i["properties"]:
+                            span.set_attribute("service.sites_count", len(i["properties"]["site_status"]))
+                            for site in i["properties"]["site_status"]:
+                                site_msgs.append({"Host": site["host"], "Site": site["site"], "State": site["state"]})
+                        msg = {
+                            "MDSO service ID": i["id"],
+                            "Stage": i["properties"]["stage"],
+                            "Site state": i["properties"]["state"],
+                            "Site status": site_msgs,
+                            "Current service state": i["orchState"],
+                            "Desired service state": i["desiredOrchState"],
+                            "Reason": i["reason"],
+                        }
+                        if i.get("reason"):
+                            error_context = error_categorizer.extract_error_context(i["reason"])
+                            span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                else:
+                    span.set_attribute("service.found", False)
+                    abort(404, "No service found")
+                
+                span.set_attribute("service.found", True)
+                add_span_event("service.status.query.complete", circuit_id=cid)
+                delete_token(token)
+                return msg
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.response(
         200,
@@ -106,43 +137,66 @@ class Service(Resource):
     @api.response(404, "Resource Not Found")
     def post(self):
         """Create a new service"""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, "Missing CID")
 
-        cid = request.args["cid"]
-        token = create_token()
+        with tracer.start_as_current_span("beorn.service.v1.create") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "create")
+            span.set_attribute("service.api_version", "v1")
+            
+            try:
+                add_span_event("service.create.start", circuit_id=cid)
+                token = create_token()
 
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": "token {}".format(token),
-        }
+                headers = {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": "token {}".format(token),
+                }
 
-        err_msg, service_id = service_id_lookup(headers, cid)
-        if err_msg:
-            abort(500, err_msg)
-        if service_id is not None:
-            return {"resource_id": service_id}, 200
+                err_msg, service_id = service_id_lookup(headers, cid)
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
+                if service_id is not None:
+                    span.set_attribute("service.existing", True)
+                    span.set_attribute("mdso.resource_id", service_id)
+                    add_span_event("service.create.existing_found", circuit_id=cid, resource_id=service_id)
+                    return {"resource_id": service_id}, 200
 
-        err_msg, product = product_query(headers, "NetworkService")
-        if err_msg:
-            abort(500, err_msg)
+                span.set_attribute("service.existing", False)
+                err_msg, product = product_query(headers, "NetworkService")
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
 
-        data = {
-            "label": cid,
-            "description": "CID from sense CLI",
-            "productId": product,
-            "properties": {"circuit_id": cid},
-            "autoclean": True,
-        }
+                data = {
+                    "label": cid,
+                    "description": "CID from sense CLI",
+                    "productId": product,
+                    "properties": {"circuit_id": cid},
+                    "autoclean": True,
+                }
 
-        logger.debug("Creating a service for {}".format(cid))
-        err_msg, resource_id = post_to_service(headers, data, cid)
-        if err_msg:
-            abort(500, err_msg)
-        delete_token(token)
+                logger.debug("Creating a service for {}".format(cid))
+                err_msg, resource_id = post_to_service(headers, data, cid)
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
+                
+                span.set_attribute("mdso.resource_id", resource_id)
+                add_span_event("service.create.complete", circuit_id=cid, resource_id=resource_id)
+                delete_token(token)
 
-        return {"resource_id": resource_id}, 201
+                return {"resource_id": resource_id}, 201
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.response(
         200,
@@ -152,26 +206,46 @@ class Service(Resource):
     @api.response(204, "No service found to delete")
     def delete(self):
         """Delete a service"""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, "Missing CID")
 
-        cid = request.args["cid"]
-        token = create_token()
-        headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
+        with tracer.start_as_current_span("beorn.service.v1.delete") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "delete")
+            span.set_attribute("service.api_version", "v1")
+            
+            try:
+                add_span_event("service.delete.start", circuit_id=cid)
+                token = create_token()
+                headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
 
-        err_msg, service_id = service_id_lookup(headers, cid)
-        if err_msg:
-            abort(500, err_msg)
+                err_msg, service_id = service_id_lookup(headers, cid)
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
 
-        if service_id is None:
-            return "", 204
+                if service_id is None:
+                    span.set_attribute("service.found", False)
+                    add_span_event("service.delete.not_found", circuit_id=cid)
+                    return "", 204
 
-        logger.debug("Deleting service for {}".format(cid))
-        err_msg = delete_service(headers, service_id)
-        if err_msg:
-            abort(500, err_msg)
-        delete_token(token)
-        return {"resource_id": service_id}, 200
+                span.set_attribute("service.found", True)
+                span.set_attribute("mdso.resource_id", service_id)
+                logger.debug("Deleting service for {}".format(cid))
+                err_msg = delete_service(headers, service_id)
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
+                
+                add_span_event("service.delete.complete", circuit_id=cid, resource_id=service_id)
+                delete_token(token)
+                return {"resource_id": service_id}, 200
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.response(
         201,
@@ -200,9 +274,9 @@ class Service(Resource):
         This relies on Granite already having the updated data.
 
         Provide at least one option to update using the body payload."""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, "Missing CID")
-        cid = request.args["cid"]
 
         body = json.loads(request.data.decode("utf-8"))
 
@@ -213,57 +287,84 @@ class Service(Resource):
         if not bw and not ip and not dsc:
             abort(400, "Select at least one option to update.")
 
-        token = create_token()
-        headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
+        with tracer.start_as_current_span("beorn.service.v1.update") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "update")
+            span.set_attribute("service.api_version", "v1")
+            span.set_attribute("service.update.bandwidth", bw)
+            span.set_attribute("service.update.ip", ip)
+            span.set_attribute("service.update.description", dsc)
+            
+            try:
+                add_span_event("service.update.start", circuit_id=cid, updates={"bw": bw, "ip": ip, "dsc": dsc})
+                token = create_token()
+                headers = {"Accept": "application/json", "Authorization": "token {}".format(token)}
 
-        err_msg, prod_id = product_query(headers, "NetworkServiceUpdate")
-        if err_msg:
-            abort(500, err_msg)
+                err_msg, prod_id = product_query(headers, "NetworkServiceUpdate")
+                if err_msg:
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    abort(500, err_msg)
 
-        # only one property can be updated at a time
+                # only one property can be updated at a time
 
-        data = {
-            "label": cid,
-            "resourceTypeId": "charter.resourceTypes.NetworkServiceUpdate",
-            "productId": prod_id,
-            "properties": {
-                "ip": False,
-                "description": False,
-                "bandwidth": False,
-                "serviceStateenable": False,
-                "circuit_id": cid,
-                "serviceStatedisable": False,
-            },
-            "desiredOrchState": "active",
-        }
-        successes = {}
-        errors = []
+                data = {
+                    "label": cid,
+                    "resourceTypeId": "charter.resourceTypes.NetworkServiceUpdate",
+                    "productId": prod_id,
+                    "properties": {
+                        "ip": False,
+                        "description": False,
+                        "bandwidth": False,
+                        "serviceStateenable": False,
+                        "circuit_id": cid,
+                        "serviceStatedisable": False,
+                    },
+                    "desiredOrchState": "active",
+                }
+                successes = {}
+                errors = []
 
-        if ip:
-            data["properties"]["bandwidth"] = False
-            data["properties"]["description"] = False
-            data["properties"]["ip"] = True
-            err_msg, resource_id = post_to_service(headers, data, cid)
-            if err_msg:
-                errors.append("IP error: {}".format(err_msg))
-            successes["ip_resource_id"] = resource_id
-        if bw:
-            data["properties"]["ip"] = False
-            data["properties"]["description"] = False
-            data["properties"]["bandwidth"] = True
-            err_msg, resource_id = post_to_service(headers, data, cid)
-            if err_msg:
-                errors.append("Bandwidth error: {}".format(err_msg))
-            successes["bw_resource_id"] = resource_id
-        if dsc:
-            data["properties"]["bandwidth"] = False
-            data["properties"]["ip"] = False
-            data["properties"]["description"] = True
-            err_msg, resource_id = post_to_service(headers, data, cid)
-            if err_msg:
-                errors.append("Description error: {}".format(err_msg))
-            successes["dsc_resource_id"] = resource_id
-        if errors:
-            abort(500, ", ".join(errors))
-        delete_token(token)
-        return successes, 201
+                if ip:
+                    data["properties"]["bandwidth"] = False
+                    data["properties"]["description"] = False
+                    data["properties"]["ip"] = True
+                    err_msg, resource_id = post_to_service(headers, data, cid)
+                    if err_msg:
+                        errors.append("IP error: {}".format(err_msg))
+                    else:
+                        successes["ip_resource_id"] = resource_id
+                        span.set_attribute("service.update.ip.resource_id", resource_id)
+                if bw:
+                    data["properties"]["ip"] = False
+                    data["properties"]["description"] = False
+                    data["properties"]["bandwidth"] = True
+                    err_msg, resource_id = post_to_service(headers, data, cid)
+                    if err_msg:
+                        errors.append("Bandwidth error: {}".format(err_msg))
+                    else:
+                        successes["bw_resource_id"] = resource_id
+                        span.set_attribute("service.update.bw.resource_id", resource_id)
+                if dsc:
+                    data["properties"]["bandwidth"] = False
+                    data["properties"]["ip"] = False
+                    data["properties"]["description"] = True
+                    err_msg, resource_id = post_to_service(headers, data, cid)
+                    if err_msg:
+                        errors.append("Description error: {}".format(err_msg))
+                    else:
+                        successes["dsc_resource_id"] = resource_id
+                        span.set_attribute("service.update.dsc.resource_id", resource_id)
+                
+                if errors:
+                    error_context = error_categorizer.extract_error_context(", ".join(errors))
+                    span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                    abort(500, ", ".join(errors))
+                
+                add_span_event("service.update.complete", circuit_id=cid, updates_count=len(successes))
+                delete_token(token)
+                return successes, 201
+            except Exception as e:
+                set_span_error(e)
+                raise

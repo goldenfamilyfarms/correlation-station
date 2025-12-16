@@ -1,5 +1,0 @@
-.integration-test:
-  image: registry.blueplanet.com/blueplanet/devtools/common-ci-cd-automations/ansible-test:0.1.1
-  stage: test
-  script:
-    - ansible-playbook main.yml

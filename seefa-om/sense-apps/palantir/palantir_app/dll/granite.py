@@ -7,6 +7,8 @@ from requests import JSONDecodeError
 import palantir_app
 from common_sense.common.errors import abort, error_formatter, get_standard_error_summary, GRANITE, MISSING_DATA
 from palantir_app.common.utils import get_hydra_headers, is_ctbh
+from palantir_app.common.otel import get_tracer, add_span_event, set_span_error
+from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
 from palantir_app.common.endpoints import (
     GRANITE_ELEMENTS,
     GRANITE_EQUIPMENTS,
@@ -23,6 +25,8 @@ from palantir_app.common.endpoints import (
 )
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 granite_base_url = palantir_app.url_config.GRANITE_BASE_URL
 
@@ -65,38 +69,66 @@ def granite_get(endpoint, params=None, timeout=60, return_response_obj=False, ha
 def granite_put(endpoint, payload, best_effort=False, calling_function="not specified"):
     """Send a PUT call to the Granite API and return
     the JSON-formatted response"""
-    headers = get_hydra_headers()
-    url = f"{granite_base_url}{endpoint}"
+    with tracer.start_as_current_span("granite.api.put") as span:
+        span.set_attribute("granite.operation", "put")
+        span.set_attribute("granite.endpoint", endpoint)
+        span.set_attribute("granite.best_effort", best_effort)
+        span.set_attribute("granite.calling_function", calling_function)
+        if isinstance(payload, dict):
+            # Extract circuit_id if present
+            cid = payload.get("PATH_NAME") or payload.get("CIRC_PATH_HUM_ID") or payload.get("cid")
+            if cid:
+                span.set_attribute("granite.circuit_id", cid)
+        
+        headers = get_hydra_headers()
+        url = f"{granite_base_url}{endpoint}"
 
-    try:
-        r = requests.put(url, headers=headers, json=payload, verify=False, timeout=60)
-        if r.status_code in [200, 204]:
-            return r.json()
+        try:
+            add_span_event("granite.api.call.start", endpoint=endpoint, calling_function=calling_function)
+            r = requests.put(url, headers=headers, json=payload, verify=False, timeout=60)
+            span.set_attribute("http.status_code", r.status_code)
+            
+            if r.status_code in [200, 204]:
+                add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=r.status_code)
+                return r.json()
 
-        granite_resp = r.json()
-        if "retString" in granite_resp:
-            error_msg = f"Granite response: {granite_resp['retString']}; \
-                calling function: {calling_function}; payload: {payload}"
-        else:
-            error_msg = (
-                f"Unexpected error from Granite for url: {url}: Headers = {clean_headers(headers)}, Payload = {payload}"
+            granite_resp = r.json()
+            if "retString" in granite_resp:
+                error_msg = f"Granite response: {granite_resp['retString']}; \
+                    calling function: {calling_function}; payload: {payload}"
+            else:
+                error_msg = (
+                    f"Unexpected error from Granite for url: {url}: Headers = {clean_headers(headers)}, Payload = {payload}"
+                )
+            error_context = error_categorizer.extract_error_context(error_msg)
+            span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            
+            if best_effort:
+                add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=r.status_code, best_effort=True)
+                return {"errorStatusCode": r.status_code, "errorStatusMessage": error_msg}
+            else:
+                abort(502, error_msg)
+        except (ConnectionError, requests.ConnectionError) as exception:
+            set_span_error(exception)
+            error_context = error_categorizer.extract_error_context(str(exception))
+            span.set_attribute("error.category", error_context.get("category", "CONNECTION_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            abort(
+                504,
+                f"Connection timed out updating data to Granite for url: {url}:"
+                f" Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
             )
-        if best_effort:
-            return {"errorStatusCode": r.status_code, "errorStatusMessage": error_msg}
-        else:
-            abort(502, error_msg)
-    except (ConnectionError, requests.ConnectionError) as exception:
-        abort(
-            504,
-            f"Connection timed out updating data to Granite for url: {url}:"
-            f" Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
-        )
-    except requests.ReadTimeout as exception:
-        abort(
-            504,
-            f"Connection timed out updating data to Granite for url: {url}:"
-            f" Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
-        )
+        except requests.ReadTimeout as exception:
+            set_span_error(exception)
+            error_context = error_categorizer.extract_error_context(str(exception))
+            span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            abort(
+                504,
+                f"Connection timed out updating data to Granite for url: {url}:"
+                f" Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
+            )
 
 
 def delete_with_query(endpoint, payload=None, query=None, timeout=60):
@@ -116,38 +148,63 @@ def delete_with_query(endpoint, payload=None, query=None, timeout=60):
 
 
 def granite_delete(endpoint, payload, timeout=60):
-    headers = get_hydra_headers()
-    url = f"{granite_base_url}{endpoint}"
-    max_retries = 3
-    if "CIRC_PATH_INST_ID" in payload:
-        CIRC_PATH_INST_ID = payload["CIRC_PATH_INST_ID"]
-    elif "PATH_INST_ID" in payload:
-        CIRC_PATH_INST_ID = payload["PATH_INST_ID"]
-    else:
-        CIRC_PATH_INST_ID = ""
-    CID = payload["PATH_NAME"]
+    with tracer.start_as_current_span("granite.api.delete") as span:
+        span.set_attribute("granite.operation", "delete")
+        span.set_attribute("granite.endpoint", endpoint)
+        span.set_attribute("granite.timeout", timeout)
+        
+        headers = get_hydra_headers()
+        url = f"{granite_base_url}{endpoint}"
+        max_retries = 3
+        if "CIRC_PATH_INST_ID" in payload:
+            CIRC_PATH_INST_ID = payload["CIRC_PATH_INST_ID"]
+        elif "PATH_INST_ID" in payload:
+            CIRC_PATH_INST_ID = payload["PATH_INST_ID"]
+        else:
+            CIRC_PATH_INST_ID = ""
+        CID = payload.get("PATH_NAME", "")
+        
+        span.set_attribute("granite.circuit_id", CID)
+        if CIRC_PATH_INST_ID:
+            span.set_attribute("granite.circ_path_inst_id", CIRC_PATH_INST_ID)
 
-    retry_count = 0
-    while retry_count <= max_retries:
-        try:
-            resp = requests.delete(url, headers=headers, json=payload, verify=False, timeout=timeout)
-            if resp.status_code in [200, 202, 204]:
-                return (200, f"Live Revision Deleted: CID = {CID} , CIRC_PATH_INST_ID = {CIRC_PATH_INST_ID}")
-            else:
-                retry_count = retry_count + 1
+        retry_count = 0
+        while retry_count <= max_retries:
+            if retry_count > 0:
+                span.set_attribute("granite.retry_count", retry_count)
+                add_span_event("granite.retry", endpoint=endpoint, attempt=retry_count)
+            
+            try:
+                add_span_event("granite.api.call.start", endpoint=endpoint, circuit_id=CID)
+                resp = requests.delete(url, headers=headers, json=payload, verify=False, timeout=timeout)
+                span.set_attribute("http.status_code", resp.status_code)
+                
+                if resp.status_code in [200, 202, 204]:
+                    add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code, circuit_id=CID)
+                    return (200, f"Live Revision Deleted: CID = {CID} , CIRC_PATH_INST_ID = {CIRC_PATH_INST_ID}")
+                else:
+                    retry_count = retry_count + 1
+                    if retry_count > max_retries:
+                        error_msg = (
+                            f"Unexpected error from Granite for url: {url}:"
+                            f" Headers = {clean_headers(headers)}, Payload = {payload}, Response = {resp.text}"
+                        )
+                        error_context = error_categorizer.extract_error_context(error_msg)
+                        span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+                        span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                        return (502, error_msg)
+            except (ConnectionError, requests.ConnectionError, requests.ReadTimeout) as exception:
                 if retry_count > max_retries:
+                    set_span_error(exception)
+                    error_context = error_categorizer.extract_error_context(str(exception))
+                    span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
                     return (
-                        502,
-                        f"Unexpected error from Granite for url: {url}:"
-                        f" Headers = {clean_headers(headers)}, Payload = {payload}, Response = {resp.text}",
+                        504,
+                        f"Connection Error While Deleting data from Granite for\
+                             url: {url}, Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
                     )
-        except (ConnectionError, requests.ConnectionError, requests.ReadTimeout) as exception:
-            if retry_count > max_retries:
-                return (
-                    504,
-                    f"Connection Error While Deleting data from Granite for\
-                         url: {url}, Headers = {clean_headers(headers)}, Payload = {payload} Error = {exception}",
-                )
+                retry_count = retry_count + 1
             else:
                 retry_count = retry_count + 1
 

@@ -8,8 +8,13 @@ import beorn_app
 
 from common_sense.common.errors import abort
 from beorn_app.common.mdso_operations import resource_status
+from beorn_app.common.otel import get_tracer, add_span_event, set_span_error
+from beorn_app.common.otel.mdso_patterns import ErrorCategorizer, MDSOPatterns
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
+mdso_patterns = MDSOPatterns()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -63,65 +68,149 @@ def _delete_token(token):
 
 
 def mdso_get(endpoint, timeout=30):
-    token = _create_token()
-    headers = {"Accept": "application/json", "Authorization": f"Bearer {token}"}
-    try:
-        r = requests.get(
-            f"{beorn_app.url_config.MDSO_BASE_URL}{endpoint}", headers=headers, timeout=timeout, verify=False
-        )
-        if r.status_code == 200:
-            try:
-                return r.json()
-            except ValueError:
-                abort(502, f"Could not parse response from MDSO for endpoint: {endpoint}")
-        else:
-            abort(
-                502,
-                f"Error Code: M003 - Unexpected status code: {r.status_code} returned from MDSO endpoint: {endpoint}",
+    with tracer.start_as_current_span("mdso.api.get") as span:
+        span.set_attribute("mdso.endpoint", endpoint)
+        span.set_attribute("mdso.method", "GET")
+        span.set_attribute("mdso.timeout", timeout)
+        
+        # Extract circuit_id from endpoint if present
+        circuit_id = mdso_patterns.extract_circuit_id(endpoint)
+        if circuit_id:
+            span.set_attribute("mdso.circuit_id", circuit_id)
+        
+        token = _create_token()
+        headers = {"Accept": "application/json", "Authorization": f"Bearer {token}"}
+        try:
+            r = requests.get(
+                f"{beorn_app.url_config.MDSO_BASE_URL}{endpoint}", headers=headers, timeout=timeout, verify=False
             )
-    except (ConnectionError, requests.ConnectionError):
-        abort(502, f"Failed to initialize connection to MDSO to complete: {endpoint}")
-    except requests.ReadTimeout:
-        abort(504, f"Error Code: M004 - Timed out reading data from MDSO to complete {endpoint}")
-    finally:
-        _delete_token(token)
+            span.set_attribute("http.status_code", r.status_code)
+            span.set_attribute("http.response.size", len(r.content) if r.content else 0)
+            
+            if r.status_code == 200:
+                try:
+                    response_data = r.json()
+                    # Extract resource_id from response if present
+                    if isinstance(response_data, dict):
+                        if "id" in response_data:
+                            span.set_attribute("mdso.resource_id", response_data["id"])
+                        if "items" in response_data and len(response_data["items"]) > 0:
+                            first_item = response_data["items"][0]
+                            if "id" in first_item:
+                                span.set_attribute("mdso.resource_id", first_item["id"])
+                            if "label" in first_item:
+                                cid = first_item["label"]
+                                span.set_attribute("mdso.circuit_id", cid)
+                    
+                    add_span_event("mdso.api.get.success", endpoint=endpoint, status_code=r.status_code)
+                    return response_data
+                except ValueError as e:
+                    error_msg = f"Could not parse response from MDSO for endpoint: {endpoint}"
+                    set_span_error(e)
+                    span.set_attribute("error.category", "PARSE_ERROR")
+                    abort(502, error_msg)
+            else:
+                error_msg = f"Error Code: M003 - Unexpected status code: {r.status_code} returned from MDSO endpoint: {endpoint}"
+                error_context = error_categorizer.extract_error_context(error_msg)
+                span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                abort(502, error_msg)
+        except (ConnectionError, requests.ConnectionError) as e:
+            error_msg = f"Failed to initialize connection to MDSO to complete: {endpoint}"
+            set_span_error(e)
+            span.set_attribute("error.category", "CONNECTIVITY_ERROR")
+            abort(502, error_msg)
+        except requests.ReadTimeout as e:
+            error_msg = f"Error Code: M004 - Timed out reading data from MDSO to complete {endpoint}"
+            set_span_error(e)
+            span.set_attribute("error.category", "TIMEOUT_ERROR")
+            abort(504, error_msg)
+        except Exception as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
+            raise
+        finally:
+            _delete_token(token)
 
 
 def mdso_post(endpoint, data, timeout=30, resync=False):
-    token = _create_token()
-    headers = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": f"Bearer {token}"}
-    try:
-        r = requests.post(
-            f"{beorn_app.url_config.MDSO_BASE_URL}{endpoint}", headers=headers, json=data, verify=False, timeout=timeout
-        )
-        if r.status_code == 201:
-            try:
-                return r.json()
-            except ValueError:
-                abort(502, f"MDSO POST - Could not parse response from MDSO for endpoint: {endpoint} | payload: {data}")
-        elif r.status_code == 202 and resync:
-            try:
-                return r.json()
-            except ValueError:
-                abort(502, f"MDSO POST - Could not parse response from MDSO for endpoint: {endpoint} | payload: {data}")
-        else:
-            abort(
-                502,
-                f"Error Code: M005 - MDSO POST - Unexpected status code: {r.status_code} "
-                f"returned from MDSO endpoint: {endpoint} | payload: {data}",
+    with tracer.start_as_current_span("mdso.api.post") as span:
+        span.set_attribute("mdso.endpoint", endpoint)
+        span.set_attribute("mdso.method", "POST")
+        span.set_attribute("mdso.timeout", timeout)
+        span.set_attribute("mdso.resync", resync)
+        
+        # Extract circuit_id from payload if present
+        if isinstance(data, dict):
+            circuit_id = data.get("label") or data.get("properties", {}).get("circuit_id")
+            if circuit_id:
+                span.set_attribute("mdso.circuit_id", circuit_id)
+            if "productId" in data:
+                span.set_attribute("mdso.product_id", data["productId"])
+            if "resourceTypeId" in data:
+                span.set_attribute("mdso.resource_type", data["resourceTypeId"])
+        
+        token = _create_token()
+        headers = {"Accept": "application/json", "Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+        try:
+            r = requests.post(
+                f"{beorn_app.url_config.MDSO_BASE_URL}{endpoint}", headers=headers, json=data, verify=False, timeout=timeout
             )
-    except (ConnectionError, requests.ConnectionError):
-        abort(502, f"MDSO POST - Failed to initialize connection to MDSO for endpoint: {endpoint} | payload: {data}")
-    except requests.ReadTimeout:
-        abort(
-            504,
-            "Error Code: M006 - MDSO POST - "
-            f"Timed out reading data from MDSO for endpoint: {endpoint} | payload: {data}",
-        )
-    except Exception:
-        abort(502, f"MDSO POST - Unknown exception occurred at MDSO for endpoint: {endpoint} | payload: {data}")
-    finally:
-        _delete_token(token)
+            span.set_attribute("http.status_code", r.status_code)
+            span.set_attribute("http.response.size", len(r.content) if r.content else 0)
+            
+            if r.status_code == 201:
+                try:
+                    response_data = r.json()
+                    if isinstance(response_data, dict) and "id" in response_data:
+                        span.set_attribute("mdso.resource_id", response_data["id"])
+                    add_span_event("mdso.api.post.success", endpoint=endpoint, status_code=r.status_code)
+                    return response_data
+                except ValueError as e:
+                    error_msg = f"MDSO POST - Could not parse response from MDSO for endpoint: {endpoint} | payload: {data}"
+                    set_span_error(e)
+                    span.set_attribute("error.category", "PARSE_ERROR")
+                    abort(502, error_msg)
+            elif r.status_code == 202 and resync:
+                try:
+                    response_data = r.json()
+                    add_span_event("mdso.api.post.resync", endpoint=endpoint, status_code=r.status_code)
+                    return response_data
+                except ValueError as e:
+                    error_msg = f"MDSO POST - Could not parse response from MDSO for endpoint: {endpoint} | payload: {data}"
+                    set_span_error(e)
+                    span.set_attribute("error.category", "PARSE_ERROR")
+                    abort(502, error_msg)
+            else:
+                error_msg = (
+                    f"Error Code: M005 - MDSO POST - Unexpected status code: {r.status_code} "
+                    f"returned from MDSO endpoint: {endpoint} | payload: {data}"
+                )
+                error_context = error_categorizer.extract_error_context(error_msg)
+                span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                abort(502, error_msg)
+        except (ConnectionError, requests.ConnectionError) as e:
+            error_msg = f"MDSO POST - Failed to initialize connection to MDSO for endpoint: {endpoint} | payload: {data}"
+            set_span_error(e)
+            span.set_attribute("error.category", "CONNECTIVITY_ERROR")
+            abort(502, error_msg)
+        except requests.ReadTimeout as e:
+            error_msg = (
+                "Error Code: M006 - MDSO POST - "
+                f"Timed out reading data from MDSO for endpoint: {endpoint} | payload: {data}"
+            )
+            set_span_error(e)
+            span.set_attribute("error.category", "TIMEOUT_ERROR")
+            abort(504, error_msg)
+        except Exception as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
+            raise
+        finally:
+            _delete_token(token)
 
 
 def mdso_post_request(endpoint, data, timeout=30):
@@ -209,12 +298,25 @@ def product_query(product_name):
 
 def create_service(payload):
     """Used to update or create a service. Returns success or failure reason."""
-    resource_id = mdso_post(f"{RESOURCES_PATH}?validate=false", payload).get("id")
-    if resource_id:
-        return resource_id
-    abort(
-        502, f"MDSO Service Create - Unexpected data from MDSO - could not create the resource ID for payload {payload}"
-    )
+    with tracer.start_as_current_span("mdso.service.create") as span:
+        circuit_id = payload.get("label") or payload.get("properties", {}).get("circuit_id")
+        if circuit_id:
+            span.set_attribute("mdso.circuit_id", circuit_id)
+        span.set_attribute("mdso.operation", "create_service")
+        
+        try:
+            resource_id = mdso_post(f"{RESOURCES_PATH}?validate=false", payload).get("id")
+            if resource_id:
+                span.set_attribute("mdso.resource_id", resource_id)
+                add_span_event("mdso.service.created", resource_id=resource_id, circuit_id=circuit_id)
+                return resource_id
+            error_msg = f"MDSO Service Create - Unexpected data from MDSO - could not create the resource ID for payload {payload}"
+            error_context = error_categorizer.extract_error_context(error_msg)
+            span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+            abort(502, error_msg)
+        except Exception as e:
+            set_span_error(e)
+            raise
 
 
 def clean_name_value_filter(afilter):

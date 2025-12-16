@@ -6,8 +6,12 @@ from flask_restx import Namespace, Resource, fields
 from beorn_app.bll.cpe import activate_cpe, cpe_activation_state
 from common_sense.common.errors import abort
 from beorn_app.common.http_auth import auth
+from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
 
 api = Namespace("v3/cpe", description="CRUD operations for a CPE")
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 @api.route("")
@@ -45,10 +49,40 @@ class CPE(Resource):
         """
         Get the CPE Activation State
         """
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, message="Bad request - missing CID")
-        cid = request.args["cid"]
-        return cpe_activation_state(cid), 200
+        
+        with tracer.start_as_current_span("beorn.cpe.get_activation_state") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("cpe.operation", "get_activation_state")
+            
+            try:
+                add_span_event("cpe.activation_state.query.start", circuit_id=cid)
+                result = cpe_activation_state(cid)
+                
+                # Extract CPE metadata from result
+                if isinstance(result, dict):
+                    if "tid" in result:
+                        span.set_attribute("network.device.tid", result["tid"])
+                    if "serviceType" in result:
+                        span.set_attribute("cpe.service_type", result["serviceType"])
+                    if "cpeState" in result:
+                        span.set_attribute("cpe.state", result["cpeState"])
+                    if "networkServiceState" in result:
+                        span.set_attribute("cpe.network_service_state", result["networkServiceState"])
+                    if "resourceId" in result:
+                        span.set_attribute("mdso.resource_id", result["resourceId"])
+                    if "cpeActivationError" in result:
+                        error_context = error_categorizer.extract_error_context(result["cpeActivationError"])
+                        span.set_attribute("error.category", error_context.get("category", "CPE_ERROR"))
+                        span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                
+                add_span_event("cpe.activation_state.query.complete", circuit_id=cid)
+                return result, 200
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.expect(
         api.model(
@@ -81,10 +115,43 @@ class CPE(Resource):
         Activate A CPE
         """
         body = json.loads(request.data.decode("utf-8"))
-        required_fields = ["cid", "tid", "port_id"]
-        for f, k in zip(body, required_fields):
-            if f in required_fields and not body[f]:
-                abort(400, f"Missing {f} value")
-            if k not in body:
-                abort(400, f"Missing {k}")
-        return activate_cpe(body), 201
+        cid = body.get("cid")
+        tid = body.get("tid")
+        port_id = body.get("port_id")
+        
+        with tracer.start_as_current_span("beorn.cpe.activate") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("cpe.operation", "activate")
+            span.set_attribute("network.device.tid", tid or "unknown")
+            span.set_attribute("cpe.port_id", port_id or "unknown")
+            if "ip" in body:
+                span.set_attribute("cpe.ip_address", body["ip"])
+            
+            required_fields = ["cid", "tid", "port_id"]
+            for f, k in zip(body, required_fields):
+                if f in required_fields and not body[f]:
+                    abort(400, f"Missing {f} value")
+                if k not in body:
+                    abort(400, f"Missing {k}")
+            
+            try:
+                add_span_event("cpe.activation.start", circuit_id=cid, tid=tid, port_id=port_id)
+                result = activate_cpe(body)
+                
+                # Extract activation result metadata
+                if isinstance(result, dict):
+                    if "operationId" in result:
+                        span.set_attribute("cpe.operation_id", result["operationId"])
+                    if "resourceId" in result:
+                        span.set_attribute("mdso.resource_id", result["resourceId"])
+                    if "uni_port" in result:
+                        span.set_attribute("cpe.uni_port", result["uni_port"])
+                
+                add_span_event("cpe.activation.complete", circuit_id=cid, resource_id=result.get("resourceId"))
+                return result, 201
+            except Exception as e:
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "CPE_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                raise

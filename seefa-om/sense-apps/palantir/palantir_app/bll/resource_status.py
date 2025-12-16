@@ -11,8 +11,17 @@ from common_sense.common.errors import (
 )
 from palantir_app.common.constants import PROCESSING_STATUSES
 from palantir_app.dll.mdso import mdso_get
+from palantir_app.common.otel import (
+    get_tracer,
+    set_mdso_correlation,
+    add_span_event,
+    set_span_error,
+)
+from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 MDSO_REASON_SUMMARY_REGEX = r"(\w*\s\|.*?\-)(.*?:)"
@@ -30,28 +39,69 @@ def get_resource_status(resource_id, map_responses=True, poll=False, poll_counte
     returns
     dict {id, status, message}
     """
-    logger.info(f"Retrieving resource status via mdso_get for ID: {resource_id}")
-    response = {"id": resource_id, "status": "", "summary": "", "message": "", "data": ""}
-    data = get_resource(resource_id, production)
-    if not data:
-        return response
+    with tracer.start_as_current_span("palantir.resource_status.get_resource_status") as span:
+        set_mdso_correlation(resource_id=resource_id)
+        span.set_attribute("resource_status.operation", "get_status")
+        span.set_attribute("resource_status.polling", poll)
+        span.set_attribute("resource_status.poll_counter", poll_counter)
+        span.set_attribute("resource_status.poll_sleep", poll_sleep)
+        span.set_attribute("resource_status.map_responses", map_responses)
+        
+        logger.info(f"Retrieving resource status via mdso_get for ID: {resource_id}")
+        response = {"id": resource_id, "status": "", "summary": "", "message": "", "data": ""}
+        
+        try:
+            add_span_event("resource_status.mdso.query.start", resource_id=resource_id)
+            data = get_resource(resource_id, production)
+            if not data:
+                span.set_attribute("resource_status.found", False)
+                return response
 
-    response["data"] = data
-    if "orchState" not in data:
-        return response
+            response["data"] = data
+            span.set_attribute("resource_status.found", True)
+            
+            # Extract circuit_id from label if available
+            if "label" in data:
+                set_mdso_correlation(circuit_id=data["label"])
+                span.set_attribute("mdso.circuit_id", data["label"])
+            
+            if "orchState" not in data:
+                return response
 
-    if data["orchState"] in PROCESSING_STATUSES:
-        response["status"] = "Processing"
-        logger.info(f"Processing resource status for {data['label']}\n")
-        if poll:
-            return _poll_response(resource_id, poll_counter, poll_sleep, production, response, map_responses)
+            orch_state = data["orchState"]
+            span.set_attribute("mdso.orch_state", orch_state)
+            
+            if orch_state in PROCESSING_STATUSES:
+                response["status"] = "Processing"
+                span.set_attribute("resource_status.status", "Processing")
+                logger.info(f"Processing resource status for {data.get('label', resource_id)}\n")
+                if poll:
+                    add_span_event("resource_status.polling.start", resource_id=resource_id, counter=poll_counter)
+                    result = _poll_response(resource_id, poll_counter, poll_sleep, production, response, map_responses)
+                    add_span_event("resource_status.polling.complete", resource_id=resource_id)
+                    return result
 
-    elif data["orchState"] == "active":
-        return _active_response(data, response)
-    else:
-        return _failed_response(data, response, map_responses)
+            elif orch_state == "active":
+                result = _active_response(data, response)
+                span.set_attribute("resource_status.status", result.get("status", "Completed"))
+                add_span_event("resource_status.active", resource_id=resource_id)
+                return result
+            else:
+                result = _failed_response(data, response, map_responses)
+                span.set_attribute("resource_status.status", "Failed")
+                error_context = error_categorizer.extract_error_context(data.get("reason", ""))
+                span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                add_span_event("resource_status.failed", resource_id=resource_id, reason=data.get("reason", "unknown"))
+                return result
 
-    return response
+            return response
+        except Exception as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            raise
 
 
 def get_resource(resource_id, production):
