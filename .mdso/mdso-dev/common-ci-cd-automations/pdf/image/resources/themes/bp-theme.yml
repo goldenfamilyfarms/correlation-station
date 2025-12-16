@@ -1,0 +1,127 @@
+# See https://github.com/asciidoctor/asciidoctor-pdf/blob/60ac51f06933214a5474c2b533f31b0e9c4a685e/docs/theming-guide.adoc
+font:
+  catalog:
+    Roboto:
+      normal: Roboto-Regular.ttf
+      italic: Roboto-Italic.ttf
+      bold: Roboto-Bold.ttf
+      bold_italic: Roboto-BoldItalic.ttf
+    Arial:
+      normal: Arial.ttf
+      italic: Arial Italic.ttf
+      bold: Arial Bold.ttf
+      bold_italic: Arial Bold Italic.ttf
+  fallbacks: Arial
+literal:
+  font_size: 10
+code:
+  font_size: 9
+lead:
+  font_size: 10
+  font_style: bold_italic
+table:
+  cell:
+    padding: 5
+  border_width: .25
+  grid_width: .25
+  grid_color: #CED0D2
+  head:
+    background_color: #CED0D2
+    font_size: 9
+    font_style: normal
+    text_transform: uppercase
+page:
+  layout: portrait
+  margin: [1in, 1in, 0.75in, 1in]
+  size: Letter
+base:
+  font_color: #222222
+  font_family: Roboto
+  font_size: 10
+  line_height_length: 14
+  line_height: $base_line_height_length / $base_font_size
+vertical_rhythm: $base_line_height_length
+heading:
+  font_size: 16
+  font_color: 0489c4
+  font_style: normal
+  line_height: 1.2
+  margin_bottom: $vertical_rhythm
+  h2_font_size: 24
+  h2_font_color: 0489c4
+  h2_font_style: normal
+  h2_margin_top: $vertical_spacing * 4
+  h3_font_size: 21
+  h3_font_color: 404041
+  h3_margin_top: $vertical_spacing * 2
+  h4_font_size: 16
+  h4_font_color: 404041
+  h5_font_size: 12
+  h5_font_color: 404041
+  h5_font_style: bold
+  h6_font_size: 11
+  h6_font_color: 404041
+  h6_font_style: normal
+link:
+  font_color: #002FA7
+outline_list:
+  indent: $base_font_size * 1.5
+  item_spacing: 4
+title_page:
+  align: left
+  logo:
+    top: 10%
+  logo_image: image:./images/bp-logo-with-bar.png[align=center]
+  title:
+    top: 32%
+    font_size: 26
+    font_color: 000000
+    line_height: 0.9
+  subtitle:
+    font_size: 30
+    line_height: 2
+  authors:
+    margin_top: 5in
+    font_size: $base_font_size
+header:
+  font_size: 8
+  font_color: $base_font_color
+  # NOTE if background_color is set, background and border will span width of page
+  border_color: dddddd
+  border_width: 0.25
+  height: 0.5in
+  line_height: 1
+  padding: [$base_line_height_length / 2, 1, 2, 1]
+  vertical_align: middle
+  # These fields can be added to the header or footer:
+  # * {page-count}
+  # * {page-number}
+  # * {document-title}
+  # * {document-subtitle}
+  # * {chapter-title}
+  # * {section-title}
+  # * {section-or-chapter-title}
+  recto_content:
+    left: '{document-title} {relnumber}'
+    right: '{chapter-title}'
+  verso_content:
+    left: '{document-title} {relnumber}'
+    right: '{chapter-title}'
+footer:
+  font_size: 8
+  font_color: $base_font_color
+  # NOTE if background_color is set, background and border will span width of page
+  border_color: dddddd
+  border_width: 0.25
+  height: 0.5in
+  line_height: 1
+  padding: [$base_line_height_length / 2, 1, 2, 1]
+  vertical_align: middle
+  recto_content:
+    left: '{ra-relnumber}'
+    center: '(C){copyright}'
+    right: '{revdate}   |   Page {page-number}'
+  verso_content:
+    left: '{ra-relnumber}'
+    center: '(C){copyright}'
+    right: '{revdate}   |   Page {page-number}'

@@ -1,0 +1,202 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed Services FortiManager"
+package     = charter
+version     = "1.0"
+description = """
+This document defines ADOM creation in FortiManager.
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    managedServicesFortiManager {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Managed Services FortiManager
+        description = """
+        - This document defines ADOM creation in FortiManager.
+        """
+
+        properties {
+            customer {
+                title       = Customer
+                description = "Customer data for enrolling the VFW in ForitTools"
+                propertyType = chartervfw.propertyTypes.Customer
+            }
+            isManagedSecurityServices{
+                title = isManagedSecurityServices
+                description = flag variable
+                type = string
+                default = "Yes"
+                enum = [
+                    "Yes"
+                ]
+            }
+            name {
+                title = "name"
+                description = "name of adom"
+                type = string
+                optional = true
+            },
+            vendor {
+                title = "vendor"
+                description = "vendor of device"
+                type = string
+                optional = true
+            },
+            device_model {
+                title = "device model",
+                description = "The specific device model",
+                type = string,
+                optional = true
+            },
+            sourceAdom{
+                title = sourceAdom
+                description = Gold Template use as a source to create the new one
+                type = string
+                default = "AdomTestTemplate_62"
+            },
+            site_clli{
+                title = siteClli
+                description = Site CLLI code
+                type = string
+                optional = true
+
+            },
+            platform {
+                title = "device model"
+                description = "device model as listed in Fortimanager"
+                type = string
+                optional = true
+                enum = ["FortiGate-61F"]
+
+            },
+            version {
+                title = "version"
+                description = "version number of Fortigate device"
+                type = string
+                optional = true
+            },
+            build {
+                title: "build",
+                description: "The specific firmware build",
+                type: string,
+                optional: true
+            },
+            tid {
+                title = "tid of the deivce"
+                description = "tid of device being provisioned"
+                type = string
+                optional = true
+            },
+            comments {
+                title = "comments"
+                description = "add comments in new adom creation"
+                type = string
+                optional = true
+            },
+            preSharedKey {
+                title = "preSharedKey"
+                description = "The pre-shared key for the Fortinet"
+                type = string
+                optional = true
+            },
+            mode {
+                title = "mode"
+                description = "mode"
+                type = string
+                default = "Normal"
+                enum = [
+                    "Normal",
+                    "Backup"
+                ]
+                optional = true
+            },
+            centralManagement {
+                title = "centralManagement"
+                description = "select which type of central management"
+                type = array
+                optional = true
+            },
+            defaultDeviceSelection {
+                title = "defaultDeviceSelection"
+                description = "Select All or Deselect All"
+                type = string
+                default = "Select All"
+                enum = [
+                    "Select All",
+                    "Deselect All"
+                ]
+                optional = true
+            },
+            performPolicyCheck {
+                title = "performPolicyCheck"
+                description = "Perform Policy Check Before Every Install"
+                type = string
+                optional = true
+                default = "Off"
+                enum = [
+                    "On",
+                    "Off"
+                ]
+            },  
+            ipv4ObjectName {
+                title = "ipv4ObjectName"
+                description = "Name of IPv4 Firewall Object"
+                type = string
+                optional = true
+            },
+            ipv4Prefix {
+                title = "ipv4Prefix"
+                description = "IPv4 Network of ipv4Object"
+                type=string
+                format = ipv4-prefix
+                optional = true
+            },
+            actionWhenConflictsOccur {
+                title = "actionWhenConflictsOccur"
+                description = "Action When Conflicts Occur During Policy Check"
+                type = string
+                enum = [
+                    "Continue Installation",
+                    "Stop Installation"
+                ]
+                optional = true
+            },
+            autoPushPolicyPackages {
+                title = "autoPushPolicyPackages"
+                description = "Auto-Push Policy Packages When Device Back Online"
+                type = string
+                default = "Disable"
+                enum = [
+                    "Enable",
+                    "Disable"
+                ]
+                optional = true
+            }   
+        }
+    }
+},
+serviceTemplates {
+    managedServicesFortiManager {
+        title = Managed Services FortiManager
+        description = "Managed Services FortiManager"
+        implements = charter.resourceTypes.managedServicesFortiManager
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiManager.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.fortinet.managedServicesFortiManager.Terminate"
+            }
+        }
+    }
+}

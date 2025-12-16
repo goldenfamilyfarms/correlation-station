@@ -1,0 +1,59 @@
+# This file is a template, and might need editing before it works on your project.
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: python:3.7
+
+stages:
+  - test
+  - build
+  - release
+
+before_script:
+  - python -V  # Print out python version for debugging
+  - pip install virtualenv
+  - virtualenv env
+  - source env/bin/activate
+
+lint:
+  stage: test
+  script:
+    - pip install -e .
+    - pip install -r requirements_lint.txt
+    - flake8 .
+  tags:
+    - aws
+
+test:
+  stage: test
+  script:
+    - pip install -e .
+    - pip install -r requirements_test.txt
+    - pytest
+  tags:
+    - aws
+
+build:
+  stage: build
+  script:
+    - python setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+      - dist/*.*
+  tags:
+    - aws
+  only:
+    changes:
+      - src/figmaker/__init__.py
+
+release:
+  stage: release
+  script:
+    - pip install -r requirements_release.txt
+    # TWINE_PASSWORD is set in CI env vars
+    - export TWINE_USERNAME=gitlab+deploy-token-figmaker
+    - python -m twine upload --repository-url https://git.blueplanet.com/api/v4/projects/3744/packages/pypi dist/*
+  tags:
+    - aws
+  only:
+    changes:
+      - src/figmaker/__init__.py

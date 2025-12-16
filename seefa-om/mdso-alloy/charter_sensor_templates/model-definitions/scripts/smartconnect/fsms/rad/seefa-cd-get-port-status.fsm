@@ -1,0 +1,34 @@
+Value name (\S+)
+Value admin (\S+)
+Value oper (\S+)
+Value connector (\S+)
+Value phy_Equipped (\S+)
+Value auto_negotiation (\S+)
+Value rate (\d+)
+Value duplex ([A-Z][a-z]+)
+Value mac (\S+)
+Value phy_ConnectorInterface (\S+)
+Value phy_Manufacturer (\S+)
+Value phy_PartNumber (\S+)
+Value opt_Range (\d+)
+Value opt_Wavelength (\S+)
+Value phy_FiberType (\S+)
+
+Start
+  ^Name ${name}
+  ^Administrative Status\s+: ${admin}
+  ^Operational Status\s+: ${oper}
+  ^Connector Type\s+: ${connector}\s${phy_Equipped}
+  ^Auto Negotiation\s+: ${auto_negotiation}
+  ^Speed And Duplex\s+: ${rate}\s+${duplex} Duplex
+  ^MAC Address\s+: ${mac}
+  ^Connector Type\s+: ${phy_ConnectorInterface}
+  ^Manufacturer Name\s+: ${phy_Manufacturer}
+  ^Manufacturer Part Number\s+: ${phy_PartNumber}
+  ^[^\n\r]+Range[^\n\r]+: ${opt_Range}
+  ^Wave Length[^\n\r]+: ${opt_Wavelength}
+  ^Fiber Type\s+: ${phy_FiberType}
+
+
+			
+

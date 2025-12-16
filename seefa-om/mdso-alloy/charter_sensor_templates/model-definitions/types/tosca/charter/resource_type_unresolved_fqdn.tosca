@@ -1,0 +1,82 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Unresolved Fqdn"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Unresolved Fqdn that will
+list all the fqdn resource which aren't resolved
+"""
+authors     = [ "Yeshaswini Narayana (ynarayan@partner.ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    UnresolvedFqdn {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Unresolved Fqdn
+        description = """
+        - Extended from tosca.resourceTypes.Root
+        -
+        """
+
+        properties {
+
+            network_function_id {
+                title = "Network Function ID"
+                description = "ID of the Network Function resource"
+                type = string
+            }
+
+            device_fqdn {
+                title = "Device Fqdn"
+                description = "Fqdn detail to update"
+                type = string
+                optional = true
+            }
+
+            device_ip {
+                title = "Device IP"
+                description = "IP of the device"
+                type = string
+                optional = true
+            }
+
+        }
+
+        requirements {
+
+        }
+
+        capabilities {
+
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    UnresolvedFqdn {
+        title = Unresolved Fqdn
+        description = "Unresolved Fqdn"
+        implements = charter.resourceTypes.UnresolvedFqdn
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.unresolvedfqdn.Activate"
+            }
+
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.unresolvedfqdn.Terminate"
+            }
+
+        }
+    }
+}

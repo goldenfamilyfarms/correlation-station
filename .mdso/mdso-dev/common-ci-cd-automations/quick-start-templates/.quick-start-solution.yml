@@ -1,0 +1,70 @@
+# Jobs for solution build & release
+
+include:
+  - local: 'auto-build/.auto-build-solution.yml'
+  - local: 'auto-build/.auto-build-solution-did.yml'
+  - local: 'auto-build/.auto-release.yml'
+
+stages:
+  - build
+  - package
+  - release
+  - sanityTest
+
+# Build
+
+build-solution:
+  extends: .build-solution
+  only:
+    refs:
+      - develop
+      - master
+      - builder
+      - /^release.*$/
+      - /^feature.*$/
+
+    changes:
+      - version.json
+
+mr-build-solution:
+  extends: .build-solution
+  only:
+    - merge_requests
+  when: manual
+
+# Package
+
+#build-did:
+#  extends: .build-did
+#  only:
+#    changes:
+#      - version.json
+#    refs:
+#      - develop
+#      - master
+#      - builder
+#      - /^release.*$/
+#      - /^feature.*$/
+
+.mr-build-did:
+  extends: .build-did
+  only:
+    refs:
+      - merge_requests
+
+# Release
+
+release:
+  extends: .release
+  except:
+    variables:
+      - $SKIP_RELEASE =~ /true/
+    refs:
+      - schedules
+  only:
+    changes:
+      - version.json
+    refs:
+      - master
+      - /^release\/\d+\.\d+.*$/
+  when: manual

@@ -1,0 +1,34 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [
+        {
+            "label": "General",
+            "children": [
+                {
+                    "model": "label"
+                },
+                {
+                    "model": "description"
+                }
+            ]
+        },
+        {
+            "label": "Device Specifics",
+            "children": [
+                 {
+                    "model": "properties.device_ip"
+                },
+                {
+                    "model": "properties.device_vendor"
+                },
+                {
+                    "model": "properties.device_already_active"
+                },
+                {
+                    "model": "properties.session_profile"
+                }
+            ]
+        }
+    ]
+}

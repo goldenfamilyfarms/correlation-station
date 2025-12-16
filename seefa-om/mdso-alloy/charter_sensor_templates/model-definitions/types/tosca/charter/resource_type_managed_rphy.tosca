@@ -1,0 +1,155 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed RPHY"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Service Mapper. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    ManagedRPHY {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Managed RPHY
+        description = """
+        - Resource activator fr RPHY
+        """
+        properties {
+            service_group_data {
+				title = "Serivce Groups and configs"
+				type = array
+			},
+            ptp_ips{
+                title = "required PTP ips for GW and clock"
+                type = array
+            },
+            zone_num {
+                title = "zone num"
+                type = string
+            }
+            zone_name {
+                title = "zone name"
+                type = string
+            }
+            rpd {
+                title = "rpd"
+                type = string
+            }
+            signal_type{
+                title = "signal type"
+                type = string
+                enum = ["comsonics", "trilithic"]
+            }
+            channels{
+                title = "List of Customer subscribed channels"
+                type = array
+            }
+            activation_error {
+                title = "activation statue/error message"
+                type = string
+                optional = true
+            }
+            device_type {
+                title = "device type"
+                type = string
+            }
+            mac_address{
+                title = "mac address"
+                type = string
+            }
+            rpd_des{
+                title = "rpd description"
+                type = string
+            }
+            cid {
+                title = "cid"
+                description = ""
+                type = string
+                optional = true
+            },
+            custAddress {
+                title = "customer address"
+                description = "ip address of the customer"
+                type = string
+                optional = true
+            },
+            cmtsTid {
+                title = "CMTS Tid"
+                description = ""
+                type = string
+                optional = true
+            },
+            cmtsipAddress {
+                title = "cmts ip address"
+                description = ""
+                type = string
+                optional = false
+            },
+            pebbleTid {
+                title = "pebble TID"
+                description = ""
+                type = string
+                optional = true
+            },
+            operationType {
+                title = "Service Option"
+                description = "New or Update Configuration"
+                type = string
+                optional = true
+                default = "New"
+                enum = [
+                    "New",
+                    "Update"
+                ]
+            },
+            ignore_errors {
+                title = "ignore errors"
+                description = "run through all commands even if one errors in the middle."
+                type = boolean
+                default = false
+                optional = true
+            },
+            additionalAttributes {
+                title = "Additional Attributes"
+                description = "Additional Attributes"
+                propertyType = tosca.propertyTypes.AdditionalAttributes
+                optional = true
+            },
+            rphy_activation {
+	            config = false
+                title = "RPHY Activation Status"
+                description = "Progress of Activation"
+                type = string
+    	        optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    ManagedRPHY {
+        title = Managed RPHY
+        description = "Managed RPHY"
+        implements = charter.resourceTypes.ManagedRPHY
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.managedRPHY.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.managedRPHY.Terminate"
+            }
+        }
+    }
+}

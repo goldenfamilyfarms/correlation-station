@@ -1,0 +1,109 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Firmware Updater"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Firmware Updater (FirmUp). 
+This tool will be used to update the firmware on network devices.
+"""
+authors = [ "David Edelson (David.Edelson@charter.com)", "Linda Luong (linda.luong@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    firmwareUpdater {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Firmware Updater
+        description = """
+        - This document defines a resource that intakes device and path details and updates the firmware on a network device.
+        - This Resource Definition requires the following:
+            Target Device:
+                FQDN
+                Vendor
+                Model
+                IP Address
+            Firmware
+        """
+
+        properties {
+            target_FQDN {
+                title = "Target Device FQDN"
+                description = "FQDN of Target Device to be updated"
+                type = string
+                optional = false
+                updatable = true
+            }
+            target_vendor {
+                title = "Target Device Vendor"
+                description = "Target Device Vendor"
+                type = string
+                optional = false
+                updatable = true
+            }
+            target_model {
+                title = "Target Device Model"
+                description = "Target Device Model"
+                type = string
+                optional = false
+                updatable = true
+            }
+            target_ip {
+                title = "Target Device IP"
+                description = "IP Address of Target Device"
+                type = string
+                optional = false
+            }
+            firmware {
+                title = "Firmware"
+                description = "Firmware for Target Device"
+                type = string
+                optional = false
+            }            
+            firmup_status {
+                config = false
+                title = "FirmUp Status"
+                description = "Progress of Firmware Updater status"
+                type = string
+    	        optional = true
+		    }
+            firmup_error {
+                config = false
+                title = "FirmUp Error Status"
+                description = "Error status of Firmware Updater"
+                type = string
+    	        optional = true        
+	    	}
+            firmup_error_code {
+                config = false
+                title = "FirmUp Error Code"
+                description = "Firmware Updater Error Code"
+                type = string
+    	        optional = true
+	    	}
+		}
+    }
+}
+
+serviceTemplates {
+    firmwareUpdater {
+        title = FirmwareUpdater
+        description = "Firmware Updater"
+        implements = charter.resourceTypes.firmwareUpdater
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.firmwareUpdater.firmwareUpdater.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.firmwareUpdater.firmwareUpdater.Terminate"
+            }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "type": "form",
+    "version": "2.0",
+    "cells": [
+        {
+            "label": "General",
+            "children": [
+                {
+                    "model": "label"
+                },
+                {
+                    "model": "properties.name"
+                },
+                {
+                    "model": "properties.id"
+                }
+            ]
+        },
+        {
+            "label": "Policer General Info",
+            "children": [
+                 {
+                    "model": "properties.policerType"
+                },
+                {
+                    "model": "properties.colorMode"
+                }
+            ]
+        },
+        {
+            "label": "Policer Rate Info",
+            "children": [
+                 {
+                    "model": "properties.committedInformationRate"
+                },
+                {
+                    "model": "properties.committedBurstSize"
+                }
+            ]
+        }
+    ]
+}

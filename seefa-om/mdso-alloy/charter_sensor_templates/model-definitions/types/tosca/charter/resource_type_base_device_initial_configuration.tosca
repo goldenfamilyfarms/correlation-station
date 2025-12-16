@@ -1,0 +1,96 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Device Configuration Commands"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the resource that will be used for the base configuration of a device or a port.
+The resource will be defined by the device type and the set of commands that will be 
+run on the device.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    DeviceConfigurationCommands {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Device Configuration Commands
+        description = """
+         - This provides a look up to be used to find the initial configuration to be pushed to a device or a port.
+         - The configuration will be defined by the device vendor and device type.
+         """
+
+        properties {
+        
+            device_vendor {
+                title = "Device Vendor"
+                description = "The device vendor"
+                type = string
+                optional = false
+                updatable = true
+                default = "RAD"
+                enum = [
+                    "RAD", 
+                    "ADVA",
+                    "JUNIPER"
+                ]
+            }
+            
+            device_model {
+                title = "Device Model"
+                description = "The device model of the device that the commands will be done on"
+                type = string
+                optional = true
+                updatable = true
+                enum = [
+                    "ETX-203",
+                    "ETX-220",
+                    "FSP150CC-825",
+                    "FSP150CC-114",
+                    "FSP150CC-114 Pro",
+                    "FSP150CC-116 Pro",
+                    "MX",
+                    "QFX",
+                    "EX"
+                ]
+            }
+            
+            device_commands {
+                title = "Device Commands"
+                description = "Commands to be executed when a new device is configured.  These should be separated with a carriage return."
+                type = string
+                optional = true
+                updatable = true
+            }
+            
+            port_commands {
+                title = "Port Commands"
+                description = "Commands to be executed when a new port is to be configured.  These should be separated with a carriage return."
+                type = string
+                optional = true
+                updatable = true
+            }
+    
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    DeviceConfigurationCommands {
+        title = Device Configuration
+        description = "Initial device or port configuration commands to be run"
+        implements = charter.resourceTypes.DeviceConfigurationCommands
+    }
+}

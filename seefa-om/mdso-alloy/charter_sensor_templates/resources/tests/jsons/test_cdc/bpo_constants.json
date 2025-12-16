@@ -1,0 +1,27 @@
+{
+  "id": "5a7d586c-edb6-46aa-a06c-fc0c2f0ecd60",
+  "label": "Globals",
+  "resourceTypeId": "charter.resourceTypes.BpoConstants",
+  "productId": "5a7b574f-8697-4d00-9e36-5fdb920e1bf2",
+  "tenantId": "049526ac-b22a-4d35-b80b-b59542a76573",
+  "shared": "false",
+  "properties": {
+    "circuit_details_server_info": {
+      "server_get_url": "orchestrate/sahil2.json",
+      "server_user": "dontcare",
+      "server_url": "https://97.105.228.217/",
+      "server_password": "**********",
+      "server_url_headers": {"Accept": "application/json"}
+    }
+  },
+  "discovered": "false",
+  "differences": [],
+  "desiredOrchState": "active",
+  "orchState": "active",
+  "reason": "",
+  "tags": {},
+  "providerData": {},
+  "updatedAt": "2018-03-23T14:50:33.234Z",
+  "createdAt": "2018-02-09T08:14:36.451Z",
+  "autoClean": "false"
+}

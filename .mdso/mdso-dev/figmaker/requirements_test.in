@@ -1,0 +1,7 @@
+# This file lists the tools used to build the documentation.
+#
+# See ./pin-requirements for more information.
+pytest
+
+pyyaml
+jsonschema

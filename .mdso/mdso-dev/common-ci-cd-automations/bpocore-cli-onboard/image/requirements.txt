@@ -1,0 +1,5 @@
+bp2hookutil==3.3.0
+bpocore_cli==0.0.51
+yq
+j2cli==0.3.10
+jinja2

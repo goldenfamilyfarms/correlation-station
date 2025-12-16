@@ -1,0 +1,64 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Base Resource"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the base resource that other Charter templates should inherit from.  
+This will provide the base properties that all of the Charter STs should have as part of
+it.  For the initial version, on the Circuit ID for the associated circuit is required.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    BaseResource {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Base Resource
+        description = """
+         - This is an abstract base resource type that cannot be instantiated 
+         - Provide the base information for all other Charter resource types to be extended from. 
+         - Currently only has the Circuit ID 
+         """
+
+        properties {
+            
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+
+            use_alternate_circuit_details_server {
+                title = "Alternate circuit details server"
+                description = "Use the 'alternate server url' to obtain circuit details"
+                type = boolean
+                default = false
+                optional = true
+                updatable = true
+            }
+
+            resource_name {
+                title = "Resource Name"
+                description = "Resource Name"
+                type = string
+                optional = true
+                updatable = false
+            }
+    
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}

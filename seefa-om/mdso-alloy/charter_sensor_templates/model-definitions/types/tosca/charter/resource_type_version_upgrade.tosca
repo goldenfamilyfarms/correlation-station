@@ -1,0 +1,168 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Version Upgrade"
+package     = charter
+version     = "1.0"
+description = """
+This document defines a resource that can be used to share configuration properties
+across multiple STs.  There will only ever be one of these available that is active
+in the system.
+"""
+authors     = [ "Susie Minor(susie.minor@partner.com)","Jose Crus-Padron(Jose.Cruz-Padron@charter.com)", "Roman Penn(roman.penn@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    VersionUpgrade {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Version Upgrade
+        description = """
+         - This document defines a resource that upgrades CPE firmware to the SVI-Approved firmware version.
+         """
+
+        properties {
+
+            cpeActivationId {
+                title = "CPE Activation ID"
+                description = "ID of cpe activation resource"
+                type = string
+                optional = true
+                updatable = false
+            }            
+            
+            deviceFqdn {
+                title = "Device FQDN"
+                description = "FQDN of device"
+                type = string
+                optional = false
+            }
+
+            deviceVendor {
+                title = "Device Vendor"
+                description = "Vendor name of device"
+                type = string
+                optional = false
+                updatable = true
+                default = "ADVA"
+                enum = [
+                    "RAD", 
+                    "ADVA"
+                ]
+            }
+
+            deviceModel {
+                type = string
+                title = "Device Model"
+                description = "Device Model Type"
+                optional = false
+            }
+
+            deviceIP {
+                title = "Device IP"
+                description = "IP Address of device"
+                type = string
+                optional = false
+            }
+
+            currentActiveDeviceVersion {
+                title = "Current Active Device Version"
+                description = "The firmware version currently active on device"
+                type = string
+                optional = true
+                config = false
+            }            
+            
+            targetDeviceVersion {
+                title = "Target Device Version"
+                description = "Target device version for upgrade"
+                type = string
+                optional = true
+                updatable = true
+            }
+
+            versionUpgradeRequired {
+                title = "Version Upgrade Required"
+                description = "Indicates if version update is required"
+                type = boolean
+                default = false
+                optional = true
+                config = false
+            }
+
+            sftpDownloadPercentStatus {
+                title = "SFTP Download Percent Status"
+                description = "Indicates percentage status of sftp download"
+                type = string
+                optional = true
+                config = false
+            }
+
+            versionInstallPercentStatus {
+                title = "Version Install Percent Status"
+                description = "Indicates percentage status of version install"
+                type = string
+                optional = true
+                config = false
+            }
+
+            upgradeCompletedDate {
+                title = "Upgrade Completed Date"
+                description = "Indicates date the firmware version was upgraded"
+                type = string
+                optional = true
+                config = false
+            }
+
+            state {
+                title = "State"
+                description = """State
+                    These are the meanings of the enums:
+                    NOT_STARTED - Device upgrade has not started
+                    REQUESTED - Device upgrade has been made
+                    FAILED - Device upgrade has failed
+                    ACTIVATING-INITIATED - Site has started to be activated
+                    ACTIVATING-DOWNLOADING_SW - Site SW is downloading
+                    ACTIVATING-CONFIGURING - Site configuration being applied
+                    ACTIVE - Site has completed activation 
+                    TERMINATED - Should not be used
+                """
+                type = string
+                config = false
+                default = "NOT_STARTED"
+                enum = [
+                    "NOT_STARTED",
+                    "FAILED",
+                    "ACTIVATING-INITIATED",
+                    "ACTIVATING-DOWNLOADING_SW",
+                    "ACTIVATING-CONFIGURING",
+                    "ACTIVE",
+                    "TERMINATED"
+                ]
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    VersionUpgrade {
+        title = Version Upgrade
+        description = "Version Upgrade"
+        implements = charter.resourceTypes.VersionUpgrade
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.cpeActivator.versionUpgrade.Activate"
+            }
+
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.cpeActivator.versionUpgrade.Terminate"
+            }
+        }
+    }
+}

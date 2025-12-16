@@ -1,0 +1,20 @@
+[{
+"resourceTypeId":"charter.resourceTypes.CircuitDetails",
+"id":"1000",
+"properties":{
+	"circuit_id":"1010"
+	}
+},
+{
+"resourceTypeId":"charter.resourceTypes.abc",
+"id":"1020"
+},
+{
+"resourceTypeId":"mef.resourceTypes.LegatoService",
+"id":"1030",
+"orchState":"active"
+},
+{
+"resourceTypeId":"charter.resourceTypes.xyz",
+"id":"1040"
+}]

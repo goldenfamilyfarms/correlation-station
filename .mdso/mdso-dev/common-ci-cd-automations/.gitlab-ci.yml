@@ -1,0 +1,7 @@
+stages:
+  - build
+  - lint
+
+include:
+  - '.gitlab-ci-image.yml'
+  - 'lint/.lint-gitlab-ci-build-depr-list.yml'

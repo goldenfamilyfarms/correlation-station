@@ -1,0 +1,16 @@
+.pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - cp -r $HTML_DOCS_PATH public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  tags:
+    - docker
+
+publish-pages:
+  stage: deploy
+  extends: .pages

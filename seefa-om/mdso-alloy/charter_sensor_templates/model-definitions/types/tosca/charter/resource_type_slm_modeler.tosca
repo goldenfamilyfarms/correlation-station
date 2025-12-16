@@ -1,0 +1,107 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "SLM Modeler"
+package     = charter
+version     = "1.0"
+description = """
+This document defines SLM Modeler. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Allison Patino (allison.patino@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    slmModeler {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = SLM Modeler
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a SLM Modeler resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        - For service types like ELINE, ELAN, etc.
+        """
+
+        properties {
+            circuit_id {
+                title = Circuit ID
+                description = Circuit ID
+                type = string
+                optional = false
+                updatable = false
+            }
+            model_type {
+                title = Model type
+                description = Requested model type (designed_config or network_config)
+                type = string
+                optional = false
+                enum = [
+                    designed_config,
+                    network_config
+                ]
+            }
+            circuit_details_id {
+                title = Circuit Details ID
+                description = Circuit Details resource ID
+                type = string
+                optional = true
+                default = ""
+            }
+            onboarding_complete {
+                title = "onboarding complete"
+                description = onboarding processes already completed for all devices within topology
+                type = boolean
+                optional = true
+            }
+            core_only {
+                title = "core only"
+                description = only model configurations for core slm device
+                type = boolean
+                optional = true                
+            }
+            requested_model {
+                title = "requested model"
+                description = allows client to limit modeling to either reflector or probe
+                type = string
+                optional = true
+                enum = ["probe", "reflector"]            
+            }
+            slm_details {
+                title = "slm details"
+                description = optional param containing slm config details required for modeling
+                type = object
+                optional = true
+            }
+            y1731_model {
+                title = Modeled y1731 Config
+                description = modeled y1731 config
+                type = object
+                output = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    slmModeler {
+        title = SLM Config Modeler
+        description = SLM Config Modeler
+        implements = charter.resourceTypes.slmModeler
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmModeler.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmModeler.Terminate"
+            }
+        }
+    }
+}

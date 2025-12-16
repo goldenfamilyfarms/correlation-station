@@ -1,0 +1,70 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "SEEFA Connectivity Check"
+package     = charter
+version     = "1.0"
+description = """
+This document defines SEEFA Connectivity Check. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Allison Patino (allison.patino@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    seefaConnectivityCheck {
+        derivedFrom = tosca.resourceTypes.Root
+        title = SEEFA Connectivity Check
+        description = """
+        - Extended from tosca.resourceTypes.Root
+        - The main entry point for Charter's systems for creating a SEEFA Connectivity Check resource.
+        - This Resource Definition requires host id, device vendor
+        - For Juniper, Adva, RAD, and Cisco devices
+        """
+
+        properties {
+            host_id {
+                title = host id
+                description = fqdn or ip of device
+                type = string
+                optional = false
+            }
+            vendor {
+                title = device vendor
+                description = device vendor
+                type = string
+                optional = false
+            }
+            reachable {
+                title = reachable
+                description = device reachable via ssh
+                type = boolean
+                output = true
+            }       
+        }
+    }
+}
+
+serviceTemplates {
+    seefaConnectivityCheck {
+        title = SEEFA Connectivity Check
+        description = device information required by SEEFA workstreams
+        implements = charter.resourceTypes.seefaConnectivityCheck
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.seefa.connectivity_check.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.seefa.connectivity_check.Terminate"
+            }
+        }
+    }
+}

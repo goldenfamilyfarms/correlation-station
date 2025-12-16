@@ -1,0 +1,30 @@
+# Generic solution deploy. Can deploy any solution. $SOLUTION variable must be set to deploy anything
+.solution-deploy:
+  tags:
+    - deploy
+  stage: .post
+  script:
+    - >
+      if [[ -z "$SOLUTION" ]]; then
+      echo "Please set the SOLUTION variable for this job" &&  false;
+      else echo "Deploying $SOLUTION..."; fi
+    - SOL_NAME=$(echo $SOLUTION| cut -f1 -d:)
+    - echo $SOL_NAME
+    - >
+      solman sps | grep ^$SOL_NAME | while read line ;
+      do
+        [ ! -z "$line" ] && solman "solution_undeploy $line" ;
+      done
+    - solman "solution_deploy $SOLUTION"
+  when: manual
+
+
+# Solution from this repo that this job is running. Going to take name & version of solution from version.json
+.this-solution-deploy:
+  extends: .solution-deploy
+  before_script:
+    - export PROJECT_NAME=$(cat version.json | jq -r .name)
+    - export PROJECT_VERSION=$(cat version.json | jq -r '.version')
+    - export PROJECT_TAG=$(cat version.json | jq -r '.tag // empty')
+    - if [[ -z "$PROJECT_TAG" ]] ; then export PROJECT_VERSION_TAG=$PROJECT_VERSION; else export PROJECT_VERSION_TAG=$PROJECT_VERSION-$PROJECT_TAG; fi
+    - export SOLUTION=registry.blueplanet.com.${CI_PROJECT_NAMESPACE//\//.}.$CI_PROJECT_NAME.${PROJECT_NAME//-/_}:$PROJECT_VERSION_TAG

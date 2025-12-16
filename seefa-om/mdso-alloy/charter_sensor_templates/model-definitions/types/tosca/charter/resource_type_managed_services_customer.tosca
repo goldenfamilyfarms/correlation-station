@@ -1,0 +1,59 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Managed Services FortiManager"
+package     = charter
+version     = "1.0"
+description = """
+This document defines acquiring provisioning properties for fortitools.
+"""
+authors     = []
+
+imports {
+
+}
+
+resourceTypes {
+    customer {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Customer
+        description = """
+        - This document defines acquiring provisioning properties for fortitools.
+        """
+
+        properties {
+            customerProps{
+                title = "customer properties"
+                description = "dict to hold acquired properties from json call"
+                type = object
+                config = false
+                optional = true
+                items.type = object
+            }
+            circuitId {
+                title = circuitId
+                description = Circuit ID to retrive the customer information from DesignPortal endpoint
+                type = string
+            }
+        }
+    }
+},
+serviceTemplates {
+    customer {
+        title = customer
+        description = handles acquiring provisioning properties and stores them
+        implements = charter.resourceTypes.customer
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.customer.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.customer.Terminate"
+            }
+        }
+    }
+}
