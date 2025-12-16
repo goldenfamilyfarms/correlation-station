@@ -28,6 +28,7 @@ class RaLogs(Environment_Setup):
         self.setup_directory_name = setup_directory_name
         self.setup_log_dir_path = setup_log_dir_path
 
+    @staticmethod
     def ra_log_function(ra_resource_id, cid, fqdn, dir_name, directory_name, setup_log_dir_path, server_ip):
         subprocess.call(['bash', '/home/all-product-logs-multiprocess/mdso_ra_log_capture_test.sh', ra_resource_id, cid, fqdn, dir_name, directory_name, setup_log_dir_path, server_ip])
         logger.info(f'Sending {cid} - {ra_resource_id} to bash script to gather RA Logs for {directory_name} - ')

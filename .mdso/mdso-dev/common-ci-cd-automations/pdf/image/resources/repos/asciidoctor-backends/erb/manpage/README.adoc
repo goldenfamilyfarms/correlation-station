@@ -1,3 +1,0 @@
-The manpage backend templates are now *deprecated* since the manpage converter has been integrated into core.
-
- $ asciidoctor -b manpage sample.adoc
