@@ -1,26 +1,33 @@
 import json
 import time
 import sys
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 from ra_plugins.ra_cutthrough import RaCutThrough
 import ipaddress
 from ping3 import verbose_ping
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """
     Activation Class for Standalone Configuration Delivery (CPEA Phase3)
     """
 
     def process(self):
-        # STEP 1. Build Equipment Dictionaries Based on Input
-        self.cpe_ip = None
-        self.status_update("Step 1: Preparing Data for Standalone Config Delivery")
-        self.logger.info("Step 1: Preparing Data for Standalone Config Delivery")
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for standalone config delivery
+        with self.create_root_span(operation_name="standalone_config_delivery"):
+            # STEP 1. Build Equipment Dictionaries Based on Input
+            self.cpe_ip = None
+            self.status_update("Step 1: Preparing Data for Standalone Config Delivery")
+            self.logger.info("Step 1: Preparing Data for Standalone Config Delivery")
 
-        try:
+            try:
             cpe = {}
             cpe["fqdn"] = self.properties["target_device"].upper()
             cpe["vendor"] = self.properties["target_vendor"].upper()
@@ -39,8 +46,19 @@ class Activate(CommonPlan):
             upst_device["port"] = self.properties["upstream_port"].upper()
             upst_device["tid"] = upst_device["fqdn"].split(".")[0].upper()
             upst_device["pe"] = True if upst_device["tid"] == pe_router["tid"] else False
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("config_delivery.started", {
+                    "cpe_tid": cpe["tid"],
+                    "cpe_vendor": cpe["vendor"],
+                    "cpe_model": cpe["model"],
+                    "pe_router": pe_router["tid"]
+                })
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Unable to Process Provided Data", ex)
             self.status_update("Unable to Process Provided Data", True, "10100")
             self.exit_error("Unable to Process Provided Data: %s" % self.properties)
 
@@ -51,10 +69,13 @@ class Activate(CommonPlan):
         # Check for Onboard CPE and Delete if There
         nf_resource_type = self.get_network_function_resource_type_by_vendor(cpe["vendor"])
         if cpe["vendor"].upper() not in ["RAD", "ADVA"]:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"CPE Vendor Unsupported: {cpe['vendor']}")
             self.status_update("CPE Vendor Unsupported", True, "10200")
             self.exit_error("CPE Vendor Unsupported: %s" % cpe["vendor"])
 
         try:
+            with self.timed_operation("config_delivery.device_management", {"cpe_vendor": cpe["vendor"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
             cpe_net_func = self.get_resource_by_type_and_label(nf_resource_type, cpe["tid"], no_fail=True)
             self.logger.info("&&&&&&&&&&&& Step 2. CPE Network Function &&&&&&&&&&&&&&&&&")
             self.logger.info(cpe_net_func)
@@ -94,9 +115,12 @@ class Activate(CommonPlan):
             self.logger.info("=== devices_to_onboard: %s" % devices_to_onboard)
 
             for dvc in devices_to_onboard:
-                dvc_onboard_result = self.onboard_device(dvc)
-                self.logger.info("=========== dvc_onboard_result for %s ===========" % dvc["tid"])
-                self.logger.info(dvc_onboard_result)
+                with self.create_network_function_span_context(dvc["tid"], dvc["fqdn"], "onboard") if getattr(self, '_otel_initialized', False) else nullcontext():
+                    dvc_onboard_result = self.onboard_device(dvc)
+                    self.logger.info("=========== dvc_onboard_result for %s ===========" % dvc["tid"])
+                    self.logger.info(dvc_onboard_result)
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("device.onboarded", {"device": dvc["tid"], "vendor": dvc["vendor"]})
                 if dvc["tid"] == pe_router["tid"]:
                     pe_router_nf = self.get_onboard_device(pe_router["fqdn"])
                     if upst_device["pe"]:
@@ -110,11 +134,13 @@ class Activate(CommonPlan):
             self.pe_prid = pe_router_nf["providerResourceId"]
             self.upst_nfid = upst_device_nf["id"]
 
-        except Exception:
-            self.status_update("Unable to Obtain, Onboard, and/or Offboard Equipment", True, "10201")
-            self.exit_error(
-                "Unable to Obtain, Onboard, and/or Offboard Equipment: %s, %s" % (pe_router["tid"], upst_device["tid"])
-            )
+            except Exception as ex:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Unable to Obtain, Onboard, and/or Offboard Equipment: {pe_router['tid']}, {upst_device['tid']}", ex)
+                self.status_update("Unable to Obtain, Onboard, and/or Offboard Equipment", True, "10201")
+                self.exit_error(
+                    "Unable to Obtain, Onboard, and/or Offboard Equipment: %s, %s" % (pe_router["tid"], upst_device["tid"])
+                )
 
         # STEP 3a. Check Upstream Port Status and Activate if Needed
         self.status_update("Step 3a: Check Port Status and Activate Port if Needed")
@@ -261,18 +287,29 @@ class Activate(CommonPlan):
             self.logger.info("&&&&&&&&&&&& Step 5. CPE Network Function &&&&&&&&&&&&&&&&&")
             self.logger.info(cpe_net_func)
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"Failed During PreOnboarding Check for {cpe['tid']}", ex)
             status_mesg = "Failed During PreOnboarding Check for " + cpe["tid"]
             self.status_update(status_mesg, True, "10500")
             self.exit_error(status_mesg)
 
         if cpe_net_func:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f"{cpe['tid']} Already Onboard and Unable to Delete")
             status_mesg = f"{cpe['tid']} Already Onboard and Unable to Delete"
             self.status_update(status_mesg, True, "10501")
             self.exit_error(status_mesg)
 
         # Onboard CPE
-        self.onboard_cpe(cpe)
+        with self.create_network_function_span_context(cpe["tid"], cpe["fqdn"], "onboard") if getattr(self, '_otel_initialized', False) else nullcontext():
+            self.onboard_cpe(cpe)
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("cpe.onboarded", {
+                    "cpe_tid": cpe["tid"],
+                    "cpe_vendor": cpe["vendor"],
+                    "cpe_model": cpe["model"]
+                })
 
         # STEP 5a. Best Effort Attempt To Obtain Light Levels
         self.status_update("Step 5a: Best Effort Attempt To Obtain Light Levels")
@@ -340,6 +377,7 @@ class Activate(CommonPlan):
         cpe_nf = self.get_network_function_by_host_or_ip(self.cpe_ip)
 
         try:
+            with self.timed_operation("config_delivery.send_config", {"cpe_ip": self.cpe_ip, "cpe_vendor": cpe["vendor"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
             # 116 PRO Uses Netconf, Different Configuration Delivery Method
             if "116PRO" not in cpe["model"]:
                 if cpe["vendor"] == "RAD":
@@ -359,13 +397,17 @@ class Activate(CommonPlan):
             else:
                 self.netconf_config(cpe_nf["providerResourceId"])
 
-            # $$$$$$$$$$$$$$$ Standalone Config Delivery Complete $$$$$$$$$$$$$$$
+            # $$$$$$$$$$$$$$$ Standalone Config Delivery Complete $$$$$$$$$$$$$$$ 
             self.status_update("CPE AUTO-ACTIVATION IS NOW COMPLETE")
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("config_delivery.completed", {"cpe_tid": cpe["tid"]})
             time.sleep(10)
-        except Exception:
-            status_mesg = "Unable to Deliver Configuration to " + cpe["tid"]
-            self.status_update(status_mesg, True, "10700")
-            self.exit_error(status_mesg)
+            except Exception as ex:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Unable to Deliver Configuration to {cpe['tid']}", ex)
+                status_mesg = "Unable to Deliver Configuration to " + cpe["tid"]
+                self.status_update(status_mesg, True, "10700")
+                self.exit_error(status_mesg)
 
         # POST DELIVERY 1. Best Effort ISE Push
         self.status_update("Post Delivery 1. Good faith effort to push CPE into ISE")

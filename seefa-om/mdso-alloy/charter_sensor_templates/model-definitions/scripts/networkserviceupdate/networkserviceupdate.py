@@ -8,24 +8,39 @@ Versions:
 
 """
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the initial updation of the
     Network Service.  The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process_with_cleanup(self):
-        self.circuit_id = self.properties["circuit_id"]
-        self.label = self.resource["label"]
-        self.devices_to_update_list = ["PE", "CPE"]
-        network_update_res_id = self.resource["id"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for network service update
+        with self.create_root_span(operation_name="network_service_update"):
+            self.circuit_id = self.properties["circuit_id"]
+            self.label = self.resource["label"]
+            self.devices_to_update_list = ["PE", "CPE"]
+            network_update_res_id = self.resource["id"]
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                update_types = [k for k, v in self.properties.items() if v is True and k != "use_alternate_circuit_details_server"]
+                self.record_span_event_from_instance("network_service.update.started", {
+                    "circuit_id": self.circuit_id,
+                    "update_types": update_types
+                })
 
-        # validate the network service update request is correct
-        self.validate_update_request()
+            # validate the network service update request is correct
+            self.validate_update_request()
 
         # reference circuit details collector resource for this network service update
         self.circuit_details_res_id = self.resource["properties"]["circuit_details_id"]
@@ -91,12 +106,14 @@ class Activate(CommonPlan):
                 ctr += 1
                 true_items.append(k)
 
-        if ctr != 1:
-            msg = "Expected only one property to be true but found %s which are %s " % (ctr, str(true_items))
-            self.categorized_error = (
-                self.ERROR_CATEGORY["MDSO"].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
-            )
-            self.exit_error(msg)
+            if ctr != 1:
+                msg = "Expected only one property to be true but found %s which are %s " % (ctr, str(true_items))
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(msg)
+                self.categorized_error = (
+                    self.ERROR_CATEGORY["MDSO"].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
+                )
+                self.exit_error(msg)
 
     def create_circuit_details_resource(self, circuit_id):
         """

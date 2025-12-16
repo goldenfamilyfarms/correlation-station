@@ -1,16 +1,37 @@
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     def process(self):
-        customer_res = self.bpo.resources.get(self.resource["properties"]["customerResourceId"])
-        fmg_payload, faz_payload, fpc_payload = self.create_payloads(customer_res)
-        # create fortimanager, fortianalyzer, and fortiportal child resources
-        self.bpo.resources.create(self.resource["id"], fmg_payload)
-        self.bpo.resources.create(self.resource["id"], faz_payload)
-        self.bpo.resources.create(self.resource["id"], fpc_payload)
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for managed security services
+        with self.create_root_span(operation_name="managed_security_services"):
+            customer_res = self.bpo.resources.get(self.resource["properties"]["customerResourceId"])
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("security_services.activation.started", {
+                    "customer_resource_id": customer_res.get("id", "unknown")
+                })
+            
+            fmg_payload, faz_payload, fpc_payload = self.create_payloads(customer_res)
+            # create fortimanager, fortianalyzer, and fortiportal child resources
+            with self.timed_operation("security_services.create_resources", {}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.bpo.resources.create(self.resource["id"], fmg_payload)
+                self.bpo.resources.create(self.resource["id"], faz_payload)
+                self.bpo.resources.create(self.resource["id"], fpc_payload)
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("security_services.resources_created", {
+                        "fmg": fmg_payload.get("label", "unknown"),
+                        "faz": faz_payload.get("label", "unknown"),
+                        "fpc": fpc_payload.get("label", "unknown")
+                    })
 
     def create_payloads(self, customer_res):
         # get properties from customer resource and assign to local variables

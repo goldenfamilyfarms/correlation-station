@@ -8,29 +8,44 @@ Versions:
 
 """
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 import json
 import sys
 sys.path.append('model-definitions')
 
 
-class Activate(CompleteAndTerminatePlan):
+class Activate(CompleteAndTerminatePlan, OTelMixin):
     """this is the class that is called for the initial activation of the
     ServiceDeviceConfigurator.
     """
 
     def process(self):
-        circuit_details_id = self.properties["circuit_details_id"]
-        context = self.properties["context"]
-        operation = self.properties["operation"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for the entire process
+        with self.create_root_span(operation_name="service_device_onboarder"):
+            circuit_details_id = self.properties["circuit_details_id"]
+            context = self.properties["context"]
+            operation = self.properties["operation"]
+            
+            # Set correlation baggage from instance attributes
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
 
-        # Get the circuit details and network service
-        circuit_details = self.get_resource(circuit_details_id)
+            # Get the circuit details and network service
+            circuit_details = self.get_resource(circuit_details_id)
         circuit_details_props = circuit_details["properties"]
 
         devices_to_onboard = circuit_details_props.get("devices_to_onboard", [])
         if len(devices_to_onboard) == 0:
             self.logger.debug("No devices to onboard found")
             return
+            
+        # Extract and set topology context from circuit details
+        if getattr(self, '_otel_initialized', False):
+            self.extract_and_set_topology_context(circuit_details_props)
+            
         # Build the lookup and add the device if it is not there
         # GET THE COMMUNICATION STATE OF THE RESOURCES by using the DeviceStateChecker resource
         onboard_product = self.get_built_in_product(self.BUILT_IN_DEVICE_ONBOARDER_TYPE)
@@ -59,53 +74,72 @@ class Activate(CompleteAndTerminatePlan):
                 connection_param = device_ip
 
             if device_hostname in devices_to_onboard and (context == "ALL" or device_role.upper() == context):
-                nf = self.get_network_function_by_host(device_fqdn)
-                # Network function was created during provisioning of primary leg but Bpo State on secondary leg incorrectly shows "NOT-ONBOARD"
-                if nf and self.get_node_bpo_state(circuit_details, device) == "NOT-ONBOARD":
-                    _, onboard_details = self.generate_onboard_details(device_hostname, circuit_details, onboard_product, connection_param, device)
-                    device_res = self.add("Resource", "/resources", onboard_details)
-                    created_onboarded_res.append(device_res)
-
-                if not nf and device_role.upper() != "PE":
-                    nf = self.get_network_function_by_host(device_ip)
-
-                if not nf:
-                    devices_deployed[device_hostname] = False
-                    label, onboard_details = self.generate_onboard_details(device_hostname, circuit_details, onboard_product, connection_param, device)
-
-                    if operation == "CPE_ACTIVATION":
-                        onboard_details["properties"]["operation"] = "CPE_ACTIVATION"
-
-                    # check market for resource already existing with identical label
-                    self.logger.debug("***********")
-                    try:
-                        check_label = self.bpo.resources.get_one_by_filters(
-                            resource_type="charter.resourceTypes.DeviceOnboarder",
-                            q_params={"label": label},
-                        )
-                        self.logger.debug("Checking for device onboarder for resource:", check_label)
-                        if check_label["label"] == label:
-                            self.logger.debug("On-boarding already processing for device: " + device_hostname)
-                            created_onboarded_res.append(check_label)
-                    except Exception:
-                        self.logger.debug("On-boarding device: " + device_hostname)
+                # Create network function span for device onboarding
+                tid = device_hostname
+                from contextlib import nullcontext
+                span_ctx = self.create_network_function_span_context(tid, device_fqdn, "onboard") if getattr(self, '_otel_initialized', False) else nullcontext()
+                with span_ctx:
+                    nf = self.get_network_function_by_host(device_fqdn)
+                    # Network function was created during provisioning of primary leg but Bpo State on secondary leg incorrectly shows "NOT-ONBOARD"
+                    if nf and self.get_node_bpo_state(circuit_details, device) == "NOT-ONBOARD":
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("device.onboard.retry", {"device": device_hostname, "reason": "bpo_state_not_onboard"})
+                        _, onboard_details = self.generate_onboard_details(device_hostname, circuit_details, onboard_product, connection_param, device)
                         device_res = self.add("Resource", "/resources", onboard_details)
                         created_onboarded_res.append(device_res)
+
+                    if not nf and device_role.upper() != "PE":
+                        nf = self.get_network_function_by_host(device_ip)
+
+                    if not nf:
+                        devices_deployed[device_hostname] = False
+                        label, onboard_details = self.generate_onboard_details(device_hostname, circuit_details, onboard_product, connection_param, device)
+
+                        if operation == "CPE_ACTIVATION":
+                            onboard_details["properties"]["operation"] = "CPE_ACTIVATION"
+
+                        # check market for resource already existing with identical label
+                        self.logger.debug("***********")
+                        try:
+                            check_label = self.bpo.resources.get_one_by_filters(
+                                resource_type="charter.resourceTypes.DeviceOnboarder",
+                                q_params={"label": label},
+                            )
+                            self.logger.debug("Checking for device onboarder for resource:", check_label)
+                            if check_label["label"] == label:
+                                self.logger.debug("On-boarding already processing for device: " + device_hostname)
+                                if getattr(self, '_otel_initialized', False):
+                                    self.record_span_event_from_instance("device.onboard.already_processing", {"device": device_hostname})
+                                created_onboarded_res.append(check_label)
+                        except Exception as ex:
+                            self.logger.debug("On-boarding device: " + device_hostname)
+                            if getattr(self, '_otel_initialized', False):
+                                self.record_span_event_from_instance("device.onboard.start", {"device": device_hostname, "vendor": onboard_details["properties"].get("device_vendor"), "model": onboard_details["properties"].get("device_model")})
+                            device_res = self.add("Resource", "/resources", onboard_details)
+                            created_onboarded_res.append(device_res)
 
         # NOW WAIT FOR THEM ALL TO FINISH
         for resp in created_onboarded_res:
             resp_id = resp["id"]
+            device_name = resp["properties"]["device_name"]
             # Wait for relationships to be built
             try:
-                self.await_resource_states_collect_timing("Waiting for " + resp_id, resp_id, interval=5, tmax=300)
-                devices_deployed[resp["properties"]["device_name"]] = True
-            except Exception:
+                from contextlib import nullcontext
+                timed_ctx = self.timed_operation("device_onboard_wait", {"device": device_name}) if getattr(self, '_otel_initialized', False) else nullcontext()
+                with timed_ctx:
+                    self.await_resource_states_collect_timing("Waiting for " + resp_id, resp_id, interval=5, tmax=300)
+                    devices_deployed[device_name] = True
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("device.onboard.completed", {"device": device_name})
+            except Exception as ex:
                 try:
                     r = self.bpo.resources.get(resp_id)
                     if r is not None:
-                        devices_deployed[resp["properties"]["device_name"]] = r["orchState"] == "active"
-                except Exception as ex:
-                    devices_deployed[resp["properties"]["device_name"]] = False
+                        devices_deployed[device_name] = r["orchState"] == "active"
+                except Exception:
+                    devices_deployed[device_name] = False
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(f"On-boarder {resp_id} failed for device {device_name}", ex)
                     self.logger.debug(f"On-boarder {resp_id} already on-boarding so no need to check.")
                     self.logger.debug(f"Exception: {ex}")
 

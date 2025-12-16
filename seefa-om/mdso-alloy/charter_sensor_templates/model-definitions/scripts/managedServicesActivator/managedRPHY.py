@@ -1,11 +1,13 @@
 import time
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan, CliCutthrough):
+class Activate(CommonPlan, CliCutthrough, OTelMixin):
     """
     Checking Operation Type
     Validate Supported Device Model
@@ -24,56 +26,93 @@ class Activate(CommonPlan, CliCutthrough):
     """
 
     def process(self):
-        self.ipAddress = self.resource['properties']['cmtsipAddress']
-        self.operationType = self.resource['properties']['operationType']
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for RPHY activation
+        with self.create_root_span(operation_name="rphy_activation"):
+            self.ipAddress = self.resource['properties']['cmtsipAddress']
+            self.operationType = self.resource['properties']['operationType']
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("rphy.activation.started", {
+                    "ip_address": self.ipAddress,
+                    "operation_type": self.operationType
+                })
 
-        # Check operation type
-        self.log_status_message('Checking Operation Type')
-        self.vendor = self.resource['properties']['device_type']
-        if self.operationType != "New":
-            err = "Operation " + self.operationType + " is not supported."
-            err_msg = "Failed Step {}: {}".format("Operation Type Check", err)
-            self.update_status_and_exit(err_msg)
+            # Check operation type
+            self.log_status_message('Checking Operation Type')
+            self.vendor = self.resource['properties']['device_type']
+            if self.operationType != "New":
+                err = "Operation " + self.operationType + " is not supported."
+                err_msg = "Failed Step {}: {}".format("Operation Type Check", err)
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(err_msg)
+                self.update_status_and_exit(err_msg)
 
         try:
             msg = "Getting Network Function"
             self.logger.info(msg)
-            nf = self.get_network_function_by_host(self.ipAddress)
-            if not nf:
-                try:
-                    product = 'charter.resourceTypes.DeviceOnboarder'
-                    self.onboard_cmts(product, "MANAGED_SERVICES_ACTIVATION")
-                    nf = self.get_network_function_by_host(self.ipAddress)
-                    if not nf:
-                        self.exit_error("No network function found for hostname {}".format(self.ipAddress))
+            with self.create_network_function_span_context(self.ipAddress, self.ipAddress, "onboard") if getattr(self, '_otel_initialized', False) else nullcontext():
+                nf = self.get_network_function_by_host(self.ipAddress)
+                if not nf:
+                    try:
+                        product = 'charter.resourceTypes.DeviceOnboarder'
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("rphy.onboard.starting", {"ip": self.ipAddress})
+                        self.onboard_cmts(product, "MANAGED_SERVICES_ACTIVATION")
+                        nf = self.get_network_function_by_host(self.ipAddress)
+                        if not nf:
+                            if getattr(self, '_otel_initialized', False):
+                                self.otel_error_handler(f"No network function found for hostname {self.ipAddress}")
+                            self.exit_error("No network function found for hostname {}".format(self.ipAddress))
 
-                    self.await_active_collect_timing([nf['id']])
-                except Exception as e:
-                    msg = f"Unable to Onboard device {self.ipAddress} due to:{e}"
-                    self.log_status_message(msg)
-            elif nf['properties']['communicationState'] != "AVAILABLE":
-                self.bpo.market.post("/resources/{}/resync".format(nf["id"]))
-                self.logger.info("*****************RESYNC*********************")
-                try:
-                    self.get_resource_await_orchstate(
-                        resource_id=nf["id"],
-                        orchstates={"active"},
-                        timeout=330,
-                        poll_interval=10,
+                        self.await_active_collect_timing([nf['id']])
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("rphy.onboard.completed", {"ip": self.ipAddress})
+                    except Exception as e:
+                        msg = f"Unable to Onboard device {self.ipAddress} due to:{e}"
+                        if getattr(self, '_otel_initialized', False):
+                            self.otel_error_handler(msg, e)
+                        self.log_status_message(msg)
+                elif nf['properties']['communicationState'] != "AVAILABLE":
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("rphy.resync.initiated", {"ip": self.ipAddress})
+                    self.bpo.market.post("/resources/{}/resync".format(nf["id"]))
+                    self.logger.info("*****************RESYNC*********************")
+                    try:
+                        self.get_resource_await_orchstate(
+                            resource_id=nf["id"],
+                            orchstates={"active"},
+                            timeout=330,
+                            poll_interval=10,
+                        )
+                        self.logger.info("awaiting orchstate active")
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("rphy.resync.completed", {"ip": self.ipAddress})
+                    except Exception as ex:
+                        self.logger.exception("resource failed to reach active orchstate")
+                        network_function_resource = self.bpo.resources.get(nf["id"])
+                        if getattr(self, '_otel_initialized', False):
+                            self.otel_error_handler(f"Could not onboard the CMTS: {network_function_resource.get('reason', 'unknown')}", ex)
+                        self.bpo.resources.patch_observed(
+                            self.resource["id"],
+                            data={
+                                "reason": "Could not onboard the CMTS: {}".format(network_function_resource["reason"]),
+                            },
+                        )
+                self.nf_res_id = nf['providerResourceId']
+                if getattr(self, '_otel_initialized', False) and nf:
+                    self.add_network_function_attributes_to_span(
+                        self.tracer.get_current_span() if hasattr(self.tracer, 'get_current_span') else None,
+                        vendor="HARMONIC",
+                        ip_address=self.ipAddress
                     )
-                    self.logger.info("awaiting orchstate active")
-                except Exception:
-                    self.logger.exception("resource failed to reach active orchstate")
-                    network_function_resource = self.bpo.resources.get(nf["id"])
-                    self.bpo.resources.patch_observed(
-                        self.resource["id"],
-                        data={
-                            "reason": "Could not onboard the CMTS: {}".format(network_function_resource["reason"]),
-                        },
-                    )
-            self.nf_res_id = nf['providerResourceId']
         except Exception as ex:
             err_msg = "Failed to find network function with reason: {}".format(ex)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, ex)
             self.update_status_and_exit(err_msg)
         self.log_status_message('Checking Existing Resources')
         self.vecima = self.resource['properties']['device_type'].lower() == 'vecima'
@@ -86,40 +125,62 @@ class Activate(CommonPlan, CliCutthrough):
             self.update_status_and_exit("Existing RPD found, do not continue")
         self.log_status_message('Adding RPD and Turning Channels Up')
         try:
-            self.create_payloads()
-            res = self.execute_ra_command_file(self.nf_res_id, 'config-mode.json')
-            if 'Entering configuration mode terminal' not in res.json()['result']:
-                self.update_status_and_exit('Failed to enter configuration mode')
-            self.try_ra_command('add-rpd.json', self.rpd_payload)
-            self.try_ra_command('set-channels.json', self.channel_payload)
-            self.try_ra_command('turn-channels-up.json', self.channels_up_payload)
+            with self.timed_operation("rphy.configure_rpd", {"rpd": self.rpd}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_payloads()
+                res = self.execute_ra_command_file(self.nf_res_id, 'config-mode.json')
+                if 'Entering configuration mode terminal' not in res.json()['result']:
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler('Failed to enter configuration mode')
+                    self.update_status_and_exit('Failed to enter configuration mode')
+                self.try_ra_command('add-rpd.json', self.rpd_payload)
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("rphy.rpd.added", {"rpd": self.rpd})
+                self.try_ra_command('set-channels.json', self.channel_payload)
+                self.try_ra_command('turn-channels-up.json', self.channels_up_payload)
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("rphy.channels.turned_up", {"rpd": self.rpd})
 
-            for service in self.service_payloads:  # maybe remove if we dont' receive service packages
-                self.try_ra_command('set-service.json', self.service_payloads[service])
-            for service in self.service_port_payloads:
-                self.try_ra_command('set-service-port.json', self.service_port_payloads[service])
-            commit_result = self.execute_ra_command_file(self.nf_res_id, 'commit-write.json').json()['result']
+                for service in self.service_payloads:  # maybe remove if we dont' receive service packages
+                    self.try_ra_command('set-service.json', self.service_payloads[service])
+                for service in self.service_port_payloads:
+                    self.try_ra_command('set-service-port.json', self.service_port_payloads[service])
+                commit_result = self.execute_ra_command_file(self.nf_res_id, 'commit-write.json').json()['result']
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("rphy.config.committed", {"rpd": self.rpd})
         except Exception as ex:
             err_msg = "Failed: Configuring RPD - Reason: {}".format(ex)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, ex)
             self.update_status_and_exit(err_msg)
         if "Successfully" not in commit_result:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f'Config failed to save with reason: {commit_result}')
             self.update_status_and_exit('Config failed to save with reason: {res}'.format(res=commit_result))
         # Looped check for Pebble successfully pulling an IP address. Default 30s
 
         self.log_status_message('Verifying Configuration')
         try:
-            check1 = self.check_channels()
-            self.logger.info(f"CHECK1 {check1}")
-            check2 = self.check_rpd()
-            self.logger.info(f"CHECK2 {check2}")
-            check3 = self.check_services()
-            self.logger.info(f"CHECK3 {check3}")
-            if not check1 or not check2 or not check3:
-                self.update_status_and_exit('Configuration not saved correctly')
+            with self.timed_operation("rphy.verify_config", {"rpd": self.rpd}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                check1 = self.check_channels()
+                self.logger.info(f"CHECK1 {check1}")
+                check2 = self.check_rpd()
+                self.logger.info(f"CHECK2 {check2}")
+                check3 = self.check_services()
+                self.logger.info(f"CHECK3 {check3}")
+                if not check1 or not check2 or not check3:
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler('Configuration not saved correctly')
+                    self.update_status_and_exit('Configuration not saved correctly')
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("rphy.verification.passed", {"rpd": self.rpd})
         except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(f'Checking final config failed: {ex}', ex)
             self.update_status_and_exit('Checking final config failed: {}.'.format(ex))
         self.logger.info("configuration saved correctly")
         self.log_status_message('Configuration Saved Correctly')
+        if getattr(self, '_otel_initialized', False):
+            self.record_span_event_from_instance("rphy.activation.completed", {"rpd": self.rpd})
 
     def log_status_message(self, msg, parent="rphy_activation"):
         self.status_messages(msg, parent=parent)

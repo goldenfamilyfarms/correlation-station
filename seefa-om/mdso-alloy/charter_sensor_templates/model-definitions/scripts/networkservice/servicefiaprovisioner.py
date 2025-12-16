@@ -10,13 +10,15 @@ Versions:
 
 import sys
 import re
+from contextlib import nullcontext
 
 sys.path.append("model-definitions")
 from scripts.networkservice.peprovisioner import PeProvisioner
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CompleteAndTerminatePlan, PeProvisioner):
+class Activate(CompleteAndTerminatePlan, PeProvisioner, OTelMixin):
     """
     this is the class used for initial activation of service fia service provisioner
     """
@@ -32,18 +34,30 @@ class Activate(CompleteAndTerminatePlan, PeProvisioner):
     }
 
     def process(self):
-        self.operation = self.properties.get("operation", self.ACTIVATE_OPERATION_STRING)
-        circuit_details_id = self.properties["circuit_details_id"]
-        context = self.properties["context"]
-        stage = self.properties["stage"]
-        self.normalized_designed_model = None
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for FIA service provisioning
+        with self.create_root_span(operation_name="fia_service_provisioner"):
+            self.operation = self.properties.get("operation", self.ACTIVATE_OPERATION_STRING)
+            circuit_details_id = self.properties["circuit_details_id"]
+            context = self.properties["context"]
+            stage = self.properties["stage"]
+            self.normalized_designed_model = None
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
 
-        if not stage == "PRODUCTION":
-            return
+            if not stage == "PRODUCTION":
+                return
 
-        # Get the circuit details and network service
-        self.circuit_details = self.get_resource(circuit_details_id)
-        self.service_type = self.circuit_details["properties"]["serviceType"]
+            # Get the circuit details and network service
+            self.circuit_details = self.get_resource(circuit_details_id)
+            self.service_type = self.circuit_details["properties"]["serviceType"]
+            
+            # Extract and set topology context
+            if getattr(self, '_otel_initialized', False):
+                self.extract_and_set_topology_context(self.circuit_details["properties"])
 
         # return without doing anything if service is not FIA
         if not self.service_type == "FIA" or not context == "PE":
@@ -110,33 +124,41 @@ class Activate(CompleteAndTerminatePlan, PeProvisioner):
         fia_plugin_product = self.get_plugin_product(package, "charter.resourceTypes.FIAendpoint")
         self.logger.info(f"fia plugin product is {fia_plugin_product}")
 
-        if self.operation == "MAP":
-            self.logger.info("Service Mapper Processing")
-            network_config_data = self.get_network_config_data(
-                self.circuit_details,
-                "FIA",
-                self.device_tid,
-                device_provider_resource_id=nf_resource["providerResourceId"],
-                is_service_mapper=True,
-            )
-            self.service_mapper_process(fia_object, network_config_data, nf_resource, pe)
-            return
+            if self.operation == "MAP":
+                self.logger.info("Service Mapper Processing")
+                with self.timed_operation("fia.service_mapper", {"device": self.device_tid}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    network_config_data = self.get_network_config_data(
+                        self.circuit_details,
+                        "FIA",
+                        self.device_tid,
+                        device_provider_resource_id=nf_resource["providerResourceId"],
+                        is_service_mapper=True,
+                    )
+                    self.service_mapper_process(fia_object, network_config_data, nf_resource, pe)
+                return
 
-        if self.operation == self.ACTIVATE_OPERATION_STRING:
-            self.do_activate(pe, fia_object, fia_plugin_product)
-            self.update_devices_prop_value([pe["Host Name"]], circuit_details_id, "Provisioned", "True")
-        elif self.operation == self.UPDATE_OPERATION_STRING:
-            self.do_update(pe, fia_object, fia_plugin_product)
-        elif self.operation == self.TERMINATE_OPERATION_STRING:
-            self.do_terminate(pe, nf_resource, self.circuit_details, fia_object, fia_plugin_product)
-        else:
-            msg = self.error_formatter(
-                self.SYSTEM_ERROR_TYPE,
-                self.RESOURCE_GET_SUBCATEGORY,
-                f"Invalid command received {self.operation}",
-            )
-            self.categorized_error = msg
-            self.exit_error(msg)
+            if self.operation == self.ACTIVATE_OPERATION_STRING:
+                with self.timed_operation("fia.activate", {"pe": pe["Host Name"], "service_type": self.service_type}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_activate(pe, fia_object, fia_plugin_product)
+                    self.update_devices_prop_value([pe["Host Name"]], circuit_details_id, "Provisioned", "True")
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("fia.activated", {"pe": pe["Host Name"]})
+            elif self.operation == self.UPDATE_OPERATION_STRING:
+                with self.timed_operation("fia.update", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_update(pe, fia_object, fia_plugin_product)
+            elif self.operation == self.TERMINATE_OPERATION_STRING:
+                with self.timed_operation("fia.terminate", {"pe": pe["Host Name"]}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    self.do_terminate(pe, nf_resource, self.circuit_details, fia_object, fia_plugin_product)
+            else:
+                msg = self.error_formatter(
+                    self.SYSTEM_ERROR_TYPE,
+                    self.RESOURCE_GET_SUBCATEGORY,
+                    f"Invalid command received {self.operation}",
+                )
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(msg)
+                self.categorized_error = msg
+                self.exit_error(msg)
 
     def service_mapper_process(self, designed_model, network_config_data, nf_resource, pe):
         ipv4_address = self.get_ipv4()

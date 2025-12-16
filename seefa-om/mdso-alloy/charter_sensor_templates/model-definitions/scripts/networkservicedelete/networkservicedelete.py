@@ -8,24 +8,35 @@ Versions:
 
 """
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """this is the class that is called for the deletion of the
     Network Service.  The only input it requires is the circuit_id
     associated with the service.
     """
 
     def process_with_cleanup(self):
-        self.circuit_id = self.properties["circuit_id"]
-        self.label = self.resource["label"]
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for network service deletion
+        with self.create_root_span(operation_name="network_service_delete"):
+            self.circuit_id = self.properties["circuit_id"]
+            self.label = self.resource["label"]
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("network_service.delete.started", {"circuit_id": self.circuit_id})
 
-        # create circuit details collector resource for this network service update
-        self.circuit_details_id = self.create_circuit_details_resource(self.circuit_id)
-        circuit_details_collector = self.bpo.resources.get(self.circuit_details_id)
-        self.circuit_details_res_id = circuit_details_collector["properties"]["circuit_details_id"]
+            # create circuit details collector resource for this network service update
+            self.circuit_details_id = self.create_circuit_details_resource(self.circuit_id)
+            circuit_details_collector = self.bpo.resources.get(self.circuit_details_id)
+            self.circuit_details_res_id = circuit_details_collector["properties"]["circuit_details_id"]
 
         # create the service device validator resource to make sure all devices are present.
         self.create_service_device_validator_resource(self.circuit_details_res_id, self.circuit_id)
@@ -34,12 +45,18 @@ class Activate(CommonPlan):
         self.create_service_device_onboarder_resource(self.circuit_details_res_id, self.circuit_id)
         circuit_details = self.bpo.resources.get(self.circuit_details_res_id)
 
-        network_services = self.get_associated_network_service_for_circuit_id(self.circuit_id, include_all=True)
-        if network_services is None:
-            raise Exception("Unable to get Network Service for " + self.circuit_id)
+            network_services = self.get_associated_network_service_for_circuit_id(self.circuit_id, include_all=True)
+            if network_services is None:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Unable to get Network Service for {self.circuit_id}")
+                raise Exception("Unable to get Network Service for " + self.circuit_id)
 
-        for network_service in network_services:
-            self.bpo.resources.delete(network_service["id"])
+            for network_service in network_services:
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("network_service.deleting", {"network_service_id": network_service["id"]})
+                self.bpo.resources.delete(network_service["id"])
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("network_service.deleted", {"network_service_id": network_service["id"]})
 
         # CLeaning up the device
         evc = circuit_details["properties"]["service"][0]["data"]["evc"][0]
@@ -73,12 +90,16 @@ class Activate(CommonPlan):
                 else:
                     self.exit_error("Device %s has unsupported role %s " % (device, values["Role"]))
 
-        self.delete_pe_context(circuit_details, pe_list, svlan)
-        self.delete_agg_context(circuit_details, agg_list, svlan)
-        self.delete_mtu_context(circuit_details, mtu_list, svlan)
-        self.delete_cpe_context(circuit_details, cpe_list, svlan)
+            with self.timed_operation("network_service.delete_contexts", {"circuit_id": self.circuit_id}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.delete_pe_context(circuit_details, pe_list, svlan)
+                self.delete_agg_context(circuit_details, agg_list, svlan)
+                self.delete_mtu_context(circuit_details, mtu_list, svlan)
+                self.delete_cpe_context(circuit_details, cpe_list, svlan)
+            
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("network_service.delete.completed", {"circuit_id": self.circuit_id})
 
-        return {}
+            return {}
 
     def process(self):
         result = {}

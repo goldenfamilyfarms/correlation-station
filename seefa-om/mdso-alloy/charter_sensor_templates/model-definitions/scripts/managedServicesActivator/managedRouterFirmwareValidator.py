@@ -1,11 +1,13 @@
 import json
 import time
 import sys
+from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     def process(self):
         """Validate Firmware
 
@@ -13,46 +15,85 @@ class Activate(CommonPlan):
         2) Get running firmware
         3) Compare to approved firmware
         """
-        self.label = self.resource["label"]
-        props = self.resource["properties"]
-        self.ipAddress = props["ipAddress"]
-        self.firmware_version = props["firmwareVersion"]
-        fqdn = self.ipAddress
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+        
+        # Create root span for firmware validation
+        with self.create_root_span(operation_name="firmware_validator"):
+            self.label = self.resource["label"]
+            props = self.resource["properties"]
+            self.ipAddress = props["ipAddress"]
+            self.firmware_version = props["firmwareVersion"]
+            fqdn = self.ipAddress
+            
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                self.record_span_event_from_instance("firmware.validation.started", {
+                    "ip_address": self.ipAddress,
+                    "expected_firmware": self.firmware_version
+                })
 
-        # Create connection to CPE
-        try:
-            msg = "1. Onboard Network Function"
-            self.logger.info(msg)
-            nf = self.onboard_network_function(fqdn)
-            self.logger.info("Device Onboarded: " + str(nf))
-        except Exception as err:
-            err_msg = "Failed Device Onboard: {}".format(err)
-            self.exit_error(err_msg)
+            # Create connection to CPE
+            try:
+                msg = "1. Onboard Network Function"
+                self.logger.info(msg)
+                with self.create_network_function_span_context(fqdn.split(".")[0] if "." in fqdn else fqdn, fqdn, "validate") if getattr(self, '_otel_initialized', False) else nullcontext():
+                    nf = self.onboard_network_function(fqdn)
+                    self.logger.info("Device Onboarded: " + str(nf))
+                    if getattr(self, '_otel_initialized', False) and nf:
+                        self.add_network_function_attributes_to_span(
+                            self.tracer.get_current_span() if hasattr(self.tracer, 'get_current_span') else None,
+                            vendor="CISCO",
+                            ip_address=self.ipAddress
+                        )
+            except Exception as err:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Failed Device Onboard: {err}", err)
+                err_msg = "Failed Device Onboard: {}".format(err)
+                self.exit_error(err_msg)
 
-        # Run show version command
-        try:
-            msg = "2. Run `show version` command."
-            self.logger.info(msg)
-            result = self.create_cli_manager()
-            self.logger.info("Result: {}".format(result))
-        except Exception as err:
-            err_msg = "Failed Sending Command: {}".format(err)
-            self.exit_error(err_msg)
+            # Run show version command
+            try:
+                msg = "2. Run `show version` command."
+                self.logger.info(msg)
+                with self.timed_operation("firmware.check_version", {"ip": self.ipAddress}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    result = self.create_cli_manager()
+                    self.logger.info("Result: {}".format(result))
+            except Exception as err:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Failed Sending Command: {err}", err)
+                err_msg = "Failed Sending Command: {}".format(err)
+                self.exit_error(err_msg)
 
-        # Verify if current firmware is approved
-        try:
-            msg = "3. Verify firmware."
-            self.logger.info(msg)
-            firmware_current = result["properties"]["output_results"]["command_results"][0]["result"]
-            self.logger.info("Current Firmware: {}".format(firmware_current))
-        except Exception as err:
-            err_msg = "Failed: {}".format(err)
-            self.exit_error(err_msg)
+            # Verify if current firmware is approved
+            try:
+                msg = "3. Verify firmware."
+                self.logger.info(msg)
+                firmware_current = result["properties"]["output_results"]["command_results"][0]["result"]
+                self.logger.info("Current Firmware: {}".format(firmware_current))
+                
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("firmware.version.checked", {
+                        "current_firmware": firmware_current,
+                        "expected_firmware": self.firmware_version
+                    })
+            except Exception as err:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Failed: {err}", err)
+                err_msg = "Failed: {}".format(err)
+                self.exit_error(err_msg)
 
-        if self.firmware_version in firmware_current:
-            self.logger.info("Firmware is approved!  Patching Observed")
-            props["approved"] = True
-            self.bpo.resources.patch_observed(self.resource["id"], {"properties": props})
+            if self.firmware_version in firmware_current:
+                self.logger.info("Firmware is approved!  Patching Observed")
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("firmware.validation.approved", {
+                        "firmware_version": self.firmware_version
+                    })
+                props["approved"] = True
+                self.bpo.resources.patch_observed(self.resource["id"], {"properties": props})
+            else:
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"Firmware validation failed: expected {self.firmware_version}, got {firmware_current}")
 
     def onboard_network_function(self, fqdn):
         """Attempt to onboard a Network Function resource.
