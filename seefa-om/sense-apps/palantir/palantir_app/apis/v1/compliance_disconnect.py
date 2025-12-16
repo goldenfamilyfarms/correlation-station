@@ -34,6 +34,7 @@ from sense_common.observability import get_tracer, set_mdso_correlation, add_spa
 from sense_common.observability.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 from palantir_app.common.http_auth import auth
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 api = Namespace("v1/compliance", description="Circuit Compliance API")
@@ -83,22 +84,25 @@ class DisconnectCompliance(Resource):
                 if compliance.is_pass_through():
                     span.set_attribute("compliance.pass_through", True)
                     add_span_event("compliance.disconnect.pass_through", circuit_id=cid)
+                    span.set_status(Status(StatusCode.OK))
                     return {"resource_id": PASS_THROUGH}, 211
 
                 span.set_attribute("compliance.pass_through", False)
                 add_span_event("compliance.disconnect_mapper.create.start", circuit_id=cid)
                 response = compliance.create_disconnect_mapper()
-                
+
                 if isinstance(response, dict) and "resource_id" in response:
                     span.set_attribute("mdso.resource_id", response["resource_id"])
-                
+
                 add_span_event("compliance.disconnect.create.complete", circuit_id=cid, resource_id=response.get("resource_id") if isinstance(response, dict) else None)
+                span.set_status(Status(StatusCode.OK))
                 return response, 201
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 
@@ -188,6 +192,7 @@ class DisconnectComplianceStatus(Resource):
                     compliance_stages.set_pass_through_status()
                     span.set_attribute("compliance.pass_through", True)
                     add_span_event("compliance.disconnect.pass_through", circuit_id=cid)
+                    span.set_status(Status(StatusCode.OK))
                     return compliance_stages.status, 200
 
                 span.set_attribute("compliance.pass_through", False)
@@ -224,14 +229,16 @@ class DisconnectComplianceStatus(Resource):
                 if isinstance(compliance_stages.status, dict):
                     compliant = compliance_stages.status.get(COMPLIANT, False)
                     span.set_attribute("compliance.compliant", compliant)
-                
+
                 add_span_event("compliance.disconnect.status.check.complete", circuit_id=cid)
+                span.set_status(Status(StatusCode.OK))
                 return {"message": compliance_stages.status, COMPLIANT: True}, 200
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 
