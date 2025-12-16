@@ -1,0 +1,6 @@
+toml
+pypi_req_finder
+jinja2-cli
+gitpython
+twine
+usolmaker

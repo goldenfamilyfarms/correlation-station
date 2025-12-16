@@ -1,0 +1,93 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Service Device Validator"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Service Device Checker action that will do the initial
+check of the device to make sure it can support the service provisioning.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    ServiceDeviceValidator {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Service Device Validator
+        description = """
+        - Extended from charter.resourceTypes.BaseResource 
+        - This resource will do the following:
+            1 - Validation of device communication state.
+                - for PEs if not on-boarded and communication active it will fail
+                - for CPE it will add any non-onboarded devices to the CircuitDetails
+                - If the CPE is on-boarded, it will fail if the communication state is not proper.
+        """
+
+        properties {
+        
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "ID for the circuit details created from the Granite system"
+                type = string
+                optional = false
+                updatable = false
+            }
+
+            operation {
+                title = "Operation from which this CircuitDetailsCollector was invoked"
+                description = """
+                This property influences the CircuitDetailsCollector's behavior when choosing which
+                nodes to configure.
+                """
+                optional = true
+                updatable = false
+                type = string
+                default = "NETWORK_SERVICE_ACTIVATION"
+                enum = [
+                    "NETWORK_SERVICE_UPDATE",
+                    "NETWORK_SERVICE_DELETION",
+                    "NETWORK_SERVICE_ACTIVATION",
+                    "CPE_ACTIVATION",
+                    "SERVICE_MAPPER",
+                    "SLM",
+                    "CONFIG_MODELER",
+                    "DISCONNECT_MAPPER",
+                    "TRANSPORT",
+                    "SMOKE_TEST",
+                    "DEVICE_RESET"
+                ]
+            }
+
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    ServiceDeviceValidator {
+        title = Service Device Validator
+        description = "Circuit Details Collector"
+        implements = charter.resourceTypes.ServiceDeviceValidator
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.servicedevicecvalidator.Activate"
+            }
+            
+        }
+    }
+}

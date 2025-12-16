@@ -1,0 +1,33 @@
+# Building wars/jars
+
+.build-maven:
+  stage: build:mvn
+  image: registry.blueplanet.com/blueplanet/registry/maven:3.6.3-openjdk-8
+  variables:
+    PROJECT_PATH: "NONE"
+  script:
+    - cd $PROJECT_PATH
+    - echo $BPI_MAVEN_SETTINGS_XML > settings.xml
+    - mvn clean install -Dmaven.test.skip=true -PdefaultProfile,java8 --settings settings.xml
+    - find . -type f -name "*.war" -o -name "*.jar"
+  after_script:
+    - cp -r /root/.npm/_logs logs/
+    - cp /tmp/*/angular-errors.log logs/
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - $PROJECT_PATH/**/target/*.war
+      - $PROJECT_PATH/**/target/*.jar
+      - logs/
+    expire_in: 30 days
+    when: always
+  tags:
+    - ciena-medium
+  rules:
+    - if: '$PROJECT_PATH == "NONE"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "/^release\/.+$"'
+      when: on_success
+

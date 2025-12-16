@@ -1,0 +1,9 @@
+--index-url http://blueplanet/mdsocharter-pypi/simple
+--extra-index-url http://blueplanet/charter-pypi/simple/
+
+jsonpath
+requests
+plansdk
+ipaddress
+jinja2
+ping3

@@ -1,0 +1,98 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Sftp Server for firmware"
+package     = charter
+version     = "1.0"
+description = """
+Sftp Server for firmware images
+"""
+authors     = [ "Susie Minor (susie.minor@charter.com)","Roman Penn (roman.penn@charter.com)" ]
+
+imports {
+    root = tosca.resourceTypes.Root
+}
+
+resourceTypes { 
+    SftpFirmwareConstants {
+        derivedFrom = [ root ]
+        title = SftpFirmwareConstants
+        description = """
+        Sftp Server for firmware images
+        """
+
+        properties {
+            username {
+                title = "username"
+                description = "username"
+                type = string
+                optional = false
+                updatable = true
+            }
+                    
+            password {
+                title = "password"
+                description = "password"
+                type = string
+                optional = false
+                obfuscate = true
+                updatable = true
+            }
+             
+            hostname {
+                title = "hostname"
+                description = "hostname or ip address"
+                type = string
+                optional = false
+                updatable = true
+            }
+                    
+            dirpath {
+                title = "directory path"
+                description = "directory path"
+                type = string
+                optional = false
+                default = "/firmware/"
+                updatable = true
+            }
+                    
+            protocol {
+                title = "download protocol"
+                description = "download protocol"
+                type = string
+                optional = false
+                updatable = true
+                default = "ftp"
+                enum = [
+                    "ftp",
+                    "sftp",
+                    "scp"
+                ]
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    SftpFirmwareConstants {
+        title = SftpFirmwareConstants
+        description = "Sftp Server for firmware images"
+        implements = charter.resourceTypes.SftpFirmwareConstants
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+            
+            update {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+
+        }
+    }
+}
+

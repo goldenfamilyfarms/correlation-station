@@ -1,0 +1,65 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "TestingResource"
+package     = charter
+version     = "1.0"
+description = """
+This document is a test
+"""
+authors     = [ "Paloma Resendiz (paloma.resendiz@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    TestingResource {
+        derivedFrom = tosca.resourceTypes.Root
+        title = TestingResource
+        description = """
+         - This is a test
+         """
+
+        properties {     
+            rpd {
+                type = string
+                title = "rpd"
+                description = "rpd"
+                optional = true
+            }  
+            channel_number {
+                type = string
+                title = "Channel Number"
+                description = "Channel number"
+            }
+            device_name {
+                type = string
+                title = "Device Name"
+                description = "Device name"
+            }
+            device {
+                type = string
+                title = "Device"
+                description = "Device"
+            }
+            }
+
+    }
+}
+serviceTemplates {
+
+   Testingresource {
+        title = Testing Resource
+        description = "Testing Resource"
+        implements = charter.resourceTypes.TestingResource
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.TestingResource.testing_resource.Activate"
+            }
+
+        }
+    }
+}

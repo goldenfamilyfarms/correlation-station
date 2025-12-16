@@ -1,0 +1,73 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Status Updater"
+package     = tosca
+version     = "1.0"
+description = "Check completion status of resource, and populate parent resource with status"
+authors     = [ 
+    "Lee Truong (lee.truong@charter.com)", 
+    "Alex Arandia (alex.arandia@charter.com)", 
+    "Daniel Medoza Pupo (Daniel.MendozaPupo@charter.com)" ]
+
+imports {
+  
+}
+
+resourceTypes {
+
+    StatusUpdater {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Status Updater
+        description = """
+            Status updater will populate network_service_status and network_service_error properties.
+            network_service_error will categorize the cause of failure.
+        """
+
+        properties {
+
+            network_service_resource_id {
+                title = "Resource ID of network service instance"
+                description = "Resource ID"
+                type = string
+                updatable = false
+                optional = false 
+            }
+
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = true
+                updatable = false
+            }
+
+            operation {
+                title = "Operation"
+                description = "Operation from which the status updater was invoked"
+                type = string
+                optional = true
+                updatable = false
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    StatusUpdater {
+
+        title = "Status updater"
+        description = "Update parent resource with status"
+        implements = tosca.resourceTypes.StatusUpdater
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.status_updater.Activate"
+            }
+
+        }
+    }
+}
+

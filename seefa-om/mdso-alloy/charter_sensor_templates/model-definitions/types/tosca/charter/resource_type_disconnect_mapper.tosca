@@ -1,0 +1,178 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Disconnect Mapper"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Disconnect Mapper. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Allison Patino (allison.patino@charter.com)"]
+
+imports {
+
+}
+
+resourceTypes {
+    DisconnectMapper {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Disconnect Mapper
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a Disconnect Mapper resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        """
+
+        properties {
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            a_side_disconnect {
+                title = "A Side Disconnect"
+                description = "A Side Granite Impact Analysis of number of circuits on edge transport path, determines Partial or Full"
+                type = string
+                optional = true
+                enum = ["FULL", "PARTIAL"]
+            }
+            a_side_endpoint {
+                title = "A Side Endpoint"
+                description = "TID of A Side Endpoint"
+                type = string
+                optional = true
+            }
+            a_side_address {
+                title = "A Side Address"
+                description = "A Side Address"
+                type = string
+                optional = true
+            }
+            z_side_disconnect {
+                title = "Z Side Disconnect"
+                description = "Z Side Granite Impact Analysis of number of circuits on edge transport path, determines Partial or Full"
+                type = string
+                optional = false
+                enum = ["FULL", "PARTIAL"]
+            }
+            z_side_endpoint {
+                title = "Z Side Endpoint"
+                description = "TID of Z Side Endpoint"
+                type = string
+                optional = true
+            }
+            z_side_address {
+                title = "Z Side Address"
+                description = "Z Side Address"
+                type = string
+                optional = true
+            }
+            configuration_found {
+                title = "Configuration Found"
+                description = "Configuration(s) found on the network"
+                type = object
+                output = true
+                optional = true
+                items.type = object
+            }
+            slm_eligible {
+                title = "SLM Eligible"
+                description = "Circuit is eligible for SLM configuration"
+                type = boolean
+                optional = true
+            }
+            network_service_id {
+                title = "Network Service ID"
+                description = "Network Service resource ID, only exists if network service for circuit exists"
+                optional = true
+                type = string
+            }
+            circuit_details {
+                title = "Circuit Details"
+                description = "circuit details"
+                type = object
+                config = false
+                optional = true
+            }
+            failure_status {
+                title = "Failure Status"
+                description = "Reason for failure"
+                type = string 
+                optional = true
+                updatable = true
+            }
+            a_side_optic_slotted {
+                title = "A-side Optic"
+                description = "Circuit has an optic slotted on the a-side"
+                type = boolean
+                optional = true
+            }
+            z_side_optic_slotted {
+                title = "Z-side Optic"
+                description = "Circuit has an optic slotted on the z-side"
+                type = boolean
+                optional = true
+            }
+            a_side_target_wavelength {
+                title = "A-side Target Wavelength"
+                description = "Circuit has a target wavelength on the a-side"
+                type = string
+                optional = true
+            }
+            z_side_target_wavelength {
+                title = "Z-side Target Wavelength"
+                description = "Circuit has a target wavelength on the z-side"
+                type = string
+                optional = true
+            }
+            a_side_sfp_vendor_name {
+                title = "A-side SFP Vendor"
+                description = "A-side SFP Vendor"
+                type = string
+                optional = true
+            }
+            z_side_sfp_vendor_name {
+                title = "Z-side SFP Vendor"
+                description = "Z-side SFP Vendor"
+                type = string
+                optional = true
+            }
+            a_side_sfp_part_number {
+                title = "A-side Part Number"
+                description = "A-side Part Number"
+                type = string
+                optional = true
+            }
+            z_side_sfp_part_number {
+                title = "Z-side Part Number"
+                description = "Z-side Part Number"
+                type = string
+                optional = true
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    DisconnectMapper {
+        title = Disconnect Mapper
+        description = "Disconnect Mapper"
+        implements = charter.resourceTypes.DisconnectMapper
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.disconnectMapper.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.serviceMapper.disconnectMapper.Terminate"
+            }
+        }
+    }
+}

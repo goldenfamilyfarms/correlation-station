@@ -1,0 +1,51 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Service"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Network Service Update model.  This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc... for the validation of an update request to network service.
+"""
+authors     = [ "Yeshaswini Narayana (ynarayan@partner.ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    IpUpdate {
+        derivedFrom = [ charter.resourceTypes.BaseResource ]
+        title = Ip Update
+        description = """
+        - Resource Type to implement Bandwidth update of a network service.
+        """
+
+        properties {
+            circuit_details_resource_id {
+                type = string
+                title = Circuit Details Resource Id
+                description = Circuit Details Resource Id
+            }
+        }
+    }
+}
+
+serviceTemplates {
+
+    IpUpdate {
+        title = IP Update
+        description = "IP Update"
+        implements = charter.resourceTypes.IpUpdate
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkserviceupdate.ip_update.Activate"
+            }
+
+        }
+    }
+}

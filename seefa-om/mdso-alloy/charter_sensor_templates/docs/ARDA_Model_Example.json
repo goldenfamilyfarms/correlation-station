@@ -1,0 +1,162 @@
+{
+    "CustomerName": "ANDROMEDA PROJECT TEST",
+    "ServiceName": "Needs to be determined",
+    "ServiceType": "Something",
+    "Services": [
+        {
+            "ServiceType": "ELINE",
+            "UnitType": "CARRIER",
+            "EVCType": "CAR-EPL",
+            "VCID": 429369,
+            "ServiceLevel": null,
+            "ServiceVLANID": 1201,
+            "CircuitID": "51.L1XX.009158..TWCC",
+            "Bandwidth": "100 Mbps",
+            "EtherType": "8100",
+            "UnderlayNetworks": [
+                {
+                    "CustomerAddr": "11921 N MOPAC EXPY",
+                    "Topology": [
+                        {
+                            "Role": "PE",
+                            "Hostname": "AUSDTXIR5CW",
+                            "Vendor": "JUNIPER",
+                            "Model": "MX240 ETHERNET ROUTER",
+                            "Interfaces": [
+                                {
+                                    "PortType": "Somthing",
+                                    "VLANOperation": "Match on VLAN ID",
+                                    "Location": "Client",
+                                    "Name": "LAG-1-1",
+                                    "Type": "LAG",
+                                    "VLAN": 1201,
+                                    "Neighbor": "AUSDTXIR55CW",
+                                    "LAGMembers": [
+                                        "GE-3/1/1",
+                                        "GE-4/1/1"
+                                    ]
+                                }
+                            ],
+                            "Description": "CARR:ELINE:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.009158..TWCC:11921 N MOPAC EXPY"
+                        },
+                        {
+                            "Role": "AGGREGATE",
+                            "Hostname": "AUSDTXIR55CW",
+                            "Vendor": "JUNIPER",
+                            "Model": "QFX AGGREGATE SWITCH",
+                            "Interfaces": [
+                                {
+                                    "VLANOperation": "Match on VLAN ID",
+                                    "Location": "Client",
+                                    "Name": "GE-2/1/0",
+                                    "Type": "Fixed",
+                                    "Neighbor": "CNI5TXR36ZW",
+                                    "VLAN": 1201,
+                                    "PortType": "CPE-Connected"
+                                },
+                                {
+                                    "VLANOperation": "Match on VLAN ID",
+                                    "Location": "Neighbor",
+                                    "Neighbor": "AUSDTXIR5CW",
+                                    "Interface": "LAG-1-1",
+                                    "Type": "LAG",
+                                    "LAGMembers": [
+                                        "GE-3/1/1",
+                                        "GE-4/1/1"
+                                    ],
+                                    "VLAN": 1201,
+                                    "PortType": "Somthing"
+                                }
+                            ],
+                            "Description": "CARR:ELINE:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.009158..TWCC:11921 N MOPAC EXPY"
+                        },
+                        {
+                            "Role": "CPE",
+                            "Hostname": "CNI5TXR36ZW",
+                            "Vendor": "RAD",
+                            "Model": "ETX203AX/2SFP/2UTP2SFP",
+                            "Description": "CARR:ELINE:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.009158..TWCC:11921 N MOPAC EXPY",
+                            "Interfaces": [
+                                {
+                                    "Location": "Client",
+                                    "Name": "ETH PORT 3",
+                                    "Type": "Fixed",
+                                    "PortType": "UNI",
+                                    "VLANOperation": "POP/PUSH",
+                                    "VLAN": 1201,
+                                    "CFMType": null,
+                                    "CFMMDLevel": null,
+                                    "CFMRemoteReflector": null,
+                                    "CFMMAID": null,
+                                    "CFMScope": null
+                                },
+                                {
+                                    "Location": "Network",
+                                    "Neighbor": "AUSDTXIR55CW",
+                                    "Name": "ETH PORT 1",
+                                    "Type": "Fixed",
+                                    "VLAN": 1201,
+                                    "PortType": "Somthing",
+                                    "VLANOperation": "Match on VLAN ID"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "CustomerAddr": "11931 N MOPAC EXPY",
+                    "Devices": [
+                        {
+                            "Role": "PE",
+                            "Hostname": "AUSDTXIR2CW",
+                            "Vendor": "JUNIPER",
+                            "Model": "MX240 ETHERNET ROUTER",
+                            "Interfaces": [
+                                {
+                                    "Location": "Client",
+                                    "Name": "GE-2/1/0",
+                                    "Type": "Fixed",
+                                    "VLAN": 1201,
+                                    "PortType": "CPE-Connected",
+                                    "VLANOperation": "Match on VLAN ID"
+                                }
+                            ],
+                            "Description": "CARR:ELINE:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.009158..TWCC:11921 N MOPAC EXPY"
+                        },
+                        {
+                            "Role": "CPE",
+                            "Hostname": "CNI5TXR36ZW",
+                            "Vendor": "RAD",
+                            "Model": "ETX203AX/2SFP/2UTP2SFP",
+                            "Description": "CARR:ELINE:ANDROMEDA PROJECT TEST@11921 N MOPAC EXPY:51.L1XX.009158..TWCC:11921 N MOPAC EXPY",
+                            "Interfaces": [
+                                {
+                                    "Location": "Client",
+                                    "Name": "ETH PORT 3",
+                                    "Type": "Fixed",
+                                    "PortType": "UNI",
+                                    "VLANOperation": "POP/PUSH",
+                                    "VLAN": 1201,
+                                    "CFMType": null,
+                                    "CFMMDLevel": null,
+                                    "CFMRemoteReflector": null,
+                                    "CFMMAID": null,
+                                    "CFMScope": null
+                                },
+                                {
+                                    "Location": "Network",
+                                    "Neighbor": "AUSDTXIR2CW",
+                                    "Name": "ETH PORT 1",
+                                    "Type": "Fixed",
+                                    "VLAN": 1201,
+                                    "PortType": "Somthing",
+                                    "VLANOperation": "Match on VLAN ID"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

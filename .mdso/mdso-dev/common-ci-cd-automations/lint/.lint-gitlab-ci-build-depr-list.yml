@@ -1,0 +1,29 @@
+deprecated-methods-list:
+  image: $REGISTRY_NAME/docker/blueplanet/devtools/common-ci-cd-automations/pypi-build-image:latest
+  tags:
+    - mdso
+  stage: build
+  script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - ssh-keyscan git.blueplanet.com >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - git config --global user.name "$GITLAB_USER_NAME"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git clone git@git.blueplanet.com:BluePlanet/DevTools/plansdk.git
+    - python3 ./scripts/update_plansdk_depr_methods.py --plansdk-repo plansdk --output-file ./plansdk_deprecated_methods.json --special-cases ./scripts/plansdk_deprecation_special_cases.json
+  # only:
+  #   changes:
+  #     - lint/image/VERSION
+  #   refs:
+  #     - master
+  # trigger using tagging of plansdk or manual
+  artifacts:
+    name: deprecated-methods-list
+    paths:
+      - ./plansdk_deprecated_methods.json
+  only:
+    refs:
+      - master

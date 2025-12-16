@@ -1,0 +1,22 @@
+#!/bin/sh
+export NAME=$(cat version.json | jq -r .name)
+export VERSION=$(cat version.json | jq -r .version)
+export PROJECT_TAG=$(cat version.json | jq -r .tag)
+export PROJECT_NEXT_TAG=$(($PROJECT_TAG+1))
+export REGISTRY=registry.blueplanet.com
+export BRANCH=$CI_COMMIT_REF_NAME
+
+[ ! -z "$VENDOR" ] || export VENDOR=${CI_REGISTRY_IMAGE/$REGISTRY\//}/${CI_COMMIT_REF_NAME/\//_}
+[ ! -z "$IMAGE_VERSION" ] || export IMAGE_VERSION=$VERSION
+[ ! -z "$DOCKERFILE" ] || export DOCKERFILE=Dockerfile
+
+echo Current Environment Values:
+echo ----------------
+echo NAME=$NAME
+echo VERSION=$VERSION
+echo PROJECT_TAG=$PROJECT_TAG
+echo PROJECT_NEXT_TAG=$PROJECT_NEXT_TAG
+echo REGISTRY=$REGISTRY
+echo VENDOR=$VENDOR
+echo DOCKERFILE=$DOCKERFILE
+echo ----------------

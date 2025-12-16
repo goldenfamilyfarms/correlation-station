@@ -1,0 +1,73 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Meraki Claim Device"
+package     = charter
+version     = "2.0"
+description = """
+This document holds the fields to claim device in Meraki dashboard.
+"""
+
+imports {
+}
+
+
+resourceTypes {
+    merakiClaim {
+        title = Managed Network Edge
+        description = """Claim device for MNE"""
+        derivedFrom = tosca.resourceTypes.Root
+        title = Meraki Claim Device
+        properties {
+            configurations {
+                title = "Configuration"
+                description = "customer site configuration"
+                type = object
+                optional = false
+            }
+            devices {
+                title = "Devices"
+                description = "List of network devices"
+                type = array
+                optional = false
+            }
+            networkID{
+                title = "Network ID"
+                description = "Network Site ID to be used in Day1 Tasks"
+                type = string
+                optional = true
+            }
+            networkName{
+                title = "Network Name"
+                description = "Network name"
+                type = string
+                optional = true
+            }
+            orgName{
+                title = "Org name"
+                description = "org name"
+                type = string
+                optional = true
+            }
+        }
+    }
+}
+
+
+serviceTemplates {
+    merakiClaim {
+        title = Meraki Claim
+        description = claim device
+        implements = charter.resourceTypes.merakiClaim
+        plans {
+            activate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.MerakiClaimDevice.Activate"
+            }
+            terminate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.MerakiClaimDevice.Terminate"
+            }
+        }
+    }
+}

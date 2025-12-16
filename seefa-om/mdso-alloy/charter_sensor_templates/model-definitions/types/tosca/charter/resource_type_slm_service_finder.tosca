@@ -1,0 +1,98 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "SLM Service Finder"
+package     = charter
+version     = "1.0"
+description = """
+This document defines SLM Service Finder. This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Allison Patino (allison.patino@charter.com)", "Paul Kim (paul.kim@charter.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    slmServiceFinder {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = SLM Service Finder
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems for creating a SLM Service Finder resource.
+        - This Resource Definition only requires the Charter Circuit ID 
+        - For service types like ELINE, ELAN, etc. eligible for SLM configurations
+        """
+
+        properties {
+            circuit_id {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            slm_configuration {
+                title = "SLM Configuration"
+                description = "display any existing SLM configuration found on probe and reflector devices"
+                type = object
+                optional = true
+                updatable = true
+                items.type = object
+            }
+            circuit_details_id {
+                title = "circuit details id"
+                description = "circuit details id"
+                type = string
+                optional = true
+            }
+            origin_cid {
+                title = "origin cid"
+                description = "origin cid"
+                type = string
+                optional = true
+                updatable = false
+            }
+            origin_cd_id {
+                title = "origin cd id"
+                description = "origin circuit details id"
+                type = string
+                optional = true
+            }
+            onboarding_complete {
+                title = "onboarding complete"
+                description = onboarding processes already completed for all devices within topology
+                type = boolean
+                optional = true
+            }
+            core_only {
+                title = "core only"
+                description =  only find configurations on core slm device
+                type = boolean
+                optional = true                
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    slmServiceFinder {
+        title = SLM Service Finder
+        description = SLM Service Finder
+        implements = charter.resourceTypes.slmServiceFinder
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmServiceFinder.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.slm.slmServiceFinder.Terminate"
+            }
+        }
+    }
+}

@@ -1,0 +1,58 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Meraki Post-activation"
+package     = charter
+version     = "2.0"
+description = """
+This document holds the fields necessary to perform post activation checks on an instance of MNE.
+"""
+authors = [ "George Strauch (george.strauch@charter.com)" ]
+
+imports {
+}
+
+resourceTypes {
+    merakiCompliance {
+        title = MNE Post-activation Compliance
+        description = """ Post-activation audit check of MNE instance """
+        derivedFrom = tosca.resourceTypes.Root
+        title = Meraki Compliance
+        properties {
+            report {
+                title = "Report"
+                description = "List of detected errors"
+                type = array
+                items.type = string
+                optional = true
+            }
+            expected_data {
+                title = "Sales Force Data"
+                description = "quantity, address product_family, cid and name"
+                type = object
+                optional = false
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    merakiCompliance {
+        title = MNE Post-activation
+        description = """ Post-activation audit check of MNE instance """
+        implements = charter.resourceTypes.merakiCompliance
+
+        plans {
+            activate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.MerakiCompliance.Activate"
+            }
+
+            terminate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.MerakiCompliance.Terminate"
+            }
+
+        }
+    }
+}

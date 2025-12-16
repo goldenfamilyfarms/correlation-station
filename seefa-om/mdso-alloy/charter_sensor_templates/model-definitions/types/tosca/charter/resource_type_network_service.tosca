@@ -1,0 +1,497 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Network Service"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the Network Service model.  This is the top level service
+construct that will be used for communicating with north-bound OSS, WebPortals,
+etc...
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    NetworkService {
+        derivedFrom = [ tosca.resourceTypes.NetworkService, charter.resourceTypes.BaseResource ]
+        title = Network Service
+        description = """
+        - Extended from charter.resourceTypes.BaseResource
+        - The main entry point for Charter's systems (SENSE-CLI or Web Interface to call) for all CRUDL
+        commands for a service (or service inventory)
+        - This Resource Definition only requires the Charter Circuit ID to create (POST),
+        update (PUT/PATCH) and remove (DELETE)
+        - Contains overall state of the network service.
+        - For service types like ELINE, ELAN, ETREE, etc.
+        - Contains state and other information about each site in the network service.
+        - Provides custom operations such as activateSite, suspend, resume.
+        """
+
+        properties {
+
+            network_service_status {
+                title = "Network Service Status"
+                description = "Status of network service translated from resource name"
+                type = string
+                config = false
+                optional = true
+            }
+
+            network_service_error {
+                title = "Network Service error"
+                description = "Categorized error message of earliest failure in tracelog"
+                type = string
+                config = false
+                optional = true
+            }
+
+            service_type {
+                title = "Service Type"
+                description = "Service type obtained from the Granite system (FIA, ELINE, etc)"
+                type = string
+                config = false
+            }
+
+            stage {
+                title = "Stage"
+                description = """
+                This provides an indication to the resources what stage of activity the resource is in:
+                PRODUCTION: Resources are being deployed to production.
+                TEST: The orchestration is being done in a test mode
+                DISCOVERY: The orchestration steps are being done based on the discovery
+                """
+                type = string
+                optional = true
+                updatable = false
+                default = "PRODUCTION"
+                enum = [
+                    "PRODUCTION",
+                    "TEST",
+                    "DISCOVERY"
+                ]
+            }
+
+            state {
+                title = "State"
+                description = """State of the provisioning of overall parts of the service
+                    These are the meanings of the enums:
+
+                    UNKNOWN - unknown state
+                    ACTIVATING_PE - The PEs are being provisioned
+                    FAILED - Activation failed.  It could be for one site or multiple
+                    READY_PRE_PRODUCTION - The PE provisioning has been completed
+                    ACTIVATING_SITE - One or more sites are activating
+                    READY_FOR_SERVICE - Enough sites have been completed for service to be activated
+                    SUSPENDED - Service is in a suspended state
+                """
+                type = string
+                config = false
+                default = "UNKNOWN"
+                enum = [
+                    "UNKNOWN",
+                    "PROVISIONING_PRE_CHECKS",
+                    "ACTIVATING_PE",
+                    "FAILED",
+                    "READY_PRE_PRODUCTION",
+                    "ACTIVATING_SITE",
+                    "READY_FOR_SERVICE",
+                    "SUSPENDED"
+                ]
+            }
+
+            circuit_details_id {
+                title = "circuit details id"
+                description = "circuit details id from cdc for factory"
+                type = string
+                updatable = true
+                optional = true
+            }
+
+            site_status {
+                title = "Site Status"
+                description = "List of individual sites and their status"
+                type = array
+                config = false
+                items.type = object
+                items.properties {
+                    site {
+                        title = "Site"
+                        description = "Identifier of the site"
+                        type = string
+                        config = false
+                    }
+
+                    host {
+                        title = "Host Name"
+                        description = "CPE Host Name"
+                        type = string
+                        config = false
+                    }
+
+                    state {
+                        title = "State"
+                        description = """State
+                            These are the meanings of the enums:
+
+                            NOT_STARTED - Site provisioning has not started
+                            REQUESTED - Provision request has been made
+                            FAILED - Site provisioning has failed
+                            ACTIVATING-INITIATED - Site has started to be activated
+                            ACTIVATING-DOWNLOADING_SW - Site SW is downloading
+                            ACTIVATING-CONFIGURING - Site configuration being applied
+                            ACTIVE - Site has completed activation
+                            TERMINATED - Should not be used
+                        """
+                        type = string
+                        config = false
+                        default = "NOT_STARTED"
+                        enum = [
+                            "NOT_STARTED",
+                            "REQUESTED",
+                            "FAILED",
+                            "ACTIVATING-INITIATED",
+                            "ACTIVATING-DOWNLOADING_SW",
+                            "ACTIVATING-CONFIGURING",
+                            "ACTIVE",
+                            "TERMINATED"
+                        ]
+                    }
+                }
+            }
+
+            cpeActivationResourceId {
+                title = "CPE Activation Resource ID"
+                description = "Resource ID of CPE Activation"
+                type = string
+                config = false
+                optional = true
+            }
+
+            cpe_activation {
+                config = false
+                title = "CPE Activation Status"
+                description = "Progress of Activation"
+                type = string
+                optional = true
+            }
+            cpe_activation_error {
+		        config = false
+                title = "CPE Activation Error Status"
+                description = "Error status of Activation"
+                type = string
+		        optional = true
+		    }
+        }
+
+        interfaces {
+           activateSite {
+               title = "Activate Site"
+               description = "Activate Site"
+               inputs {
+                   site {
+                       title = "Site"
+                       description = "Identifier of the site"
+                       type = string
+                   }
+                   port {
+                       title = "Port"
+                       description = "Port associated with site/node"
+                       type = string
+                       optional = true
+                   }
+
+                   ip {
+                       title = "CPE IP"
+                       description = "IP Address of CPE"
+                       type = string
+                       optional = true
+                   }
+               }
+           }
+
+           softTerminate {
+               title = "Soft Terminate"
+               description = "Terminate the Network Service without deleting the RA work."
+               inputs {
+               }
+          }
+
+           suspend {
+               title = "Suspend"
+               description = "Suspend"
+               inputs {
+               }
+           }
+
+           resume {
+               title = "Resume"
+               description = "Resume"
+               inputs {
+               }
+           }
+        }
+
+        requirements {
+
+        }
+
+        capabilities {
+
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    NetworkService {
+        title = Network Service
+        description = "Network Service"
+        implements = charter.resourceTypes.NetworkService
+
+        plans {
+
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.networkservice.Terminate"
+            }
+
+            activateSite {
+                type = remote
+                language = python
+                path = "scripts.networkservice.networkservice.ActivateSite"
+            }
+
+            suspend {
+                type = remote
+                language = python
+                path = "scripts.networkservice.networkservice.Suspend"
+            }
+
+            resume {
+                type = remote
+                language = python
+                path = "scripts.networkservice.networkservice.Resume"
+            }
+
+            softTerminate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.networkservice.SoftTerminate"
+            }
+
+        }
+
+        resources {
+
+            network_service_pre_check_update {
+                type = charter.resourceTypes.UpdateObservedProperty
+                properties {
+                    resource_id = { getResourceId = this }
+                    properties = {
+                        "state": "PROVISIONING_PRE_CHECKS"
+                    }
+                }
+            }
+
+
+            network_service_pre_check {
+                type = charter.resourceTypes.NetworkServiceCheck
+                properties {
+                    resource_name = "network_service_pre_check"
+                    resource_id = { getResourceId = this }
+                    circuit_id = {getParam = circuit_id}
+                    circuit_details_id = {getParam = circuit_details_id}
+                    provisioning_stage = "PRE"
+                }
+            }
+
+            service_device_validator {
+                type = charter.resourceTypes.ServiceDeviceValidator
+                properties {
+                    resource_name = "service_device_validator"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                }
+                activateAfter = [ network_service_pre_check ]
+            }
+
+            pe_device_onboarder {
+                type = charter.resourceTypes.ServiceDeviceOnboarder
+                properties {
+                    resource_name = "pe_device_onboarder"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "PE"
+                }
+                activateAfter = [service_device_validator]
+            }
+            pe_device_config_validator {
+                type = charter.resourceTypes.PeDeviceConfigValidator
+                properties {
+                    resource_name = "pe_device_config_validator"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                }
+                activateAfter = [ pe_device_onboarder ]
+            }
+
+            network_service_state_change_activating_pe {
+                type = charter.resourceTypes.UpdateObservedProperty
+                properties {
+                    resource_id = { getResourceId = this }
+                    properties = {
+                        "state": "ACTIVATING_PE"
+                    }
+                }
+                activateAfter = [ cpe_device_config_validator, pe_device_config_validator ]
+            }
+
+            pe_bw_profile_configurator {
+                type = charter.resourceTypes.ServiceDeviceProfileConfigurator
+                properties {
+                    resource_name = "pe_bw_profile_configurator"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "PE"
+                }
+                activateAfter = [ pe_device_onboarder, network_service_state_change_activating_pe ]
+            }
+
+	    service_fia_provisioner {
+                type = charter.resourceTypes.FiaProvisioner
+                properties {
+                    resource_name = "service_fia_provisioner"
+                    stage = {getParam = stage}
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "PE"
+                }
+                activateAfter = [ pe_bw_profile_configurator  ]
+            }
+
+            pe_service_provisioner {
+                type = charter.resourceTypes.ServiceProvisioner
+                properties {
+                    resource_name = "pe_service_provisioner"
+                    stage = {getParam = stage}
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "PE"
+                    network_service_resource_id = { getResourceId = this }
+                }
+                activateAfter = [ pe_bw_profile_configurator, service_fia_provisioner ]
+            }
+
+            network_service_state_change_ready_pre_production {
+                type = charter.resourceTypes.UpdateObservedProperty
+                properties {
+                    resource_id = { getResourceId = this }
+                    properties = {
+                        "state": "READY_PRE_PRODUCTION"
+                    }
+                }
+                activateAfter = [ pe_service_provisioner ]
+            }
+
+            cpe_device_onboarder {
+                type = charter.resourceTypes.ServiceDeviceOnboarder
+                properties {
+                    resource_name = "cpe_device_onboarder"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "CPE"
+                }
+                activateAfter = [ pe_device_onboarder, service_device_validator]
+            }
+
+            cpe_device_config_validator {
+                type = charter.resourceTypes.CpeDeviceConfigValidator
+                properties {
+                    resource_name = "cpe_device_config_validator"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                }
+                activateAfter = [ cpe_device_onboarder ]
+            }
+
+            cpe_bw_profile_configurator {
+                type = charter.resourceTypes.ServiceDeviceProfileConfigurator
+                properties {
+                    resource_name = "cpe_bw_profile_configurator"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "CPE"
+                }
+                activateAfter = [ cpe_device_config_validator, pe_device_config_validator]
+            }
+
+            service_fre_onboarder {
+                type = charter.resourceTypes.ServiceFreOnboarder
+                properties {
+                    resource_name = "service_fre_onboarder"
+                    circuit_details_id = {getParam = circuit_details_id}
+                }
+                activateAfter = [ pe_bw_profile_configurator, cpe_bw_profile_configurator, service_fia_provisioner ]
+            }
+
+            cpe_service_provisioner {
+                type = charter.resourceTypes.ServiceProvisioner
+                properties {
+                    resource_name = "cpe_service_provisioner"
+                    stage = {getParam = stage}
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                    context = "CPE"
+                    network_service_resource_id = { getResourceId = this }
+                }
+                activateAfter = [ service_fre_onboarder, pe_service_provisioner  ]
+            }
+
+            network_service_state_change_ready {
+                type = charter.resourceTypes.UpdateObservedProperty
+                properties {
+                    resource_id = { getResourceId = this }
+                    properties = {
+                        "state": "READY_FOR_SERVICE"
+                    }
+                }
+                activateAfter = [ cpe_service_provisioner ]
+            }
+
+            network_service_post_check {
+                type = charter.resourceTypes.NetworkServiceCheck
+                properties {
+                    resource_name = "network_service_post_check"
+                    resource_id = { getResourceId = this }
+                    circuit_id = {getParam = circuit_id}
+                    provisioning_stage = "POST"
+                }
+                activateAfter = [ cpe_service_provisioner, network_service_state_change_ready ]
+            }
+
+            service_dependency_modifier {
+                type = charter.resourceTypes.ServiceDependencyModifier
+                properties {
+                    resource_name = "service_dependency_modifier"
+                    circuit_details_id = {getParam = circuit_details_id}
+                    circuit_id = {getParam = circuit_id}
+                }
+                activateAfter = [ network_service_post_check ]
+            }
+
+            network_service_clean_up {
+                type = charter.resourceTypes.NetworkServiceCleaner
+                properties {
+                    resource_name = "network_service_clean_up"
+                    resource_id = { getResourceId = this }
+                }
+                activateAfter = [ network_service_state_change_ready, network_service_post_check ]
+                terminateBefore = [ pe_service_provisioner ]
+            }
+        }
+    }
+}

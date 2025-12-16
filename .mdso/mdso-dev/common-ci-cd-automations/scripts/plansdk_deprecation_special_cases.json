@@ -1,0 +1,17 @@
+{
+    "self.bpo.resources.get_by_provider_resource_id(": {
+        "key": "self.bpo.resources.get_by_provider_resource_id(None",
+        "value": {
+            "message": "Specifying `None` for `domain_id` in plansdk.apis.bpo.Resource.get_by_provider_resource_id() is deprecated; use plansdk.apis.bpo.Resource.get_list_by_provider_resource_id() instead",
+            "depr_vers": "plansdk-3.8.0"
+        }
+    },
+    "self.bpo.relationships.get(": {
+        "key": "self.bpo.relationships.get(",
+        "value": {
+            "message": "self.bpo.relationship.get() has been deprecated in favor of self.bpo.relationship.get_one() and will be removed in plansdk 5.0.0",
+            "depr_vers": "plansdk-4.6.0"
+        }
+    },
+    "self.bpo.market.get(": {}
+}

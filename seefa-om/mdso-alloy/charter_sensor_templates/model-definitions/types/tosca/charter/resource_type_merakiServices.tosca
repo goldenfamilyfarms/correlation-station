@@ -1,0 +1,261 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Meraki Services"
+package     = charter
+version     = "2.0"
+description = """
+This document holds the fields to create a customer in Meraki dashboard.
+"""
+
+imports {
+}
+
+resourceTypes { 
+    merakiServices {
+        title = Managed Network Edge
+        description = """ This document holds the fields to create a customer in Meraki dashboard """
+        derivedFrom = tosca.resourceTypes.Root
+        title = Meraki Services
+        properties {
+            configurations {
+                title = "Configuration"
+                description = "customer site configuration"
+                type = object
+                optional = true
+            }
+            circuitId {
+                title = "Circuit ID"
+                description = "Circuit ID"
+                type = string
+                optional = true
+            }
+            orgName {
+                title = "Customer Organization Name"
+                description = "Customer Organization Name"
+                type = string
+                optional = true
+            }
+            networkID{
+                title = "Network ID"
+                description = "Network Site ID to be used in Day1 Tasks"
+                type = string
+                optional = true
+            }
+            orgID{
+                title = "Meraki Organization ID"
+                description = "Meraki Organization ID"
+                type = string
+                optional = true
+            }
+            LicenseID{
+                title = "Meraki License ID"
+                description = "Meraki License ID"
+                type = string
+                optional = true
+            }
+            serial{
+                title = "Meraki Device Serial"
+                description = "Meraki Device Serial"
+                type = string
+                optional = true
+                config = false
+                updatable = true
+            }
+            networkName {
+                title = "Customer Site Name"
+                description = "Customer Site Name"
+                type = string
+                optional = false
+                updatable = true
+            }
+            clli {
+                title = "CLII"
+                description = "Network's CLLI to be used in the Network Name"
+                type = string
+                optional = true
+            }
+            address {
+                title = "Site's Street Address"
+                description = " Site's street address"
+                type = string
+                optional = true
+            }
+            productTypes {
+                title = "Type of the new network"
+                description = "type of the new network valid type are wireless, appliance, swtich,systemManager, camera, cellularGateway"
+                type = string
+                optional = true
+            }
+            timeZone{
+                title = "Network Time Zone"
+                description = "Network Time Zone"
+                type = string
+                optional = true
+            }
+            accountNumbers{
+                title = "Account Number"
+                description = "Account number to be used for the SAML role:"
+                type = string
+                updatable = true
+            }
+            licenseType{
+                title = "License Devices"
+                description = "Select Device Type to obtain a License"
+                type = string
+                updatable = true
+            }
+            notes{
+                title = Notes
+                description = "Notes"
+                type = string
+                updatable = true
+            }
+
+            defaultCustomerLAN{
+                title = "Default Customer LAN"
+                description = "Default Customer LAN"
+                type = string
+                default = "192.168.1.0/24"
+                optional = true
+           }
+
+        }
+
+        interfaces = {
+            retry {
+                title = "Retry Day 0"
+                description = "retry building the org and network"
+                inputs {
+                    properties {
+                        title = "input properties"
+                        description = "placeholder for activate properties"
+                        type = object
+                        optional = true
+                        items.type = object
+                    }
+                }
+            }
+            claimDevice {
+                title = Claim Device
+                description = "Add Device to the created organization and assign it to a Network"
+
+                inputs {
+                    bandwidth {
+                        title = "bandwidth"
+                        description = "Traffic shaping settings for an MX network"
+                        type = object
+                        optional = true
+                        items.type = object
+                    }
+
+                    contentFiltering {
+                        title = "Content Filtering Activation"
+                        description = "Content Filtering Activation"
+                        type = array
+                        items.type = string
+                        optional = true
+                    }
+
+                    SSIDS {
+                        title = "SSIDs"
+                        description = "Optional additional ssids for wireless devices"
+                        type = array
+                        optional = true
+                        SSID {
+                            title = "SSID"
+                            description = "SSID information"
+                            type = object
+                            optional = true
+                            properties {
+                                ipAssignmentMode {
+                                    title = "ip assignment mode"
+                                    description = "Bridge, NAT or Layer 3 Roaming"
+                                    type = string
+                                }
+
+                                name {
+                                    title = "SSID name"
+                                    description =  "SSID name"
+                                    type = string
+                                }
+
+                                encryptionMode {
+                                    title = "encryption mode"
+                                    description = "encryption mode"
+                                    type = string
+                                }
+
+                                psk {
+                                    title = "PSK"
+                                    description = "private secure key"
+                                    type = string
+                                }
+
+                                defaultVlanId {
+                                    title = "vlan id"
+                                    description = "vlan id provided only for bridge mode and layer 3 roaming"
+                                    type = int
+                                    optional = true
+                                }
+                            }
+                        }
+                    }
+
+                    VLANS {
+                        title = "Vlans"
+                        description = "list of vlans"
+                        type = array
+                        optional = true
+                        items.type = object
+                    }
+                    serial{
+                        title = "Devices Serial Number"
+                        description = "Device Serial Number"
+                        type = string
+                        optional = true
+                    }
+                    device {
+                        title = "Device-specific configuration"
+                        description = "Device-specific configuration"
+                        type = object
+                        optional = true
+                    }
+                    vpn {
+                        title = "VPN"
+                        description = "VPN Information"
+                        type = object
+                        optional = true
+                    }
+                }
+                outputs{}
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    merakiServices {
+        title = Meraki Service
+        description = creating a customer in Meraki dashboard
+        implements = charter.resourceTypes.merakiServices
+
+        plans {
+            activate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.merakiServices.Activate"
+            }
+
+            terminate{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.merakiServices.Terminate"
+            }
+
+            claimDevice{
+                type = remote
+                language = python
+                path = "scripts.managedServicesActivator.merakiServices.merakiServices.claimDevice"
+            }
+        }
+    }
+}

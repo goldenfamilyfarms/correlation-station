@@ -1,0 +1,82 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Path Finder"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Path Finder action which could be called
+from MEF Path Computation to find the segment path for particular UNI ID.
+This resource requires a circuit details resource which is based on the 
+Topology Representation in ONF TAPI Model.
+"""
+authors     = [ "Sahil Sidhar (ssidhar@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes {
+    PathFinder {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Path Finder
+        description = """
+        - Finds the node on a path between PE-CPE devices
+        -
+        """
+
+        properties {
+
+            port_uuid {
+                title = "UNI PORT ID"
+                description = "UNI PORT ID in NODE-PORT format"
+                type = string
+            }
+            
+            topology_resource_id {
+                title = topology_resource_id
+                description = "Resource ID to Fetch Topology in ONF TAPI MODEL"
+                type = string
+                optional = true
+            }
+
+            required_nodes {
+                title = "Required Nodes"
+                description = "Nodes to be provisioned in this segment"
+                type = array
+                output = true
+                items.type = object
+            }
+        }
+
+        requirements {
+
+        }
+
+        capabilities {
+
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    PathFinder {
+        title = Path Finder
+        description = "Path Finder"
+        implements = charter.resourceTypes.PathFinder
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.path_finder.Activate"
+            }
+
+        }
+
+        output = {
+          required_nodes = { getAttr = [ activate, required_nodes ] }
+        }
+    }
+}

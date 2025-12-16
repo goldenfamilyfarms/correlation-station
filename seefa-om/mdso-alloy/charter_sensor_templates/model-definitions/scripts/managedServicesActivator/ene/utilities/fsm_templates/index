@@ -1,0 +1,18 @@
+# First line is the header fields for columns and is mandatory.
+# Regular expressions are supported in all fields except the first.
+# Last field supports variable length command completion.
+# abc[[xyz]] is expanded to abc(x(y(z)?)?)?, regexp inside [[]] is not supported
+#
+# Rules of Ordering:
+#  - OS in alphabetical order
+#  - Template name in length order
+#  - When Length is the same, use alphabetical order
+#  - Keep space between OS's
+#
+Template, Hostname, Platform, Command
+
+exe_api_user_generate_key.fsm, .*, fortigate, exe api-user generate-key
+show_system_accprofile.fsm, .*, fortigate, show system accprofile
+show_system_api_user.fsm, .*, fortigate, show system api-user
+get_system_status.fsm, .*, fortigate, get system status
+show_system_admin.fsm, .*, fortigate, show system admin

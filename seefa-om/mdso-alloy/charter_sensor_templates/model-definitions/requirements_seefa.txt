@@ -1,0 +1,11 @@
+--index-url http://blueplanet/charter-pypi/simple/
+--extra-index-url http://blueplanet/vfirewall-templates-pypi/simple/
+
+jinja2
+jsonpath
+requests
+paramiko
+plansdk
+ipaddress
+textfsm
+xmltodict

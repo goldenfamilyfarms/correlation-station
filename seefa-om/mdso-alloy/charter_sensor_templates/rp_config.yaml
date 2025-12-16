@@ -1,0 +1,352 @@
+app_name: chartersensortemplates
+
+# onboarding waits till the dependant_types are
+# available in orchestrate
+dependent_types:
+  - tosca.resourceTypes.NetworkService
+  - tosca.resourceTypes.NetworkFunction
+  - tosca.resourceTypes.SessionProfile
+  - tosca.resourceTypes.PacketBandwidthProfile
+  - tosca.resourceTypes.NetworkConstruct
+  - tosca.resourceTypes.TPE
+  - tosca.resourceTypes.FRE
+  - bpoextensions.resourceTypes.MarketRequest
+  - mef.resourceTypes.MEFService
+  - mef.resourceTypes.LegatoService
+
+# products specify the list of products to be created
+# on orchestrate after successful onboard
+products:
+  - title: "Device Configuration Commands"
+    resourceType: charter.resourceTypes.DeviceConfigurationCommands
+    template: charter.serviceTemplates.DeviceConfigurationCommands
+    description: "Device Configuration Commands"
+  - title: "Blue Planet Constants"
+    resourceType: charter.resourceTypes.BpoConstants
+    template: charter.serviceTemplates.BpoConstants
+    description: "Blue Planet Constants"
+  - title: "Circuit Details"
+    resourceType: charter.resourceTypes.CircuitDetails
+    template: charter.serviceTemplates.CircuitDetails
+    description: "Circuit Details"
+  - title: "Circuit Details Collector"
+    resourceType: charter.resourceTypes.CircuitDetailsCollector
+    template: charter.serviceTemplates.CircuitDetailsCollector
+    description: "Circuit Details Collector"
+  - title: "Device Onboarder"
+    resourceType: charter.resourceTypes.DeviceOnboarder
+    template: charter.serviceTemplates.DeviceOnboarder
+    description: "Device Onboarder"
+  - title: "Device State Checker"
+    resourceType: charter.resourceTypes.DeviceStateChecker
+    template: charter.serviceTemplates.DeviceStateChecker
+    description: "Device State Checker"
+  - title: "Network Service"
+    resourceType: charter.resourceTypes.NetworkService
+    template: charter.serviceTemplates.NetworkService
+    description: "Network Service"
+  - title: "Network Service Check"
+    resourceType: charter.resourceTypes.NetworkServiceCheck
+    template: charter.serviceTemplates.NetworkServiceCheck
+    description: "Network Service Check"
+  - title: "Service Device Onboarder"
+    resourceType: charter.resourceTypes.ServiceDeviceOnboarder
+    template: charter.serviceTemplates.ServiceDeviceOnboarder
+    description: "Service Device Onboarder"
+  - title: "Service Device Profile Configurator"
+    resourceType: charter.resourceTypes.ServiceDeviceProfileConfigurator
+    template: charter.serviceTemplates.ServiceDeviceProfileConfigurator
+    description: "Service Device Profile Configurator"
+  - title: "Service Device Validator"
+    resourceType: charter.resourceTypes.ServiceDeviceValidator
+    template: charter.serviceTemplates.ServiceDeviceValidator
+    description: "Service Device Validator"
+  - title: "Service Provisioner"
+    resourceType: charter.resourceTypes.ServiceProvisioner
+    template: charter.serviceTemplates.ServiceProvisioner
+    description: "Service Provisioner"
+  - title: "Service FRE Onboarder"
+    resourceType: charter.resourceTypes.ServiceFreOnboarder
+    template: charter.serviceTemplates.ServiceFreOnboarder
+    description: "Service FRE Onboarder"
+  - title: "Update Observed Properties"
+    resourceType: charter.resourceTypes.UpdateObservedProperty
+    template: charter.serviceTemplates.UpdateObservedProperty
+    description: "Update Observed Properties"
+  - title: "Device Connectivity Check"
+    resourceType: tosca.resourceTypes.ConnectivityCheck
+    template: tosca.serviceTemplates.ConnectivityCheck
+    description: "Device Connectivity Check"
+  - title: "Device File Onboarder"
+    resourceType: charter.resourceTypes.DeviceFileOnboarder
+    template: charter.serviceTemplates.DeviceFileOnboarder
+    description: "Device File Onboarder"
+  - title: "Network Service Cleaner"
+    resourceType: charter.resourceTypes.NetworkServiceCleaner
+    template: charter.serviceTemplates.NetworkServiceCleaner
+    description: "Network Service Cleaner"
+  - title: "Resource Terminator"
+    resourceType: tosca.resourceTypes.ResourceTerminator
+    template: tosca.serviceTemplates.ResourceTerminator
+    description: "Resource Terminator"
+  - title: "Service Device Configurator"
+    resourceType: charter.resourceTypes.ServiceDeviceConfigurator
+    template: charter.serviceTemplates.ServiceDeviceConfigurator
+    description: "Service Device Configurator"
+  - title: "Trace Log"
+    resourceType: tosca.resourceTypes.TraceLog
+    template: tosca.serviceTemplates.TraceLog
+    description: "Trace Log"
+  - title: "Service Dependency Modifier"
+    resourceType: charter.resourceTypes.ServiceDependencyModifier
+    template: charter.serviceTemplates.ServiceDependencyModifier
+    description: "Service Dependency Modifier"
+  - title: "FIA Provisioner"
+    resourceType: charter.resourceTypes.FiaProvisioner
+    template: charter.serviceTemplates.FiaProvisioner
+    description: "FIA Provisioner"
+  - title: "Port Activation"
+    resourceType: charter.resourceTypes.PortActivation
+    template: charter.serviceTemplates.PortActivation
+    description: "Port Activation"
+  - title: "PE Device Configuration Validator"
+    resourceType: charter.resourceTypes.PeDeviceConfigValidator
+    template: charter.serviceTemplates.PeDeviceConfigValidator
+    description: "PE Device Configuration Validator"
+  - title: "CPE Activator"
+    resourceType: charter.resourceTypes.cpeActivator
+    template: charter.serviceTemplates.cpeActivator
+    description: "CPE Activator"
+  - title: "CPE Device Configuration Validator"
+    resourceType: charter.resourceTypes.CpeDeviceConfigValidator
+    template: charter.serviceTemplates.CpeDeviceConfigValidator
+    description: "CPE Device Configuration Validator"
+  - title: "Network Service Update"
+    resourceType: charter.resourceTypes.NetworkServiceUpdate
+    template: charter.serviceTemplates.NetworkServiceUpdate
+    description: "Network Service Update"
+  - title: "Bandwidth Update"
+    resourceType: charter.resourceTypes.BandwidthUpdate
+    template: charter.serviceTemplates.BandwidthUpdate
+    description: "Bandwidth Update"
+  - title: "Description Update"
+    resourceType: charter.resourceTypes.DescriptionUpdate
+    template: charter.serviceTemplates.DescriptionUpdate
+    description: "Description Update"
+  - title: "Network Service Delete"
+    resourceType: charter.resourceTypes.NetworkServiceDelete
+    template: charter.serviceTemplates.NetworkServiceDelete
+    description: "Network Service Delete"
+  - title: "Network Service State Toggle"
+    resourceType: charter.resourceTypes.NetworkServiceStateToggle
+    template: charter.serviceTemplates.NetworkServiceStateToggle
+    description: "Network Service State Toggle"
+  - title: "IP Update"
+    resourceType: charter.resourceTypes.IpUpdate
+    template: charter.serviceTemplates.IpUpdate
+    description: "IP Update"
+  - title: "FIA Service Provisioner"
+    resourceType: charter.resourceTypes.ServiceProvisioner_FIA
+    template: charter.serviceTemplates.ServiceProvisioner_FIA
+    description: "FIA Service Provisioner"
+  - title: "ELAN Service Provisioner"
+    resourceType: charter.resourceTypes.ServiceProvisioner_ELAN
+    template: charter.serviceTemplates.ServiceProvisioner_ELAN
+    description: "ELAN Service Provisioner"
+  - title: "Path Finder"
+    resourceType: charter.resourceTypes.PathFinder
+    template: charter.serviceTemplates.PathFinder
+    description: "Path Finder"
+  - title: "Service Mapper"
+    resourceType: charter.resourceTypes.ServiceMapper
+    template: charter.serviceTemplates.ServiceMapper
+    description: "Service Mapper"
+  - title: "ELAN Mapper"
+    resourceType: charter.resourceTypes.ElanMapper
+    template: charter.serviceTemplates.ElanMapper
+    description: "ELAN Mapper"
+  - title: "SLM"
+    resourceType: charter.resourceTypes.slm
+    template: charter.serviceTemplates.slm
+    description: "Base SLM product"
+  - title: "Managed Services Activator"
+    resourceType: charter.resourceTypes.ManagedServicesActivator
+    template: charter.serviceTemplates.ManagedServicesActivator
+    description: "Activate Managed Services Device"
+  - title: "CLI Manager"
+    resourceType: charter.resourceTypes.CLIManager
+    template: charter.serviceTemplates.CLIManager
+    description: "Send Commands to Device"
+  - title: "CPEA Creds"
+    resourceType: charter.resourceTypes.CPEACreds
+    template: charter.serviceTemplates.CPEACreds
+    description: "Store CPEA Creds"
+  - title: "Status Updater"
+    resourceType: tosca.resourceTypes.StatusUpdater
+    template: tosca.serviceTemplates.StatusUpdater
+    description: "Status Updater Product"
+  - title: "Managed Services FortiAnalyzer"
+    resourceType: charter.resourceTypes.managedServicesFortiAnalyzer
+    template: charter.serviceTemplates.managedServicesFortiAnalyzer
+    description: "Provisions FortiAnalyzer"
+  - title: "Managed Services FortiManager"
+    resourceType: charter.resourceTypes.managedServicesFortiManager
+    template: charter.serviceTemplates.managedServicesFortiManager
+    description: "Provisions FortiManager"
+  - title: "Managed Router Services Activator"
+    resourceType: charter.resourceTypes.ManagedRouterServicesActivator
+    template: charter.serviceTemplates.ManagedRouterServicesActivator
+    description: "Provisions MRS devices"
+  - title: "Managed Services FortiPortal"
+    resourceType: charter.resourceTypes.managedServicesFortiPortal
+    template: charter.serviceTemplates.managedServicesFortiPortal
+    description: "Provisions FortiPortal"
+  - title: "Managed Security Services"
+    resourceType: charter.resourceTypes.managedSecurityServices
+    template: charter.serviceTemplates.managedSecurityServices
+    description: "Creates FortiTools Resources"
+  - title: "Managed Security Edge Meraki"
+    resourceType: charter.resourceTypes.merakiServices
+    template: charter.serviceTemplates.merakiServices
+    description: "Creates MerakiServices resources"
+  - title: "Customer"
+    resourceType: charter.resourceTypes.customer
+    template: charter.serviceTemplates.customer
+    description: "Stores custom properties to provision MSS"
+  - title: "Datastore"
+    resourceType: charter.resourceTypes.datastore
+    template: charter.serviceTemplates.datastore
+    description: "Stores static variables for MSS"
+  - title: "MNE Product Data"
+    resourceType: charter.resourceTypes.MNEData
+    template: charter.resourceTypes.MNEData
+    description: "Stores static variables for MNE"
+  - title: "Meraki Acceptance"
+    resourceType: charter.resourceTypes.merakiAcceptance
+    template: charter.resourceTypes.merakiAcceptance
+    description: "Meraki Acceptance product"
+  - title: "Meraki Compliance"
+    resourceType: charter.resourceTypes.merakiCompliance
+    template: charter.resourceTypes.merakiCompliance
+    description: "Meraki Compliance product"
+  - title: "slmConfigVariables"
+    resourceType: charter.resourceTypes.slmConfigVariables
+    template: charter.serviceTemplates.slmConfigVariables
+    description: "slmConfigVariables"
+  - title: "slmConfigurator"
+    resourceType: charter.resourceTypes.slmConfigurator
+    template: charter.serviceTemplates.slmConfigurator
+    description: "slmConfigurator"
+  - title: "slmServiceFinder"
+    resourceType: charter.resourceTypes.slmServiceFinder
+    template: charter.serviceTemplates.slmServiceFinder
+    description: "slmServiceFinder"
+  - title: "cpeIpProvider"
+    resourceType: charter.resourceTypes.cpeIpProvider
+    template: charter.serviceTemplates.cpeIpProvider
+    description: "cpeIpProvider"
+  - title: "seefaDeviceInformation"
+    resourceType: charter.resourceTypes.seefaDeviceInformation
+    template: charter.serviceTemplates.seefaDeviceInformation
+    description: "seefaDeviceInformation"
+  - title: "seefaTACACSRemediation"
+    resourceType: charter.resourceTypes.seefaTACACSRemediation
+    template: charter.serviceTemplates.seefaTACACSRemediation
+    description: "seefaTACACSRemediation"
+  - title: "Disconnect Mapper"
+    resourceType: charter.resourceTypes.DisconnectMapper
+    template: charter.serviceTemplates.DisconnectMapper
+    description: "Disconnect Mapper"
+  - title: "Config Modeler"
+    resourceType: charter.resourceTypes.configModeler
+    template: charter.serviceTemplates.configModeler
+    description: "Config Modeler"
+  - title: "transport nni provisioner"
+    resourceType: charter.resourceTypes.TransportNNIProvisioner
+    description: "transport nni provisioner"
+  - title: "SLM Modeler"
+    resourceType: charter.resourceTypes.slmModeler
+    template: charter.serviceTemplates.slmModeler
+    description: "Config Modeler"
+  - title: "TestingResource"
+    resourceType: charter.resourceTypes.TestingResource
+    description: "TestingResouce"
+  - title: "Multi-Leg Circuit"
+    resourceType: charter.resourceTypes.multiLegCircuit
+    template: charter.serviceTemplates.multiLegCircuit
+    description: "Multi-Leg Circuit"
+  - title: "Standalone Config Delivery"
+    resourceType: charter.resourceTypes.standaloneConfigDelivery
+    template: charter.serviceTemplates.standaloneConfigDelivery
+    description: "Standalone Config Delivery"
+  - title: "Meraki Claim Device"
+    resourceType: charter.resourceTypes.merakiClaim
+    template: charter.serviceTemplates.merakiClaim
+    description: "MNE Claim Device"
+  - title: "Turnup Locate IP"
+    resourceType: charter.resourceTypes.turnupLocateIP
+    template: charter.serviceTemplates.turnupLocateIP
+    description: "Turnup Locate IP"
+  - title: "Firmware Updater"
+    resourceType: charter.resourceTypes.firmwareUpdater
+    template: charter.serviceTemplates.firmwareUpdater
+    description: "Firmware Updater"
+  - title: "WIA Mapper"
+    resourceType: charter.resourceTypes.WIAMapper
+    template: charter.serviceTemplates.WIAMapper
+    description: "WIA Mapper"
+  - title: "WIA Constants"
+    resourceType: charter.resourceTypes.WIAConstants
+    template: charter.serviceTemplates.WIAConstants
+    description: "WIA Constants"
+  - title: "Managed RPHY"
+    resourceType: charter.resourceTypes.ManagedRPHY
+    template: charter.serviceTemplates.ManagedRPHY
+    description: "Managed RPHY Automation"
+  - title: "RPHY FW Constants"
+    resourceType: charter.resourceTypes.rphy_fw
+    template: charter.serviceTemplates.rphy_fw
+    description: "RPHY FW Constants"
+  - title: "RPHY FW Upgrade"
+    resourceType: charter.resourceTypes.RPHYFWupgrade
+    template: charter.serviceTemplates.RPHYFWupgrade
+    description: "RPHY FW Upgrade"
+  - title: "RPHY Acceptance"
+    resourceType: charter.resourceTypes.RPHYAcceptance
+    template: charter.serviceTemplates.RPHYAcceptance
+    description: "RPHY Acceptance"
+  - title: "Post Install Light Levels"
+    resourceType: charter.resourceTypes.postInstallLightLevels
+    template: charter.serviceTemplates.postInstallLightLevels
+    description: "Post Install Light Levels tool"
+  - title: "SFP Thresholds"
+    resourceType: charter.resourceTypes.sfpThresholds
+    template: charter.serviceTemplates.sfpThresholds
+    description: "SFP Details and Associated Thresholds"
+  - title: "SftpFirmwareConstants"
+    resourceType: charter.resourceTypes.SftpFirmwareConstants
+    template: charter.serviceTemplates.SftpFirmwareConstants
+    description: "Sftp Server for firmware images"
+  - title: "Device Reset"
+    resourceType: charter.resourceTypes.DeviceReset
+    template: charter.serviceTemplates.DeviceReset
+    description: "Device Service reset tool"
+  - title: "Provisioning"
+    resourceType: charter.resourceTypes.Provisioning
+    template: charter.serviceTemplates.Provisioning
+    description: "Provisioning Factory"
+  - title: "Compliance"
+    resourceType: charter.resourceTypes.Compliance
+    template: charter.serviceTemplates.Compliance
+    description: "Compliance Factory"
+
+# model_dir contains all the tosca, ui, py files to be onboarded to
+# orchestrate
+model_dir: /model-definitions
+
+# Place holder where the model files has to be copied
+# repo_dir: /definitions
+
+# relative paths that has to be onboarded on orchestrate from the
+# model_dir, empty list will onboard the same directory structure as model_dir
+onboard_paths:

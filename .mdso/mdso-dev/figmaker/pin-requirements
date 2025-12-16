@@ -1,0 +1,14 @@
+#!/bin/bash
+# Use pip-compile to generate requirements files.
+#
+# The resulting requirements files fully-specify the dependency tree so that
+# upstream changes don't break things.
+
+set -e
+
+CUSTOM_COMPILE_COMMAND="$0"
+export CUSTOM_COMPILE_COMMAND
+
+tox -e pipcompile-py38 -- pip-compile $flags requirements_test.in -o requirements_test.txt
+tox -e pipcompile-py38 -- pip-compile $flags requirements_lint.in -o requirements_lint.txt
+tox -e pipcompile-py38 -- pip-compile $flags requirements_release.in -o requirements_release.txt

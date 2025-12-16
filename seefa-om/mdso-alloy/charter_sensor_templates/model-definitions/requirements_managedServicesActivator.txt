@@ -1,0 +1,15 @@
+--index-url http://blueplanet/mdsocharter-pypi/simple
+--extra-index-url http://blueplanet/charter-pypi/simple/
+--extra-index-url http://blueplanet/openapi-pypi/simple/
+
+jsonpath
+requests
+plansdk
+ipaddress
+jinja2
+planext~=1.0.1
+paramiko
+pyzipcode
+meraki
+pyyaml==5.3.1
+textfsm

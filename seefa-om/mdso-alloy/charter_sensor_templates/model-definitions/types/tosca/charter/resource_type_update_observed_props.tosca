@@ -1,0 +1,69 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Update Observed Properties"
+package     = charter
+version     = "1.0"
+description = """
+This document defines a function to update the properties of a resource's observed state.  This can 
+be used when the resource is in an activating state and needs to update a property with the config = false
+flag.
+etc...
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    UpdateObservedProperty {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Update Observed Properties
+        description = """
+       
+        """
+
+        properties {
+        
+            resource_id {
+                title = "Resource ID"
+                description = "Resource ID"
+                type = string
+                updatable = false
+                optional = false 
+            }
+            
+            properties {
+                title = "Properties"
+                type = object
+                description = """
+                Properties to update.  This will be put into the "properties" attribute of the 
+                object so it should start out "properties":...
+                """
+                updatable = false
+                optional = false 
+               
+            }
+
+        }
+    }
+}
+
+serviceTemplates {
+
+    UpdateObservedProperty {
+        title = Update Observed Properties
+        description = "Update Observed Properties"
+        implements = charter.resourceTypes.UpdateObservedProperty
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.updateobservedproperty.Activate"
+            }
+            
+        }
+        
+    }
+}

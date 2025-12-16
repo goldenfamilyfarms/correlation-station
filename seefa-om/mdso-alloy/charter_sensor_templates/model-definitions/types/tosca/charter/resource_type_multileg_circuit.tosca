@@ -1,0 +1,89 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Multi-Leg Circuit"
+package     = charter
+version     = "1.0"
+description = """
+    This document defines the Multi-leg Circuit model.  This is the top level service 
+    construct that will be used to hold multiple Netword Services which are part of the same circuit.
+"""
+authors     = [ "David Edelson (david.edelson@charter.com)" ]
+
+resourceTypes {
+    multiLegCircuit {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Multi-Leg Circuit
+        description = """
+        - Extended from charter.resourceTypes.BaseResource  
+        - The main entry point for Charter's systems (SENSE-CLI or Web Interface to call) for multi-leg circuits
+        - This Resource Definition only requires the Charter Circuit ID to create (POST), 
+        update (PUT/PATCH) and remove (DELETE) 
+        - Contains overall state of the network services within it. 
+        - For service types like CTBH, and eventually, Managed Services.
+        """    
+
+        properties {
+            use_alternate_circuit_details_server {
+                title = "Alternate circuit details server"
+                description = "Use the 'alternate server url' to obtain circuit details"
+                type = boolean
+                default = false
+                optional = true
+                updatable = true
+            }
+            circuit_id {
+                title = Circuit ID
+                description = "Circuit ID"
+                type = string
+                optional = false
+                updatable = false
+            }
+            legs_list {
+                config = false
+                title = "Legs List"
+                description = "List of leg names in the circuit Design"
+                type = array
+                optional = true
+                items.type = object
+            }
+            number_of_legs {
+                config = false
+                title = "Legs List"
+                description = "Count of legs in the circuit Design"
+                type = integer
+                optional = true
+                items.type = object
+            }
+            timeout_per_leg {
+                config = true
+                title ="Time out per leg"
+                description = "Time out per leg in seconds - default value is 900 seconds"
+                type = integer
+                optional = true
+                updatable = true
+                default = 900
+            }
+        }
+    }
+}
+
+serviceTemplates {
+    multiLegCircuit {
+        title = Multi-Leg Circuit
+        description = "Multi-Leg Circuit"
+        implements = charter.resourceTypes.multiLegCircuit
+
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.multiLeg.multilegcircuit.Activate"
+            }
+            terminate {
+                type = remote
+                language = python
+                path = "scripts.multiLeg.multilegcircuit.Terminate"
+            }
+        }
+    }
+}

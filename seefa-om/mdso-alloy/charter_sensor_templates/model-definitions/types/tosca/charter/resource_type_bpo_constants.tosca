@@ -1,0 +1,170 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "BPO Constants"
+package     = charter
+version     = "2.0"
+description = """
+This document defines a resource that can be used to share configuration properties
+across multiple STs.  There will only ever be one of these available that is active 
+in the system.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)","Sahil Sidhar(ssidhar@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    BpoConstants {
+        derivedFrom = tosca.resourceTypes.Root
+        title = Blue Planet Constants
+        description = """
+         - This document defines a resource that can be used to share configuration properties
+         - across multiple STs.  There will only ever be one of these available that is active
+         - in the system.
+         """
+
+        properties {
+            
+            circuit_details_server_info {
+                title = "Circuit Details Server info"
+                description = "Server info"
+                type = object
+                optional = false
+                updatable = true
+                properties {
+                
+                    server_url {
+                        title = "Circuit Details Server URL"
+                        description = "Circuit details Server URL (example: https://192.168.1.2/cdc)"
+                        type = string
+                        optional = false
+                        updatable = true
+                    }
+
+                    server_get_url {
+                        title = "Circuit Details Server Get URL"
+                        description = "Circuit Details Server Get URL after the URL above (example: /${circuit_id}/request)"
+                        type = string
+                        optional = false
+                        updatable = true
+                    }
+
+                    alternate_server_url {
+                        title = "Alternate Circuit Details Server URL"
+                        description = "Alternate Circuit details Server URL (example: https://192.168.1.2/cdc)"
+                        type = string
+                        default = ""
+                        optional = true
+                        updatable = true
+                    }
+                    
+                    alternate_server_get_url {
+                        title = "Alternate Circuit Details Server Get URL"
+                        description = "Alternate Circuit Details Server Get URL after the URL above (example: /${circuit_id}/request)"
+                        type = string
+                        default = ""
+                        optional = true
+                        updatable = true
+                    }
+                    
+                    server_user {
+                        title = "Circuit Details Server User"
+                        description = "Circuit Details Server User"
+                        type = string
+                        optional = true
+                        updatable = true
+                    }
+                    
+                    server_password {
+                        title = "Circuit Details Server Password"
+                        description = "Circuit Details Server Password"
+                        type = string
+                        optional = true
+                        updatable = true
+                        obfuscate = true
+                    }
+                    
+                    server_url_headers {
+                        title = "Circuit Details Server Headers"
+                        description = "Circuit Details Server URL Headers"
+                        type = object
+                        optional = true
+                        updatable = true
+                    }
+         
+                }
+            }
+            
+            application_properties {
+                title = "Application Properties"
+                description = "Properties for the service activation templates"
+                type = object
+                optional = true
+                updatable = true
+                properties {
+                    
+                    days_to_keep_active_network_service {
+                        title = "# Days to Keep Active NS"
+                        description = """
+                        Number of days to keep an active network service in the MDSO database.
+                          - When set to zero (0), it is disabled, the same as not being provided.
+                        """
+                        type = integer
+                        format = uint8 
+                        default = 0
+                        optional = true
+                        updatable = true
+                    }
+                    
+                    days_to_keep_failed_network_service {
+                        title = "# Days to Keep Failed NS"
+                        description = """
+                        Number of days to keep a failed network service in the MDSO database.
+                          - When set to zero (0), it is disabled, the same as not being provided.
+                        """
+                        type = integer
+                        format = uint8 
+                        default = 0
+                        optional = true
+                        updatable = true
+                    }
+                
+                }
+            }
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    BpoConstants {
+        title = Blue Planet Constants
+        description = "Blue Planet Constants"
+        implements = charter.resourceTypes.BpoConstants
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+            
+            update {
+                type = remote
+                language = python
+                path = "scripts.common_plan.SingletonActivate"
+            }
+
+        }
+    }
+}

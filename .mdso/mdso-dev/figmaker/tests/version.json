@@ -1,0 +1,27 @@
+{
+    "name": "test",
+    "version": "19.02.0",
+    "mdso_version": "1902",
+    "registry": "artifactory.ciena.com",
+    "vendor": "blueplanet",
+    "apps": [
+      {
+        "name": "bp-so-brocade5600",
+        "version": "19.02.0-12",
+        "volumes": [
+          "/dev/log:/dev/log"
+        ],
+        "max_instances": 1
+      },
+      {
+        "name": "raopenstack",
+        "version": "1.1.16.1902",
+        "volumes": [
+          "/dev/log:/dev/log",
+          "/etc/bp2/site:/etc/bp2/site:ro",
+          "/etc/hostname:/etc/physical_hostname:ro"
+        ]
+      }
+    ]
+  }
+  

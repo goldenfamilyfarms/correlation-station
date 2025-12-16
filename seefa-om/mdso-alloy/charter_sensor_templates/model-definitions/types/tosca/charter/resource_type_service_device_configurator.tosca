@@ -1,0 +1,68 @@
+"$schema"   = "http://cyaninc.com/json-schemas/tosca-lite-v1/definition-module#"
+title       = "Service Device Configurator"
+package     = charter
+version     = "1.0"
+description = """
+This document defines the the Service Device Configurator action that will do the initial
+check of the device to make sure it can support the service provisioning.
+"""
+authors     = [ "Matt Becker (mbecker@ciena.com)" ]
+
+imports {
+
+}
+
+resourceTypes { 
+    ServiceDeviceConfigurator {
+        derivedFrom = charter.resourceTypes.BaseResource
+        title = Service Device Configurator
+        description = """
+        - Extended from charter.resourceTypes.BaseResource 
+        - This resource will do the following:
+            1 - Validation of device communication state
+                  - if the device is not in BPO and the device is existing, it will be on-boarded (CPE only)
+            2 - Check the profiles on the device to make sure that they are resident.
+                  - if not there they will be provisioned based on the master ones in BPO.
+        """
+
+        properties {
+        
+            circuit_details_id {
+                title = "Circuit Details ID"
+                description = "ID for the circuit details created from the Granite system"
+                type = string
+                optional = false
+                updatable = false
+            }
+
+        }
+
+        requirements {
+    
+        }
+    
+        capabilities {
+    
+        }
+
+    }
+}
+
+serviceTemplates {
+
+    ServiceDeviceConfigurator {
+        title = Service Device Configurator
+        description = "Circuit Details Collector"
+        implements = charter.resourceTypes.ServiceDeviceConfigurator
+        
+        plans {
+
+            activate {
+                type = remote
+                language = python
+                path = "scripts.networkservice.servicedeviceconfigurator.Activate"
+            }
+            
+        }
+    }
+}

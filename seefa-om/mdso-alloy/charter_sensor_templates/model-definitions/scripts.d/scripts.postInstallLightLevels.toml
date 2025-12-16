@@ -1,0 +1,3 @@
+[virtualenv]
+python = "py310"
+requirements = "requirements_postInstallLightLevels.txt"
