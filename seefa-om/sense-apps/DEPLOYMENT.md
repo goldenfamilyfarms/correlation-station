@@ -213,27 +213,34 @@ Configure in **GitLab → Settings → CI/CD → Variables**:
 
 ### Environment Variables
 
-Each service supports these OpenTelemetry variables:
+Each service supports these standard OpenTelemetry environment variables:
 
 ```bash
-# OpenTelemetry
-OTEL_SERVICE_NAME=<service-name>          # arda, beorn, or palantir
-OTEL_SERVICE_VERSION=1.0.0
-OTEL_DEPLOYMENT_ENV=production            # production, staging, dev
-OTEL_EXPORTER_OTLP_ENDPOINT=http://159.56.4.94:4318
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-OTEL_TRACES_SAMPLER=parentbased_traceidratio
-OTEL_TRACES_SAMPLER_ARG=0.1               # 10% sampling rate
+# OpenTelemetry - Standard OTEL Environment Variables
+OTEL_SERVICE_NAME=<service-name>          # arda, beorn, or palantir (required)
+OTEL_SERVICE_VERSION=1.0.0                 # Service version (required)
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production  # Resource attributes
+OTEL_TRACES_EXPORTER=otlp                  # Traces exporter (default: otlp)
+OTEL_METRICS_EXPORTER=otlp                 # Metrics exporter (default: otlp)
+OTEL_EXPORTER_OTLP_ENDPOINT=http://<datadog-agent>:4318  # Datadog Agent OTLP endpoint (required for dual export)
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf # Protocol: http/protobuf, grpc, or http/json
+OTEL_EXPORTER_OTLP_HEADERS=                # Optional headers (e.g., "api-key=xxx")
+OTEL_PROPAGATORS=tracecontext,baggage     # Context propagators (default: tracecontext,baggage)
+OTEL_TRACES_SAMPLER=parentbased_traceidratio  # Sampling strategy
+OTEL_TRACES_SAMPLER_ARG=0.1               # Sampling rate (10% = 0.1)
 
-# DataDog (optional)
-DD_AGENT_HOST=<datadog-agent-ip>
-DD_ENV=production
-DD_SERVICE=<service-name>
-DD_VERSION=1.0.0
+# Dual Export: Correlation Engine (second export destination)
+CORRELATION_ENGINE_URL=http://159.56.4.94:8080  # Correlation engine URL for dual export
 
 # Application
 LOG_LEVEL=info                            # debug, info, warning, error
 ```
+
+**Dual Export Configuration:**
+- **Traces**: Exported to both Datadog Agent (via OTLP) and Correlation Engine (via OTLP)
+- **Metrics**: Exported to both Datadog Agent (via OTLP) and Correlation Engine (via OTLP)
+- Set `OTEL_EXPORTER_OTLP_ENDPOINT` to Datadog Agent OTLP receiver (typically port 4318)
+- Set `CORRELATION_ENGINE_URL` for the second export destination
 
 ### Network Configuration
 

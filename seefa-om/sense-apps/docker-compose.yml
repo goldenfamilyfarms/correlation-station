@@ -31,19 +31,19 @@ services:
     ports:
       - "5003:5001"
     environment:
-      # OpenTelemetry Configuration
+      # OpenTelemetry Configuration - Standard OTEL Environment Variables
       OTEL_SERVICE_NAME: arda
       OTEL_SERVICE_VERSION: "1.0.0"
-      OTEL_DEPLOYMENT_ENV: ${DEPLOYMENT_ENV:-production}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://159.56.4.94:4318
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOYMENT_ENV:-production}
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${DD_AGENT_HOST:-http://159.56.4.94:4318}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_PROPAGATORS: tracecontext,baggage
       OTEL_TRACES_SAMPLER: parentbased_traceidratio
       OTEL_TRACES_SAMPLER_ARG: "0.1"
-      # DataDog (optional dual export)
-      DD_AGENT_HOST: ${DD_AGENT_HOST:-}
-      DD_ENV: ${DEPLOYMENT_ENV:-production}
-      DD_SERVICE: arda
-      DD_VERSION: "1.0.0"
+      # Dual Export: Correlation Engine (second export destination)
+      CORRELATION_ENGINE_URL: ${CORRELATION_ENGINE_URL:-http://159.56.4.94:8080}
       # Application Config
       LOG_LEVEL: ${LOG_LEVEL:-info}
     env_file:
@@ -72,19 +72,19 @@ services:
     ports:
       - "5004:5002"
     environment:
-      # OpenTelemetry Configuration
+      # OpenTelemetry Configuration - Standard OTEL Environment Variables
       OTEL_SERVICE_NAME: beorn
       OTEL_SERVICE_VERSION: "1.0.0"
-      OTEL_DEPLOYMENT_ENV: ${DEPLOYMENT_ENV:-production}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://159.56.4.94:4318
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOYMENT_ENV:-production}
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${DD_AGENT_HOST:-http://159.56.4.94:4318}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_PROPAGATORS: tracecontext,baggage
       OTEL_TRACES_SAMPLER: parentbased_traceidratio
       OTEL_TRACES_SAMPLER_ARG: "0.1"
-      # DataDog (optional dual export)
-      DD_AGENT_HOST: ${DD_AGENT_HOST:-}
-      DD_ENV: ${DEPLOYMENT_ENV:-production}
-      DD_SERVICE: beorn
-      DD_VERSION: "1.0.0"
+      # Dual Export: Correlation Engine (second export destination)
+      CORRELATION_ENGINE_URL: ${CORRELATION_ENGINE_URL:-http://159.56.4.94:8080}
       # Application Config
       LOG_LEVEL: ${LOG_LEVEL:-info}
       SENSE_BEORN_CONFIG: /beorn/beorn_app/test_config.py
@@ -114,19 +114,19 @@ services:
     ports:
       - "5002:5003"
     environment:
-      # OpenTelemetry Configuration
+      # OpenTelemetry Configuration - Standard OTEL Environment Variables
       OTEL_SERVICE_NAME: palantir
       OTEL_SERVICE_VERSION: "1.0.0"
-      OTEL_DEPLOYMENT_ENV: ${DEPLOYMENT_ENV:-production}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://159.56.4.94:4318
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOYMENT_ENV:-production}
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${DD_AGENT_HOST:-http://159.56.4.94:4318}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_PROPAGATORS: tracecontext,baggage
       OTEL_TRACES_SAMPLER: parentbased_traceidratio
       OTEL_TRACES_SAMPLER_ARG: "0.1"
-      # DataDog (optional dual export)
-      DD_AGENT_HOST: ${DD_AGENT_HOST:-}
-      DD_ENV: ${DEPLOYMENT_ENV:-production}
-      DD_SERVICE: palantir
-      DD_VERSION: "1.0.0"
+      # Dual Export: Correlation Engine (second export destination)
+      CORRELATION_ENGINE_URL: ${CORRELATION_ENGINE_URL:-http://159.56.4.94:8080}
       # Application Config
       LOG_LEVEL: ${LOG_LEVEL:-info}
     env_file:
