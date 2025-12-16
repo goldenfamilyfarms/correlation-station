@@ -6,8 +6,8 @@ from flask_restx import Namespace, Resource, fields
 from palantir_app.bll.circuit_test_v3 import circuit_test_model_v3
 from palantir_app.bll.circuit_test import check_valid_circuit_id
 from common_sense.common.errors import abort
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 api = Namespace("v3/circuit_test", description="Pull VTA information and status from Granite/MDSO")
 

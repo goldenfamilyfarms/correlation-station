@@ -5,7 +5,7 @@ from flask_restx import Namespace, Resource
 
 from beorn_app.bll.topologies import Topologies
 from common_sense.common.errors import abort
-from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

@@ -6,8 +6,8 @@ import json
 
 from arda_app.common import url_config, endpoints
 from arda_app.dll.utils import get_hydra_headers
-from arda_app.common.otel import get_tracer, add_span_event, set_span_error
-from arda_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 
 logger = logging.getLogger(__name__)

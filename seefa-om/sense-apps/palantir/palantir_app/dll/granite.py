@@ -7,8 +7,8 @@ from requests import JSONDecodeError
 import palantir_app
 from common_sense.common.errors import abort, error_formatter, get_standard_error_summary, GRANITE, MISSING_DATA
 from palantir_app.common.utils import get_hydra_headers, is_ctbh
-from palantir_app.common.otel import get_tracer, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 from palantir_app.common.endpoints import (
     GRANITE_ELEMENTS,
     GRANITE_EQUIPMENTS,

@@ -7,8 +7,8 @@ from palantir_app.bll.resource_status import get_resource_status
 from palantir_app.common.constants import PASS_THROUGH
 from common_sense.common.errors import abort
 from palantir_app.common.regres_testing import mock_resource_status_response
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 
 api = Namespace("v4/resourcestatus", description="Status of MDSO resources")

@@ -7,8 +7,8 @@ import beorn_app
 from common_sense.common.errors import abort
 from beorn_app.common.endpoints import GRANITE_ELEMENTS, GRANITE_PATHS, GRANITE_UDA
 from beorn_app.dll.hydra import get_headers
-from beorn_app.common.otel import get_tracer, add_span_event, set_span_error
-from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 LOGGER = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

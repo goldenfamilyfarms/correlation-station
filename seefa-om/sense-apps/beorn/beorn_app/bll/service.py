@@ -27,7 +27,7 @@ from common_sense.common.errors import (
     error_formatter,
     get_standard_error_summary,
 )
-from beorn_app.common.otel import (
+from sense_common.observability import (
     traced,
     get_tracer,
     set_mdso_correlation,
@@ -35,7 +35,7 @@ from beorn_app.common.otel import (
     set_span_error,
     add_topology_span_attrs,
 )
-from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

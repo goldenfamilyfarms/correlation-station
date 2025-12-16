@@ -30,8 +30,8 @@ from palantir_app.common.compliance_utils import (
 from palantir_app.bll import compliance_disconnect
 from palantir_app.bll.compliance_disconnect_housekeeping import DisconnectHousekeeping, DisconnectServiceIPs
 from palantir_app.bll.mdso import get_active_resource, get_resource_by_type_and_label
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 from palantir_app.common.http_auth import auth
 

@@ -11,13 +11,13 @@ from common_sense.common.errors import (
 )
 from palantir_app.common.constants import PROCESSING_STATUSES
 from palantir_app.dll.mdso import mdso_get
-from palantir_app.common.otel import (
+from sense_common.observability import (
     get_tracer,
     set_mdso_correlation,
     add_span_event,
     set_span_error,
 )
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

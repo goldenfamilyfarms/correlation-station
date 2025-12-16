@@ -8,8 +8,8 @@ from time import sleep
 from arda_app.common import url_config, auth_config, app_config
 from arda_app.common.utils import sanitize_site_string
 from arda_app.common.endpoints import GRANITE_COMMON_PATH
-from arda_app.common.otel import get_tracer, add_span_event, set_span_error
-from arda_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 
 logger = logging.getLogger(__name__)

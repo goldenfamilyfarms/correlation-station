@@ -18,8 +18,8 @@ from palantir_app.common.constants import (
     WIA_PRIMARY,
 )
 from palantir_app.common.http_auth import auth
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 logger = logging.getLogger(__name__)
 api = Namespace("v1/compliance", description="Circuit Compliance API")

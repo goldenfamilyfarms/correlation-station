@@ -15,8 +15,8 @@ from beorn_app.bll.eligibility.automation_eligibility import (
 )
 from beorn_app.common.generic import ENG_ID_REGEX, MAC_ADDR_REGEX
 from beorn_app.bll.topologies import Topologies
-from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
 
 
 api = Namespace("v1/eligibility", description="Automation Eligibility Checks")
