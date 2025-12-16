@@ -10,8 +10,10 @@ from common_sense.common.errors import abort
 from beorn_app.common.http_auth import auth
 from beorn_app.common.regres_testing import regression_testing_check
 from beorn_app.dll.mdso import create_service, mdso_get, product_query
+from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
 
 api = Namespace("v3/service", description="CRUD for Core Provisioning")
 
@@ -71,12 +73,32 @@ class Service(Resource):
     @api.doc(params={"cid": "Circuit-Path ID", "service_mapping_only": "optional field to view map info"})
     def get(self):
         """Check status of a service"""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, MISSING_CID_MSG)
-        if "service_mapping_only" in request.args:
-            return get_service_map_info(request.args["cid"]), 200
-        else:
-            return get_service_info(request.args["cid"]), 200
+        
+        with tracer.start_as_current_span("beorn.service.get") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "get_status")
+            span.set_attribute("service.mapping_only", "service_mapping_only" in request.args)
+            
+            try:
+                if "service_mapping_only" in request.args:
+                    result = get_service_map_info(cid)
+                    span.set_attribute("service.result_type", "mapping")
+                else:
+                    result = get_service_info(cid)
+                    span.set_attribute("service.result_type", "status")
+                    if isinstance(result, dict) and "MDSO service ID" in result:
+                        span.set_attribute("mdso.resource_id", result["MDSO service ID"])
+                        span.set_attribute("service.stage", result.get("Stage", "unknown"))
+                        span.set_attribute("service.state", result.get("Current service state", "unknown"))
+                
+                add_span_event("service.status.retrieved", circuit_id=cid)
+                return result, 200
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.response(
         200,
@@ -115,27 +137,51 @@ class Service(Resource):
     def post(self):
         """Create a new service"""
         body = json.loads(request.data.decode("utf-8"))
-        required_fields = ["cid", "product_name", "maintenance_window"]
-        for f, k in zip(body, required_fields):
-            if f in required_fields and body[f] is None:
-                abort(400, f"Missing {f} value")
-            if k not in body:
-                abort(400, f"Missing {k}")
-            if body["maintenance_window"] is True:
-                abort(
-                    400,
-                    "This order requires customer coordination & is ineligible for automation",
-                    summary="MDSO | Automation Unsupported | Maintenance Window Required",
-                )
+        cid = body.get("cid")
+        product_name = body.get("product_name")
+        
+        with tracer.start_as_current_span("beorn.service.create") as span:
+            set_mdso_correlation(
+                circuit_id=cid,
+                product_id=product_name,
+                service_type=body.get("service_request_order_type"),
+            )
+            span.set_attribute("service.operation", "create")
+            span.set_attribute("service.product_name", product_name or "unknown")
+            span.set_attribute("service.maintenance_window", body.get("maintenance_window", False))
+            span.set_attribute("service.order_type", body.get("service_request_order_type", "unknown"))
+            span.set_attribute("service.engineering_job_type", body.get("engineering_job_type", "unknown"))
+            
+            required_fields = ["cid", "product_name", "maintenance_window"]
+            for f, k in zip(body, required_fields):
+                if f in required_fields and body[f] is None:
+                    abort(400, f"Missing {f} value")
+                if k not in body:
+                    abort(400, f"Missing {k}")
+                if body["maintenance_window"] is True:
+                    add_span_event("service.maintenance_window.detected", circuit_id=cid)
+                    abort(
+                        400,
+                        "This order requires customer coordination & is ineligible for automation",
+                        summary="MDSO | Automation Unsupported | Maintenance Window Required",
+                    )
 
-        # return response for QA regression testing
-        if "STAGE" in beorn_app.app_config.USAGE_DESIGNATION:
-            test_response = regression_testing_check(api.path, body["cid"], request="post")
-            if test_response != "pass":
-                return test_response, 201
+            # return response for QA regression testing
+            if "STAGE" in beorn_app.app_config.USAGE_DESIGNATION:
+                test_response = regression_testing_check(api.path, body["cid"], request="post")
+                if test_response != "pass":
+                    span.set_attribute("service.test_mode", True)
+                    return test_response, 201
 
-        resource_id, http_resp_code = create_core_service(body)
-        return {"resource_id": resource_id}, http_resp_code
+            try:
+                resource_id, http_resp_code = create_core_service(body)
+                span.set_attribute("mdso.resource_id", resource_id)
+                span.set_attribute("http.status_code", http_resp_code)
+                add_span_event("service.created", resource_id=resource_id, circuit_id=cid)
+                return {"resource_id": resource_id}, http_resp_code
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.response(
         201,
@@ -184,23 +230,50 @@ class Service(Resource):
     def put(self):
         """Update an existing service map to include devices either uninstalled or undiscovered"""
         body = json.loads(request.data.decode("utf-8"))
-        # device_mapping boolean = TRUE + a CID will default to PUT of Device Mapping
-        if "cid" not in body:
-            abort(400, MISSING_CID_MSG)
-        order_type = body.get("order_type")
-        if "test" in body["cid"]:
-            return (
-                regression_testing_check(
-                    "/v3/service", body["cid"], request="put", validate_cid=False, order_type=order_type
-                ),
-                200,
-            )
+        cid = body.get("cid")
+        
+        with tracer.start_as_current_span("beorn.service.update") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "update")
+            span.set_attribute("service.update_types", {
+                "bandwidth": body.get("bw", False),
+                "ip": body.get("ip", False),
+                "description": body.get("dsc", False),
+            })
+            span.set_attribute("service.order_type", body.get("order_type", "unknown"))
+            
+            # device_mapping boolean = TRUE + a CID will default to PUT of Device Mapping
+            if not cid:
+                abort(400, MISSING_CID_MSG)
+            
+            order_type = body.get("order_type")
+            if "test" in cid:
+                span.set_attribute("service.test_mode", True)
+                return (
+                    regression_testing_check(
+                        "/v3/service", cid, request="put", validate_cid=False, order_type=order_type
+                    ),
+                    200,
+                )
 
-        response = update_service(body)
-        status = 201
-        if response.get("resource_id") == "pass through":
-            status = 211
-        return response, status
+            try:
+                response = update_service(body)
+                status = 201
+                if response.get("resource_id") == "pass through":
+                    status = 211
+                    span.set_attribute("service.pass_through", True)
+                else:
+                    if "ip_resource_id" in response:
+                        span.set_attribute("mdso.ip_resource_id", response["ip_resource_id"])
+                    if "bw_resource_id" in response:
+                        span.set_attribute("mdso.bw_resource_id", response["bw_resource_id"])
+                
+                span.set_attribute("http.status_code", status)
+                add_span_event("service.updated", circuit_id=cid, status=status)
+                return response, status
+            except Exception as e:
+                set_span_error(e)
+                raise
 
 
 @api.route("/slm/configuration_variables")
@@ -261,25 +334,39 @@ class SLMConfigVariables(Resource):
         """
         Get variables necessary for generating SLM configuration from template.
         """
-        if "resource_id" not in request.args:
+        resource_id = request.args.get("resource_id")
+        if not resource_id:
             abort(400, message="Bad request - missing resource ID")
-        base = BASE_RESOURCE_ENDPOINT
-        resource_id = request.args["resource_id"]
-        endpoint_url = f"{base}/{resource_id}?full=false&obfuscate=true"
-        slm_return = mdso_get(endpoint_url)
-
-        if not slm_return:
-            abort(404, message="Resource Not Found")
-        # consider when next available manet field would be empty.
-
-        data = {
-            "resource_id": slm_return["id"],
-            "slm_configuration_variables": slm_return["properties"].get(
-                "slm_configuration_variables", slm_return["reason"]
-            ),
-            "cid": slm_return["label"],
-        }
-        return data
+        
+        with tracer.start_as_current_span("beorn.service.slm_config.get") as span:
+            set_mdso_correlation(resource_id=resource_id)
+            span.set_attribute("service.operation", "get_slm_config")
+            
+            base = BASE_RESOURCE_ENDPOINT
+            endpoint_url = f"{base}/{resource_id}?full=false&obfuscate=true"
+            
+            try:
+                slm_return = mdso_get(endpoint_url)
+                if not slm_return:
+                    abort(404, message="Resource Not Found")
+                
+                cid = slm_return.get("label")
+                if cid:
+                    set_mdso_correlation(circuit_id=cid)
+                    span.set_attribute("mdso.circuit_id", cid)
+                
+                data = {
+                    "resource_id": slm_return["id"],
+                    "slm_configuration_variables": slm_return["properties"].get(
+                        "slm_configuration_variables", slm_return["reason"]
+                    ),
+                    "cid": cid,
+                }
+                add_span_event("slm.config.retrieved", resource_id=resource_id, circuit_id=cid)
+                return data
+            except Exception as e:
+                set_span_error(e)
+                raise
 
     @api.doc(params={"cid": "CID"})
     @api.response(
@@ -289,20 +376,33 @@ class SLMConfigVariables(Resource):
     )
     def post(self):
         """Create new SLM Config Variables resource"""
-        if "cid" not in request.args:
+        cid = request.args.get("cid")
+        if not cid:
             abort(400, MISSING_CID_MSG)
 
-        cid, product = request.args["cid"], product_query("slmConfigVariables")
-        data = {
-            "label": cid,
-            "description": "CID from sense CLI",
-            "productId": product,
-            "properties": {"circuit_id": cid},
-        }
+        with tracer.start_as_current_span("beorn.service.slm_config.create") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("service.operation", "create_slm_config")
+            
+            try:
+                product = product_query("slmConfigVariables")
+                data = {
+                    "label": cid,
+                    "description": "CID from sense CLI",
+                    "productId": product,
+                    "properties": {"circuit_id": cid},
+                }
 
-        logger.debug("Creating a service for {}".format(cid))
-        resource_id = create_service(data)
-        if resource_id is not None:
-            return {"resource_id": resource_id}, 200
+                logger.debug("Creating a service for {}".format(cid))
+                resource_id = create_service(data)
+                
+                if resource_id is not None:
+                    span.set_attribute("mdso.resource_id", resource_id)
+                    add_span_event("slm.config.created", resource_id=resource_id, circuit_id=cid)
+                    return {"resource_id": resource_id}, 200
 
-        return {"resource_id": resource_id}, 201
+                add_span_event("slm.config.created.pending", circuit_id=cid)
+                return {"resource_id": resource_id}, 201
+            except Exception as e:
+                set_span_error(e)
+                raise

@@ -7,57 +7,114 @@ import beorn_app
 from common_sense.common.errors import abort
 from beorn_app.common.endpoints import GRANITE_ELEMENTS, GRANITE_PATHS, GRANITE_UDA
 from beorn_app.dll.hydra import get_headers
+from beorn_app.common.otel import get_tracer, add_span_event, set_span_error
+from beorn_app.common.otel.mdso_patterns import ErrorCategorizer
 
 LOGGER = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 def granite_get(endpoint, params=None, timeout=60, retry=0, best_effort=False):
-    headers = get_headers()
-    url = f"{beorn_app.url_config.GRANITE_BASE_URL}{endpoint}"
-    err_msg = ""
-    for _ in range(retry + 1):
-        try:
-            resp = requests.get(url=url, headers=headers, params=params, timeout=timeout, verify=False)
-            if resp.status_code == 200:
-                granite_resp = resp.json()
-                # Check for CID not found
-                if "retString" in granite_resp and "No records" in granite_resp["retString"]:
-                    if best_effort:
-                        return []
-                    else:
-                        abort(
-                            502, f"Granite Call - No records found for URL: {url} params: {params} RESPONSE: {resp.text}"
-                        )
-                return granite_resp
-            else:
-                err_msg = f"Granite Call - Not success status code '{resp.status_code}': {url}"
-        except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout):
-            err_msg = f"Granite Call - Failed connecting to Granite for URL: {url}"
-        except requests.ReadTimeout:
-            err_msg = f"Granite Call - Connected to Granite and timed out waiting for data for URL: {url}"
-        LOGGER.info(f"Granite get - {err_msg}")
-        sleep(3)
-    # Failed to get data from granite. Aborting
-    abort(504, err_msg)
+    with tracer.start_as_current_span("granite.api.get") as span:
+        span.set_attribute("granite.operation", "get")
+        span.set_attribute("granite.endpoint", endpoint)
+        span.set_attribute("granite.timeout", timeout)
+        span.set_attribute("granite.retry_count", retry)
+        span.set_attribute("granite.best_effort", best_effort)
+        if params:
+            # Extract circuit_id if present
+            cid = params.get("CIRC_PATH_HUM_ID") or params.get("cid")
+            if cid:
+                span.set_attribute("granite.circuit_id", cid)
+        
+        headers = get_headers()
+        url = f"{beorn_app.url_config.GRANITE_BASE_URL}{endpoint}"
+        err_msg = ""
+        for attempt in range(retry + 1):
+            if attempt > 0:
+                span.set_attribute("granite.retry_attempt", attempt)
+                add_span_event("granite.retry", endpoint=endpoint, attempt=attempt)
+                sleep(3)
+            
+            try:
+                add_span_event("granite.api.call.start", endpoint=endpoint)
+                resp = requests.get(url=url, headers=headers, params=params, timeout=timeout, verify=False)
+                span.set_attribute("http.status_code", resp.status_code)
+                
+                if resp.status_code == 200:
+                    granite_resp = resp.json()
+                    # Check for CID not found
+                    if "retString" in granite_resp and "No records" in granite_resp["retString"]:
+                        span.set_attribute("granite.no_records", True)
+                        if best_effort:
+                            add_span_event("granite.api.call.complete", endpoint=endpoint, records_found=False)
+                            return []
+                        else:
+                            error_msg = f"Granite Call - No records found for URL: {url} params: {params} RESPONSE: {resp.text}"
+                            error_context = error_categorizer.extract_error_context(error_msg)
+                            span.set_attribute("error.category", error_context.get("category", "DATA_ERROR"))
+                            abort(502, error_msg)
+                    add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=200)
+                    return granite_resp
+                else:
+                    err_msg = f"Granite Call - Not success status code '{resp.status_code}': {url}"
+                    error_context = error_categorizer.extract_error_context(err_msg)
+                    span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout) as e:
+                err_msg = f"Granite Call - Failed connecting to Granite for URL: {url}"
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "CONNECTION_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            except requests.ReadTimeout as e:
+                err_msg = f"Granite Call - Connected to Granite and timed out waiting for data for URL: {url}"
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            LOGGER.info(f"Granite get - {err_msg}")
+        # Failed to get data from granite. Aborting
+        abort(504, err_msg)
 
 
 def granite_put(endpoint, payload):
     """Send a PUT call to the Granite API and return
     the JSON-formatted response"""
-    headers = get_headers()
-    try:
-        r = requests.put(
-            f"{beorn_app.url_config.GRANITE_BASE_URL}{endpoint}", headers=headers, json=payload, verify=False, timeout=60
-        )
-        if r.status_code != 200:
-            abort(
-                502,
-                f"Granite Update - Unexpected status code {r.status_code} "
-                f"from Granite for url: {endpoint} and payload {payload} RESPONSE: {r.text}",
+    with tracer.start_as_current_span("granite.api.put") as span:
+        span.set_attribute("granite.operation", "put")
+        span.set_attribute("granite.endpoint", endpoint)
+        if isinstance(payload, dict):
+            # Extract relevant identifiers from payload
+            if "CIRC_PATH_HUM_ID" in payload:
+                span.set_attribute("granite.circuit_id", payload["CIRC_PATH_HUM_ID"])
+        
+        headers = get_headers()
+        try:
+            add_span_event("granite.api.put.start", endpoint=endpoint)
+            r = requests.put(
+                f"{beorn_app.url_config.GRANITE_BASE_URL}{endpoint}", headers=headers, json=payload, verify=False, timeout=60
             )
-        return r
-    except (ConnectionError, requests.ConnectionError, requests.Timeout):
-        abort(504, f"Timed out putting data to Granite for url: {endpoint} and payload {payload}")
+            span.set_attribute("http.status_code", r.status_code)
+            
+            if r.status_code != 200:
+                error_msg = (
+                    f"Granite Update - Unexpected status code {r.status_code} "
+                    f"from Granite for url: {endpoint} and payload {payload} RESPONSE: {r.text}"
+                )
+                error_context = error_categorizer.extract_error_context(error_msg)
+                span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                abort(502, error_msg)
+            add_span_event("granite.api.put.complete", endpoint=endpoint, status_code=r.status_code)
+            return r
+        except (ConnectionError, requests.ConnectionError, requests.Timeout) as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            abort(504, f"Timed out putting data to Granite for url: {endpoint} and payload {payload}")
 
 
 def get_granite_devices_from_cid(cid):

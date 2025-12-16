@@ -25,10 +25,14 @@ from arda_app.bll.circuit_design.common import (
     bw_check,
     entrance_criteria_check,
 )
+from arda_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from arda_app.common.otel.mdso_patterns import ErrorCategorizer
 
 from arda_app.api._routers import v1_design_router
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 @v1_design_router.post("/circuit_design", summary="SEnSE Circuit Design")
@@ -39,13 +43,32 @@ def circuit_design(payload: CircuitDesignPayloadModel, authenticated: bool = Dep
     payload_dict = payload.model_dump(exclude_none=True)
     logger.info(f"v1/circuit_design payload: {payload_dict}")
 
-    # TEST CASES for regression testing
-    test_resp = test_case_responses(payload_dict)
+    zcid = payload_dict.get("z_side_info", {}).get("cid")
+    z_side_service_type = payload_dict.get("z_side_info", {}).get("service_type")
+    product_name = payload_dict.get("z_side_info", {}).get("product_name")
+    engineering_job_type = payload_dict.get("z_side_info", {}).get("engineering_job_type", "").lower()
 
-    if test_resp:
-        return test_resp
+    with tracer.start_as_current_span("arda.circuit_design") as span:
+        set_mdso_correlation(
+            circuit_id=zcid,
+            product_id=product_name,
+            service_type=z_side_service_type,
+        )
+        span.set_attribute("design.operation", "circuit_design")
+        span.set_attribute("design.service_type", z_side_service_type or "unknown")
+        span.set_attribute("design.engineering_job_type", engineering_job_type or "unknown")
+        span.set_attribute("design.product_name", product_name or "unknown")
+        
+        try:
+            # TEST CASES for regression testing
+            test_resp = test_case_responses(payload_dict)
+            if test_resp:
+                span.set_attribute("design.test_mode", True)
+                return test_resp
 
-    entrance_criteria_check(payload_dict)
+            add_span_event("design.entrance_criteria.check.start", circuit_id=zcid)
+            entrance_criteria_check(payload_dict)
+            add_span_event("design.entrance_criteria.check.passed", circuit_id=zcid)
 
     z_side = True if payload_dict["z_side_info"]["service_type"] == "add" else False
     a_side = (
@@ -75,9 +98,11 @@ def circuit_design(payload: CircuitDesignPayloadModel, authenticated: bool = Dep
         #        f"Unable to determine CID from: {zcid}",
         #    )
 
-        resp: dict = {}
-        if z_side_service_type == "change_logical":
-            lc_payload_dict = {
+            resp: dict = {}
+            if z_side_service_type == "change_logical":
+                add_span_event("design.logical_change.start", circuit_id=zcid)
+                span.set_attribute("design.operation_type", "logical_change")
+                lc_payload_dict = {
                 "service_type": z_side_service_type,
                 "product_name": payload_dict["z_side_info"].get("product_name"),
                 "cid": zcid,
@@ -109,11 +134,18 @@ def circuit_design(payload: CircuitDesignPayloadModel, authenticated: bool = Dep
             ec_resp = create_base_exit_criteria(exit_criteria_payload_dict)
             ec_resp["orchestration"] = z_side_service_type
 
-            return create_exit_criteria(exit_criteria_payload_dict, ec_resp)
-        elif z_side_service_type == "disconnect":
-            side = list(payload_dict.keys())[0]
-            return disconnect_processing(payload_dict, side)
-        elif z_side_service_type == "bw_change":
+                add_span_event("design.logical_change.complete", circuit_id=zcid, circ_path_inst_id=resp.get("circ_path_inst_id"))
+                return create_exit_criteria(exit_criteria_payload_dict, ec_resp)
+            elif z_side_service_type == "disconnect":
+                add_span_event("design.disconnect.start", circuit_id=zcid)
+                span.set_attribute("design.operation_type", "disconnect")
+                side = list(payload_dict.keys())[0]
+                result = disconnect_processing(payload_dict, side)
+                add_span_event("design.disconnect.complete", circuit_id=zcid)
+                return result
+            elif z_side_service_type == "bw_change":
+                add_span_event("design.bandwidth_change.start", circuit_id=zcid)
+                span.set_attribute("design.operation_type", "bandwidth_change")
             if payload_dict["z_side_info"].get("pid"):
                 logger.error("PRISM ID not allowed in bw_change payload_dict.")
                 abort(500, "PRISM ID not allowed in bw_change payload_dict.")
@@ -190,10 +222,14 @@ def circuit_design(payload: CircuitDesignPayloadModel, authenticated: bool = Dep
             ec_resp = create_base_exit_criteria(exit_criteria_payload_dict)
             ec_resp["orchestration"] = z_side_service_type
 
-            return create_exit_criteria(exit_criteria_payload_dict, ec_resp)
+                add_span_event("design.bandwidth_change.complete", circuit_id=zcid, circ_path_inst_id=resp.get("circ_path_inst_id"))
+                return create_exit_criteria(exit_criteria_payload_dict, ec_resp)
 
-        # This is not a (change_logical, disconnect, bw_change) will flow to Build Ciruit Design
-        if z_side_service_type in ("net_new_cj", "net_new_qc", "net_new_serviceable", "net_new_no_cj"):
+            # This is not a (change_logical, disconnect, bw_change) will flow to Build Ciruit Design
+            if z_side_service_type in ("net_new_cj", "net_new_qc", "net_new_serviceable", "net_new_no_cj"):
+                add_span_event("design.build_circuit_design.start", circuit_id=zcid)
+                span.set_attribute("design.operation_type", "build_circuit_design")
+                span.set_attribute("design.net_new_type", z_side_service_type)
             # whitelist for bw_check
             if payload_dict["z_side_info"].get("product_name") in (
                 "Carrier E-Access (Fiber)",
@@ -321,9 +357,19 @@ def circuit_design(payload: CircuitDesignPayloadModel, authenticated: bool = Dep
                 else:
                     return create_exit_criteria(exit_criteria_payload_dict, ec_resp)
 
-            return exit_dict
+                add_span_event("design.build_circuit_design.complete", circuit_id=zcid)
+                return exit_dict
 
-        abort(500, f"Build Circuit Design Error: service_type of {z_side_service_type} is unsupported")
+            error_msg = f"Build Circuit Design Error: service_type of {z_side_service_type} is unsupported"
+            error_context = error_categorizer.extract_error_context(error_msg)
+            span.set_attribute("error.category", error_context.get("category", "VALIDATION_ERROR"))
+            abort(500, error_msg)
+        except Exception as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            raise
 
     abort(500, "z_side_info field missing from payload_dict")
 

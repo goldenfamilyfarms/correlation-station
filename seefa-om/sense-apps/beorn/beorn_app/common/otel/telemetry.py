@@ -2,7 +2,7 @@
 Unified OpenTelemetry Module for SENSE Apps
 Consolidates common_sense_telemetry, observability.py, and otel_sense.py
 """
-from common.otel_sense import (
+from .otel_sense import (
     # Core setup
     setup_otel_sense,
     instrument_flask_lightweight,

@@ -24,14 +24,26 @@ from beorn_app.bll.granite import get_vpls_vlan_id, get_elan_slm_data, get_vc_cl
 from common_sense.common.network_devices import VOICE_GATEWAY_MODELS
 
 # Import OTEL utilities for topology instrumentation
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'common'))
+from beorn_app.common.otel import (
+    get_tracer,
+    set_mdso_correlation,
+    add_span_event,
+    set_span_error,
+    add_topology_span_attrs,
+)
+from beorn_app.common.otel.mdso_patterns import MDSOPatterns, ErrorCategorizer, extract_vendor_from_beorn_node
+from opentelemetry import trace, baggage, context
+
 try:
-    from opentelemetry import trace, baggage
-    from mdso_patterns import MDSOPatterns, extract_vendor_from_beorn_node
     OTEL_AVAILABLE = True
-    tracer = trace.get_tracer(__name__)
+    tracer = get_tracer(__name__)
+    error_categorizer = ErrorCategorizer()
+    mdso_patterns = MDSOPatterns()
 except ImportError:
     OTEL_AVAILABLE = False
+    tracer = None
+    error_categorizer = None
+    mdso_patterns = None
 
 logger = logging.getLogger(__name__)
 
@@ -100,16 +112,47 @@ class Topologies:
 
                 # Set baggage for correlation
                 ctx = baggage.set_baggage("circuit_id", self.cid)
+                context.attach(ctx)
 
-                if self._is_multi_leg():
-                    topology = self._create_multi_leg_topology()
-                else:
-                    topology = self._create_topology()
+                try:
+                    add_span_event("topology.denodo.query.start", circuit_id=self.cid)
+                    # Denodo query already happened in __init__, but we track it here
+                    span.set_attribute("topology.circuit_elements_count", len(self.circuit_elements))
+                    add_span_event("topology.denodo.query.complete", circuit_id=self.cid, elements=len(self.circuit_elements))
 
-                # Extract and record device information from topology
-                self._add_topology_device_spans(topology, span)
-                self.topology = topology
-                return topology
+                    multi_leg = self._is_multi_leg()
+                    span.set_attribute("topology.multi_leg", multi_leg)
+                    
+                    if multi_leg:
+                        add_span_event("topology.multi_leg.creation.start", circuit_id=self.cid)
+                        topology = self._create_multi_leg_topology()
+                        span.set_attribute("topology.legs", 2)
+                        add_span_event("topology.multi_leg.creation.complete", circuit_id=self.cid)
+                    else:
+                        add_span_event("topology.single.creation.start", circuit_id=self.cid)
+                        topology = self._create_topology()
+                        span.set_attribute("topology.legs", 1)
+                        add_span_event("topology.single.creation.complete", circuit_id=self.cid)
+
+                    # Extract and record device information from topology
+                    self._add_topology_device_spans(topology, span)
+                    
+                    # Add topology-specific attributes
+                    if isinstance(topology, dict):
+                        service_type = topology.get("serviceType") or (topology.get("PRIMARY", {}).get("serviceType") if multi_leg else None)
+                        if service_type:
+                            span.set_attribute("topology.service_type", service_type)
+                            add_topology_span_attrs(service_type=service_type)
+                    
+                    add_span_event("topology.creation.complete", circuit_id=self.cid)
+                    self.topology = topology
+                    return topology
+                except Exception as e:
+                    set_span_error(e)
+                    error_context = error_categorizer.extract_error_context(str(e))
+                    span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                    raise
         else:
             if self._is_multi_leg():
                 topology = self._create_multi_leg_topology()

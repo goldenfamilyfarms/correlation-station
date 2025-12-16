@@ -6,9 +6,13 @@ import json
 
 from arda_app.common import url_config, endpoints
 from arda_app.dll.utils import get_hydra_headers
+from arda_app.common.otel import get_tracer, add_span_event, set_span_error
+from arda_app.common.otel.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 DEPLOYED_STATUS = "deployed"
 
@@ -71,34 +75,78 @@ def get_ipc(url, params=None, timeout=30, return_resp=False):
 
 def post_ipc(url, payload, timeout=30):
     """Send a post call to the IPControl API and return the JSON-formatted response"""
-    url = f"{url_config.HYDRA_BASE_URL}{url}"
-    headers = get_hydra_headers()
+    with tracer.start_as_current_span("ipc.api.post") as span:
+        span.set_attribute("ipc.operation", "post")
+        span.set_attribute("ipc.endpoint", url)
+        span.set_attribute("ipc.timeout", timeout)
+        if isinstance(payload, dict):
+            # Extract circuit_id if present
+            cid = payload.get("cid") or payload.get("circuit_id")
+            if cid:
+                span.set_attribute("ipc.circuit_id", cid)
+            if "ip_address" in payload:
+                span.set_attribute("ipc.ip_address", payload["ip_address"])
+            if "subnet" in payload:
+                span.set_attribute("ipc.subnet", payload["subnet"])
+        
+        full_url = f"{url_config.HYDRA_BASE_URL}{url}"
+        headers = get_hydra_headers()
 
-    try:
-        resp = requests.post(url=url, headers=headers, json=payload, verify=False, timeout=timeout)
-        return _handle_ipc_resp(url, "POST", resp=resp, payload=payload)
-    except (ConnectionError, requests.ConnectionError, requests.Timeout):
-        _handle_ipc_resp(url, "POST", timeout=True)
+        try:
+            add_span_event("ipc.api.call.start", endpoint=url)
+            resp = requests.post(url=full_url, headers=headers, json=payload, verify=False, timeout=timeout)
+            span.set_attribute("http.status_code", resp.status_code)
+            result = _handle_ipc_resp(url, "POST", resp=resp, payload=payload)
+            add_span_event("ipc.api.call.complete", endpoint=url, status_code=resp.status_code)
+            return result
+        except (ConnectionError, requests.ConnectionError, requests.Timeout) as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            _handle_ipc_resp(url, "POST", timeout=True)
 
-    logger.error(f"Timed out getting data from IPControl for URL: {url}")
-    abort(500, f"Timed out getting data from IPControl for URL: {url}")
+        logger.error(f"Timed out getting data from IPControl for URL: {full_url}")
+        abort(500, f"Timed out getting data from IPControl for URL: {full_url}")
 
 
 def put_ipc(url, payload, timeout=30):
-    """Send a post call to the IPControl API and return the JSON-formatted response"""
-    url = f"{url_config.HYDRA_BASE_URL}{url}"
-    headers = get_hydra_headers()
-    for count in range(3):
-        if count > 0:
-            sleep(5)
-        try:
-            resp = requests.put(url=url, headers=headers, json=payload, verify=False, timeout=timeout)
-            return _handle_ipc_resp(url, "PUT", resp=resp, payload=payload)
-        except (ConnectionError, requests.ConnectionError, requests.Timeout):
-            _handle_ipc_resp(url, "PUT", timeout=True)
+    """Send a PUT call to the IPControl API and return the JSON-formatted response"""
+    with tracer.start_as_current_span("ipc.api.put") as span:
+        span.set_attribute("ipc.operation", "put")
+        span.set_attribute("ipc.endpoint", url)
+        span.set_attribute("ipc.timeout", timeout)
+        if isinstance(payload, dict):
+            # Extract circuit_id if present
+            cid = payload.get("cid") or payload.get("circuit_id")
+            if cid:
+                span.set_attribute("ipc.circuit_id", cid)
+        
+        full_url = f"{url_config.HYDRA_BASE_URL}{url}"
+        headers = get_hydra_headers()
+        for count in range(3):
+            if count > 0:
+                sleep(5)
+                span.set_attribute("ipc.retry_count", count)
+                add_span_event("ipc.retry", endpoint=url, attempt=count)
+            
+            try:
+                add_span_event("ipc.api.call.start", endpoint=url)
+                resp = requests.put(url=full_url, headers=headers, json=payload, verify=False, timeout=timeout)
+                span.set_attribute("http.status_code", resp.status_code)
+                result = _handle_ipc_resp(url, "PUT", resp=resp, payload=payload)
+                add_span_event("ipc.api.call.complete", endpoint=url, status_code=resp.status_code)
+                return result
+            except (ConnectionError, requests.ConnectionError, requests.Timeout) as e:
+                if count == 2:  # Last attempt
+                    set_span_error(e)
+                    error_context = error_categorizer.extract_error_context(str(e))
+                    span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                _handle_ipc_resp(url, "PUT", timeout=True)
 
-    logger.error(f"Timed out getting data from IPControl for URL: {url}")
-    abort(500, f"Timed out getting data from IPControl for URL: {url} after {count} tries")
+        logger.error(f"Timed out getting data from IPControl for URL: {full_url}")
+        abort(500, f"Timed out getting data from IPControl for URL: {full_url} after {count} tries")
 
 
 def delete_ipc(url, payload, timeout=30, return_resp=False):

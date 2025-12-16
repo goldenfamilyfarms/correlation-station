@@ -18,9 +18,13 @@ from palantir_app.common.constants import (
     WIA_PRIMARY,
 )
 from palantir_app.common.http_auth import auth
+from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
 
 logger = logging.getLogger(__name__)
 api = Namespace("v1/compliance", description="Circuit Compliance API")
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 UNSUPPORTED_ERROR = api.model("unsupported", {"message": fields.String(example="Use case unsupported")})
 
@@ -74,22 +78,61 @@ class ProvisioningCompliance(Resource):
     def post(self, cid):
         """Create service mapper resource to map discrepancies between network and design for circuit"""
         body = request.get_json()
-        compliance_provisioning.validate_request(body)  # abort if request is not feasible
-        order_type = compliance_utils.translate_sf_order_type(
-            body["service_request_order_type"], body.get("product_name", "")
-        )
-        network_compliance = compliance_provisioning.Initialize(cid, body, order_type)
-        if network_compliance.is_pass_through():
-            return {"resource_id": PASS_THROUGH}, 211
-        try:
-            validation_process(cid, acceptance=False)
-        except HTTPException as error:
-            logger.info(f"Validate Failed for {cid}: {error}")
-        except Exception as error:
-            logger.info(f"Validate Failed for {cid} Exception: {error}")
+        
+        with tracer.start_as_current_span("palantir.compliance.provisioning.create") as span:
+            set_mdso_correlation(circuit_id=cid)
+            span.set_attribute("compliance.operation", "provisioning_create")
+            span.set_attribute("compliance.order_type", body.get("order_type", "unknown"))
+            span.set_attribute("compliance.service_request_order_type", body.get("service_request_order_type", "unknown"))
+            span.set_attribute("compliance.product_name", body.get("product_name", "unknown"))
+            span.set_attribute("compliance.remediation_flag", body.get("remediation_flag", True))
+            
+            try:
+                add_span_event("compliance.provisioning.create.start", circuit_id=cid)
+                compliance_provisioning.validate_request(body)  # abort if request is not feasible
+                order_type = compliance_utils.translate_sf_order_type(
+                    body["service_request_order_type"], body.get("product_name", "")
+                )
+                span.set_attribute("compliance.order_type_translated", order_type)
+                
+                network_compliance = compliance_provisioning.Initialize(cid, body, order_type)
+                if network_compliance.is_pass_through():
+                    span.set_attribute("compliance.pass_through", True)
+                    add_span_event("compliance.provisioning.pass_through", circuit_id=cid)
+                    return {"resource_id": PASS_THROUGH}, 211
+                
+                span.set_attribute("compliance.pass_through", False)
+                try:
+                    add_span_event("compliance.device_validation.start", circuit_id=cid)
+                    validation_process(cid, acceptance=False)
+                    add_span_event("compliance.device_validation.complete", circuit_id=cid)
+                except HTTPException as error:
+                    logger.info(f"Validate Failed for {cid}: {error}")
+                    error_context = error_categorizer.extract_error_context(str(error))
+                    span.set_attribute("error.category", error_context.get("category", "VALIDATION_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "WARN"))
+                    add_span_event("compliance.device_validation.failed", circuit_id=cid, error=str(error))
+                except Exception as error:
+                    logger.info(f"Validate Failed for {cid} Exception: {error}")
+                    error_context = error_categorizer.extract_error_context(str(error))
+                    span.set_attribute("error.category", error_context.get("category", "VALIDATION_ERROR"))
+                    span.set_attribute("error.severity", error_context.get("severity", "WARN"))
+                    add_span_event("compliance.device_validation.failed", circuit_id=cid, error=str(error))
 
-        response = network_compliance.create_service_mapper()
-        return response, 201
+                add_span_event("compliance.service_mapper.create.start", circuit_id=cid)
+                response = network_compliance.create_service_mapper()
+                
+                if isinstance(response, dict) and "resource_id" in response:
+                    span.set_attribute("mdso.resource_id", response["resource_id"])
+                
+                add_span_event("compliance.provisioning.create.complete", circuit_id=cid, resource_id=response.get("resource_id") if isinstance(response, dict) else None)
+                return response, 201
+            except Exception as e:
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                raise
 
 
 @api.route("/provisioning/status/<cid>")
@@ -142,35 +185,67 @@ class ProvisioningComplianceStatus(Resource):
         """
         body = request.get_json()
         resource_id = body.get("resource_id")
-        compliance_required = compliance_utils.is_compliance_required(resource_id)
+        
+        with tracer.start_as_current_span("palantir.compliance.provisioning.status") as span:
+            set_mdso_correlation(circuit_id=cid, resource_id=resource_id)
+            span.set_attribute("compliance.operation", "provisioning_status")
+            span.set_attribute("compliance.product_name", body.get("product_name", "unknown"))
+            span.set_attribute("compliance.order_type", body.get("order_type", "unknown"))
+            
+            try:
+                add_span_event("compliance.provisioning.status.check.start", circuit_id=cid, resource_id=resource_id)
+                compliance_required = compliance_utils.is_compliance_required(resource_id)
+                span.set_attribute("compliance.required", compliance_required)
 
-        # get required details from request
-        product_name = body["product_name"]
-        order_type = compliance_utils.translate_eng_job_type(body["order_type"])
+                # get required details from request
+                product_name = body["product_name"]
+                order_type = compliance_utils.translate_eng_job_type(body["order_type"])
+                span.set_attribute("compliance.order_type_translated", order_type)
 
-        # make sure the right endpoint was called for the order type
-        if not compliance_provisioning.is_valid_request(order_type):
-            abort(400, f"Incorrect order type submitted for provisioning compliance request: {body['order_type']}")
+                # make sure the right endpoint was called for the order type
+                if not compliance_provisioning.is_valid_request(order_type):
+                    error_msg = f"Incorrect order type submitted for provisioning compliance request: {body['order_type']}"
+                    error_context = error_categorizer.extract_error_context(error_msg)
+                    span.set_attribute("error.category", error_context.get("category", "VALIDATION_ERROR"))
+                    abort(400, error_msg)
 
-        # initialize compliance stages for order type
-        compliance_stages = compliance_utils.ComplianceStages(order_type)
-        logger.debug(f"{cid} Initial Compliance Stages: {compliance_stages.status}")
+                # initialize compliance stages for order type
+                compliance_stages = compliance_utils.ComplianceStages(order_type)
+                logger.debug(f"{cid} Initial Compliance Stages: {compliance_stages.status}")
 
-        # allow pass through orders to flow directly to housekeeping
-        if not compliance_required:
-            compliance_stages.set_pass_through_status()
-            return compliance_stages.status, 200
+                # allow pass through orders to flow directly to housekeeping
+                if not compliance_required:
+                    compliance_stages.set_pass_through_status()
+                    span.set_attribute("compliance.pass_through", True)
+                    add_span_event("compliance.provisioning.pass_through", circuit_id=cid)
+                    return compliance_stages.status, 200
 
-        order_details = compliance_utils.get_required_order_details(product_name, body, order_type)
-        logger.debug(f"CID: {cid} Required data: {order_details}")
+                span.set_attribute("compliance.pass_through", False)
+                order_details = compliance_utils.get_required_order_details(product_name, body, order_type)
+                logger.debug(f"CID: {cid} Required data: {order_details}")
 
-        # check compliance
-        compliance_provisioning.check_compliance(
-            order_details, cid, order_type, compliance_stages.status, resource_id=resource_id
-        )
+                # check compliance
+                add_span_event("compliance.check.start", circuit_id=cid, order_type=order_type)
+                compliance_provisioning.check_compliance(
+                    order_details, cid, order_type, compliance_stages.status, resource_id=resource_id
+                )
+                add_span_event("compliance.check.complete", circuit_id=cid)
 
-        compliance_stages.set_next_stage_to_ready()
-        return compliance_stages.status, 200
+                compliance_stages.set_next_stage_to_ready()
+                
+                # Extract compliance status
+                if isinstance(compliance_stages.status, dict):
+                    compliant = compliance_stages.status.get(COMPLIANT, False)
+                    span.set_attribute("compliance.compliant", compliant)
+                
+                add_span_event("compliance.provisioning.status.check.complete", circuit_id=cid)
+                return compliance_stages.status, 200
+            except Exception as e:
+                set_span_error(e)
+                error_context = error_categorizer.extract_error_context(str(e))
+                span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
+                span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                raise
 
 
 @api.route("/provisioning/housekeeping/<cid>")

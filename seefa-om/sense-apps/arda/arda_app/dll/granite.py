@@ -8,9 +8,13 @@ from time import sleep
 from arda_app.common import url_config, auth_config, app_config
 from arda_app.common.utils import sanitize_site_string
 from arda_app.common.endpoints import GRANITE_COMMON_PATH
+from arda_app.common.otel import get_tracer, add_span_event, set_span_error
+from arda_app.common.otel.mdso_patterns import ErrorCategorizer
 from common_sense.common.errors import abort
 
 logger = logging.getLogger(__name__)
+tracer = get_tracer(__name__)
+error_categorizer = ErrorCategorizer()
 
 
 def get_headers(api_key=None):
@@ -95,33 +99,71 @@ def post_granite(endpoint, payload, timeout=60, return_resp=False) -> Any:
     """Send a POST call to the Granite API and return
     the JSON-formatted response"""
 
-    url = f"{url_config.GRANITE_BASE_URL}{GRANITE_COMMON_PATH}{endpoint}"
-    headers = get_headers()
-    try:
-        resp = requests.post(url, headers=headers, json=payload, verify=False, timeout=timeout)
+    with tracer.start_as_current_span("granite.api.post") as span:
+        span.set_attribute("granite.operation", "post")
+        span.set_attribute("granite.endpoint", endpoint)
+        span.set_attribute("granite.timeout", timeout)
+        if isinstance(payload, dict):
+            # Extract circuit_id if present
+            cid = payload.get("CIRC_PATH_HUM_ID") or payload.get("cid")
+            if cid:
+                span.set_attribute("granite.circuit_id", cid)
+        
+        url = f"{url_config.GRANITE_BASE_URL}{GRANITE_COMMON_PATH}{endpoint}"
+        headers = get_headers()
+        try:
+            add_span_event("granite.api.call.start", endpoint=endpoint)
+            resp = requests.post(url, headers=headers, json=payload, verify=False, timeout=timeout)
+            span.set_attribute("http.status_code", resp.status_code)
 
-        if return_resp and "<!DOCTYPE" not in resp.text:
-            return resp
-        return _handle_granite_resp(url, "POST", resp=resp, payload=payload)
-    except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout, requests.ReadTimeout):
-        _handle_granite_resp(url, "POST", payload=payload, timeout=True)
+            if return_resp and "<!DOCTYPE" not in resp.text:
+                add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code)
+                return resp
+            result = _handle_granite_resp(url, "POST", resp=resp, payload=payload)
+            add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code)
+            return result
+        except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout, requests.ReadTimeout) as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            _handle_granite_resp(url, "POST", payload=payload, timeout=True)
 
 
 def put_granite(endpoint, payload, timeout=60, return_resp=False):
     """Send a PUT call to the Granite API and return
     the JSON-formatted response"""
 
-    url = f"{url_config.GRANITE_BASE_URL}{GRANITE_COMMON_PATH}{endpoint}"
-    headers = get_headers()
-    try:
-        payload["BREAK_LOCK"] = "TRUE"  # Prevent lock errors
-        resp = requests.put(url, headers=headers, json=payload, verify=False, timeout=timeout)
-
-        if return_resp and "<!DOCTYPE" not in resp.text:
-            return resp
-        return _handle_granite_resp(url, "PUT", resp=resp, payload=payload)
-    except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout, requests.ReadTimeout):
-        _handle_granite_resp(url, "PUT", payload=payload, timeout=True)
+    with tracer.start_as_current_span("granite.api.put") as span:
+        span.set_attribute("granite.operation", "put")
+        span.set_attribute("granite.endpoint", endpoint)
+        span.set_attribute("granite.timeout", timeout)
+        if isinstance(payload, dict):
+            # Extract circuit_id if present
+            cid = payload.get("CIRC_PATH_HUM_ID") or payload.get("cid")
+            if cid:
+                span.set_attribute("granite.circuit_id", cid)
+        
+        url = f"{url_config.GRANITE_BASE_URL}{GRANITE_COMMON_PATH}{endpoint}"
+        headers = get_headers()
+        try:
+            payload["BREAK_LOCK"] = "TRUE"  # Prevent lock errors
+            add_span_event("granite.api.call.start", endpoint=endpoint)
+            resp = requests.put(url, headers=headers, json=payload, verify=False, timeout=timeout)
+            span.set_attribute("http.status_code", resp.status_code)
+            
+            if return_resp and "<!DOCTYPE" not in resp.text:
+                add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code)
+                return resp
+            result = _handle_granite_resp(url, "PUT", resp=resp, payload=payload)
+            add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code)
+            return result
+        except (ConnectionError, requests.ConnectionError, requests.ConnectTimeout, requests.ReadTimeout) as e:
+            set_span_error(e)
+            error_context = error_categorizer.extract_error_context(str(e))
+            span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
+            span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            _handle_granite_resp(url, "PUT", payload=payload, timeout=True)
 
 
 def delete_granite(endpoint, payload, timeout=60, return_resp=False) -> Any:
