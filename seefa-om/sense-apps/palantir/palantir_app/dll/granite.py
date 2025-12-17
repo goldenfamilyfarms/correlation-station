@@ -7,8 +7,9 @@ from requests import JSONDecodeError
 import palantir_app
 from common_sense.common.errors import abort, error_formatter, get_standard_error_summary, GRANITE, MISSING_DATA
 from palantir_app.common.utils import get_hydra_headers, is_ctbh
-from palantir_app.common.otel import get_tracer, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 from palantir_app.common.endpoints import (
     GRANITE_ELEMENTS,
     GRANITE_EQUIPMENTS,
@@ -90,6 +91,7 @@ def granite_put(endpoint, payload, best_effort=False, calling_function="not spec
             
             if r.status_code in [200, 204]:
                 add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=r.status_code)
+                span.set_status(Status(StatusCode.OK))
                 return r.json()
 
             granite_resp = r.json()
@@ -106,14 +108,17 @@ def granite_put(endpoint, payload, best_effort=False, calling_function="not spec
             
             if best_effort:
                 add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=r.status_code, best_effort=True)
+                span.set_status(Status(StatusCode.ERROR))
                 return {"errorStatusCode": r.status_code, "errorStatusMessage": error_msg}
             else:
+                span.set_status(Status(StatusCode.ERROR, error_msg))
                 abort(502, error_msg)
         except (ConnectionError, requests.ConnectionError) as exception:
             set_span_error(exception)
             error_context = error_categorizer.extract_error_context(str(exception))
             span.set_attribute("error.category", error_context.get("category", "CONNECTION_ERROR"))
             span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            span.set_status(Status(StatusCode.ERROR, str(exception)))
             abort(
                 504,
                 f"Connection timed out updating data to Granite for url: {url}:"
@@ -124,6 +129,7 @@ def granite_put(endpoint, payload, best_effort=False, calling_function="not spec
             error_context = error_categorizer.extract_error_context(str(exception))
             span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
             span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            span.set_status(Status(StatusCode.ERROR, str(exception)))
             abort(
                 504,
                 f"Connection timed out updating data to Granite for url: {url}:"
@@ -181,6 +187,7 @@ def granite_delete(endpoint, payload, timeout=60):
                 
                 if resp.status_code in [200, 202, 204]:
                     add_span_event("granite.api.call.complete", endpoint=endpoint, status_code=resp.status_code, circuit_id=CID)
+                    span.set_status(Status(StatusCode.OK))
                     return (200, f"Live Revision Deleted: CID = {CID} , CIRC_PATH_INST_ID = {CIRC_PATH_INST_ID}")
                 else:
                     retry_count = retry_count + 1
@@ -192,13 +199,16 @@ def granite_delete(endpoint, payload, timeout=60):
                         error_context = error_categorizer.extract_error_context(error_msg)
                         span.set_attribute("error.category", error_context.get("category", "HTTP_ERROR"))
                         span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                        span.set_status(Status(StatusCode.ERROR))
                         return (502, error_msg)
             except (ConnectionError, requests.ConnectionError, requests.ReadTimeout) as exception:
+                retry_count = retry_count + 1
                 if retry_count > max_retries:
                     set_span_error(exception)
                     error_context = error_categorizer.extract_error_context(str(exception))
                     span.set_attribute("error.category", error_context.get("category", "TIMEOUT_ERROR"))
                     span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                    span.set_status(Status(StatusCode.ERROR, str(exception)))
                     return (
                         504,
                         f"Connection Error While Deleting data from Granite for\

@@ -10,7 +10,8 @@ from common_sense.common.errors import abort
 from beorn_app.common.http_auth import auth
 from beorn_app.common.regres_testing import regression_testing_check
 from beorn_app.dll.mdso import create_service, mdso_get, product_query
-from beorn_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

@@ -25,8 +25,10 @@ from arda_app.bll.circuit_design.common import (
     bw_check,
     entrance_criteria_check,
 )
-from arda_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from arda_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
+from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 from arda_app.api._routers import v1_design_router
 

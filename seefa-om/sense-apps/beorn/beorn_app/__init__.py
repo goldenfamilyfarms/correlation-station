@@ -13,10 +13,12 @@ from beorn_app.config import AppConfig, AuthConfig, UrlConfig
 
 # Add common directory to path for shared utilities
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'common'))
+# Add shared-libs directory to path for sense_common modules
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'shared-libs'))
 
 # Import comprehensive OTEL observability (replaces resource-intensive middleware)
 try:
-    from beorn_app.common.otel.observability import setup_observability
+    from sense_common.observability import setup_observability
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False

@@ -2,6 +2,7 @@
 OpenTelemetry Bootstrap Module
 Unified initialization using standard OTEL environment variables with dual export support
 """
+import atexit
 import logging
 import os
 from typing import Optional, Tuple
@@ -328,5 +329,37 @@ def bootstrap_otel(
         f"version={config.service_version}, env={config.deployment_environment}, "
         f"dual_export={config.is_dual_export_enabled()}"
     )
-    
+
+    # Register shutdown handler to ensure telemetry is flushed on exit
+    def shutdown_telemetry():
+        """
+        Gracefully shutdown telemetry providers on application exit.
+
+        This ensures all pending spans and metrics are flushed to exporters
+        before the application terminates, preventing data loss during
+        deployments, crashes, or container stops.
+        """
+        try:
+            # Flush and shutdown tracer provider
+            if tracer_provider:
+                logger.info("Flushing remaining spans...")
+                tracer_provider.force_flush(timeout_millis=5000)
+                tracer_provider.shutdown()
+                logger.info("Tracer provider shut down successfully")
+
+            # Flush and shutdown meter provider
+            if meter_provider:
+                logger.info("Flushing remaining metrics...")
+                meter_provider.force_flush(timeout_millis=5000)
+                meter_provider.shutdown()
+                logger.info("Meter provider shut down successfully")
+
+            logger.info("OpenTelemetry shutdown complete - all telemetry flushed")
+        except Exception as e:
+            logger.error(f"Error during OpenTelemetry shutdown: {e}", exc_info=True)
+
+    # Register the shutdown handler
+    atexit.register(shutdown_telemetry)
+    logger.info("Shutdown handler registered - telemetry will be flushed on exit")
+
     return tracer_provider, meter_provider

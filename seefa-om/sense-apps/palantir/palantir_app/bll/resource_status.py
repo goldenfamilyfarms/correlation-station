@@ -11,13 +11,14 @@ from common_sense.common.errors import (
 )
 from palantir_app.common.constants import PROCESSING_STATUSES
 from palantir_app.dll.mdso import mdso_get
-from palantir_app.common.otel import (
+from sense_common.observability import (
     get_tracer,
     set_mdso_correlation,
     add_span_event,
     set_span_error,
 )
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)
@@ -55,6 +56,7 @@ def get_resource_status(resource_id, map_responses=True, poll=False, poll_counte
             data = get_resource(resource_id, production)
             if not data:
                 span.set_attribute("resource_status.found", False)
+                span.set_status(Status(StatusCode.OK))
                 return response
 
             response["data"] = data
@@ -66,6 +68,7 @@ def get_resource_status(resource_id, map_responses=True, poll=False, poll_counte
                 span.set_attribute("mdso.circuit_id", data["label"])
             
             if "orchState" not in data:
+                span.set_status(Status(StatusCode.OK))
                 return response
 
             orch_state = data["orchState"]
@@ -79,12 +82,14 @@ def get_resource_status(resource_id, map_responses=True, poll=False, poll_counte
                     add_span_event("resource_status.polling.start", resource_id=resource_id, counter=poll_counter)
                     result = _poll_response(resource_id, poll_counter, poll_sleep, production, response, map_responses)
                     add_span_event("resource_status.polling.complete", resource_id=resource_id)
+                    span.set_status(Status(StatusCode.OK))
                     return result
 
             elif orch_state == "active":
                 result = _active_response(data, response)
                 span.set_attribute("resource_status.status", result.get("status", "Completed"))
                 add_span_event("resource_status.active", resource_id=resource_id)
+                span.set_status(Status(StatusCode.OK))
                 return result
             else:
                 result = _failed_response(data, response, map_responses)
@@ -93,14 +98,17 @@ def get_resource_status(resource_id, map_responses=True, poll=False, poll_counte
                 span.set_attribute("error.category", error_context.get("category", "MDSO_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
                 add_span_event("resource_status.failed", resource_id=resource_id, reason=data.get("reason", "unknown"))
+                span.set_status(Status(StatusCode.ERROR))
                 return result
 
+            span.set_status(Status(StatusCode.OK))
             return response
         except Exception as e:
             set_span_error(e)
             error_context = error_categorizer.extract_error_context(str(e))
             span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
             span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+            span.set_status(Status(StatusCode.ERROR, str(e)))
             raise
 
 

@@ -18,8 +18,9 @@ from palantir_app.common.constants import (
     WIA_PRIMARY,
 )
 from palantir_app.common.http_auth import auth
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 api = Namespace("v1/compliance", description="Circuit Compliance API")
@@ -99,6 +100,7 @@ class ProvisioningCompliance(Resource):
                 if network_compliance.is_pass_through():
                     span.set_attribute("compliance.pass_through", True)
                     add_span_event("compliance.provisioning.pass_through", circuit_id=cid)
+                    span.set_status(Status(StatusCode.OK))
                     return {"resource_id": PASS_THROUGH}, 211
                 
                 span.set_attribute("compliance.pass_through", False)
@@ -126,12 +128,14 @@ class ProvisioningCompliance(Resource):
                     span.set_attribute("mdso.resource_id", response["resource_id"])
                 
                 add_span_event("compliance.provisioning.create.complete", circuit_id=cid, resource_id=response.get("resource_id") if isinstance(response, dict) else None)
+                span.set_status(Status(StatusCode.OK))
                 return response, 201
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 
@@ -218,6 +222,7 @@ class ProvisioningComplianceStatus(Resource):
                     compliance_stages.set_pass_through_status()
                     span.set_attribute("compliance.pass_through", True)
                     add_span_event("compliance.provisioning.pass_through", circuit_id=cid)
+                    span.set_status(Status(StatusCode.OK))
                     return compliance_stages.status, 200
 
                 span.set_attribute("compliance.pass_through", False)
@@ -237,14 +242,16 @@ class ProvisioningComplianceStatus(Resource):
                 if isinstance(compliance_stages.status, dict):
                     compliant = compliance_stages.status.get(COMPLIANT, False)
                     span.set_attribute("compliance.compliant", compliant)
-                
+
                 add_span_event("compliance.provisioning.status.check.complete", circuit_id=cid)
+                span.set_status(Status(StatusCode.OK))
                 return compliance_stages.status, 200
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "COMPLIANCE_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
 
 

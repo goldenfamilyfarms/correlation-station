@@ -24,14 +24,16 @@ from beorn_app.bll.granite import get_vpls_vlan_id, get_elan_slm_data, get_vc_cl
 from common_sense.common.network_devices import VOICE_GATEWAY_MODELS
 
 # Import OTEL utilities for topology instrumentation
-from beorn_app.common.otel import (
+from sense_common.observability import (
+from opentelemetry.trace import Status, StatusCode
     get_tracer,
     set_mdso_correlation,
     add_span_event,
     set_span_error,
     add_topology_span_attrs,
 )
-from beorn_app.common.otel.mdso_patterns import MDSOPatterns, ErrorCategorizer, extract_vendor_from_beorn_node
+from sense_common.observability.mdso_patterns import MDSOPatterns, ErrorCategorizer, extract_vendor_from_beorn_node
+from opentelemetry.trace import Status, StatusCode
 from opentelemetry import trace, baggage, context
 
 try:

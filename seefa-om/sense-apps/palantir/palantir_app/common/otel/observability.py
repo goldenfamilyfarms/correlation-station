@@ -268,7 +268,10 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
         ctx = context.get_current()
         for key, value in extracted_keys.items():
             ctx = baggage.set_baggage(key, str(value), context=ctx)
-        context.attach(ctx)
+
+        # Attach context and store token for cleanup
+        token = context.attach(ctx)
+        g._otel_context_token = token  # Store token for detachment in after_request
 
         # Add to current span attributes
         span = trace.get_current_span()
@@ -314,7 +317,14 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
             )
         except Exception as e:
             logging.debug(f"Failed to record HTTP metrics: {e}")
-        
+
+        # Detach context to prevent leaks
+        if hasattr(g, '_otel_context_token'):
+            try:
+                context.detach(g._otel_context_token)
+            except Exception as e:
+                logging.debug(f"Error detaching context: {e}")
+
         return response
 
     logging.info(f"Flask app instrumented: {service_name}")
@@ -386,42 +396,52 @@ def _instrument_fastapi(app, service_name: str, baggage_keys: List[str], tracer_
             ctx = context.get_current()
             for key, value in extracted_keys.items():
                 ctx = baggage.set_baggage(key, str(value), context=ctx)
-            context.attach(ctx)
 
-            # Add to span
-            span = trace.get_current_span()
-            if span and span.is_recording():
-                for key, value in extracted_keys.items():
-                    span.set_attribute(key, str(value))
+            # Attach context and store token for cleanup
+            token = context.attach(ctx)
 
-                # Service-specific attributes
-                span.set_attribute("sense.service", service_name)
-
-            # Process request
-            response = await call_next(request)
-
-            # Inject trace ID into response headers
-            if span and span.is_recording():
-                trace_id = format(span.get_span_context().trace_id, '032x')
-                response.headers["X-Trace-Id"] = trace_id
-
-            # Record RED metrics
             try:
-                from .metrics import record_http_request
-                duration_ms = (time.perf_counter_ns() - start_time) / 1_000_000  # Convert to ms
-                
-                # Get route template (normalized)
-                route = _normalize_route(str(request.url.path))
-                record_http_request(
-                    method=request.method,
-                    route=route,
-                    status_code=response.status_code,
-                    duration_ms=duration_ms,
-                )
-            except Exception as e:
-                logging.debug(f"Failed to record HTTP metrics: {e}")
+                # Add to span
+                span = trace.get_current_span()
+                if span and span.is_recording():
+                    for key, value in extracted_keys.items():
+                        span.set_attribute(key, str(value))
 
-            return response
+                    # Service-specific attributes
+                    span.set_attribute("sense.service", service_name)
+
+                # Process request
+                response = await call_next(request)
+
+                # Inject trace ID into response headers
+                if span and span.is_recording():
+                    trace_id = format(span.get_span_context().trace_id, '032x')
+                    response.headers["X-Trace-Id"] = trace_id
+
+                # Record RED metrics
+                try:
+                    from .metrics import record_http_request
+                    duration_ms = (time.perf_counter_ns() - start_time) / 1_000_000  # Convert to ms
+
+                    # Get route template (normalized)
+                    route = _normalize_route(str(request.url.path))
+                    record_http_request(
+                        method=request.method,
+                        route=route,
+                        status_code=response.status_code,
+                        duration_ms=duration_ms,
+                    )
+                except Exception as e:
+                    logging.debug(f"Failed to record HTTP metrics: {e}")
+
+                return response
+
+            finally:
+                # Always detach context to prevent leaks
+                try:
+                    context.detach(token)
+                except Exception as e:
+                    logging.debug(f"Error detaching context: {e}")
 
     app.add_middleware(CorrelationMiddleware)
 

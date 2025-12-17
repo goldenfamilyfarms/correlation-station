@@ -8,8 +8,10 @@ import beorn_app
 
 from common_sense.common.errors import abort
 from beorn_app.common.mdso_operations import resource_status
-from beorn_app.common.otel import get_tracer, add_span_event, set_span_error
-from beorn_app.common.otel.mdso_patterns import ErrorCategorizer, MDSOPatterns
+from sense_common.observability import get_tracer, add_span_event, set_span_error
+from opentelemetry.trace import Status, StatusCode
+from sense_common.observability.mdso_patterns import ErrorCategorizer, MDSOPatterns
+from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)

@@ -72,15 +72,24 @@ def setup_observability(
 ) -> tuple:
     """
     Initialize OpenTelemetry for Sense apps with comprehensive observability
+    
+    Uses standard OTEL environment variables for configuration:
+    - OTEL_SERVICE_NAME: Service name (overridden by service_name parameter)
+    - OTEL_SERVICE_VERSION: Service version (overridden by service_version parameter)
+    - OTEL_EXPORTER_OTLP_ENDPOINT: Datadog Agent OTLP endpoint (e.g., http://localhost:4318)
+    - OTEL_EXPORTER_OTLP_PROTOCOL: Protocol (http/protobuf, grpc, http/json)
+    - CORRELATION_ENGINE_URL: Correlation engine URL for dual export
+    
+    Dual export: Traces and metrics are exported to both Datadog Agent (via OTLP) and Correlation Engine (via OTLP).
 
     Args:
         app: Flask or FastAPI application instance
-        service_name: Service name (arda, beorn, palantir)
-        service_version: Version string
-        environment: Environment (dev/staging/prod) - defaults to DEPLOYMENT_ENV
-        correlation_engine_url: Correlation engine base URL
-        datadog_enabled: Enable DataDog export (default: True)
-        datadog_agent_url: DataDog agent URL
+        service_name: Service name (arda, beorn, palantir) - overrides OTEL_SERVICE_NAME
+        service_version: Version string - overrides OTEL_SERVICE_VERSION
+        environment: Environment (dev/staging/prod) - defaults to DEPLOYMENT_ENV or OTEL_DEPLOYMENT_ENV
+        correlation_engine_url: Correlation engine base URL (overrides CORRELATION_ENGINE_URL env var)
+        datadog_enabled: Enable Datadog export (default: True) - ignored if OTEL_EXPORTER_OTLP_ENDPOINT not set
+        datadog_agent_url: Deprecated - use OTEL_EXPORTER_OTLP_ENDPOINT env var instead
         baggage_keys: List of baggage keys to propagate (defaults to DEFAULT_BAGGAGE_KEYS)
         enable_metrics: Enable metrics collection (default: True)
         metric_export_interval_ms: Metrics export interval in milliseconds (default: 60000)
@@ -90,7 +99,7 @@ def setup_observability(
 
     Example:
         >>> from flask import Flask
-        >>> from common.observability import setup_observability
+        >>> from common.otel.observability import setup_observability
         >>> app = Flask(__name__)
         >>> setup_observability(app, "beorn", "1.0.0")
     """
@@ -203,8 +212,25 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
 
     from flask import request, g
 
-    # Auto-instrument Flask
-    FlaskInstrumentor().instrument_app(app, tracer_provider=tracer_provider)
+    # Exclude noisy endpoints from instrumentation
+    excluded_urls = [
+        "/health",
+        "/metrics",
+        "/ready",
+        "/docs",
+        "/openapi.json",
+        "/swagger.json",
+        "/arda",
+        "/beorn",
+        "/palantir",
+    ]
+    
+    # Auto-instrument Flask with excluded URLs
+    FlaskInstrumentor().instrument_app(
+        app,
+        tracer_provider=tracer_provider,
+        excluded_urls=",".join(excluded_urls) if excluded_urls else None,
+    )
 
     @app.before_request
     def inject_correlation_keys():
@@ -242,7 +268,10 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
         ctx = context.get_current()
         for key, value in extracted_keys.items():
             ctx = baggage.set_baggage(key, str(value), context=ctx)
-        context.attach(ctx)
+
+        # Attach context and store token for cleanup
+        token = context.attach(ctx)
+        g._otel_context_token = token  # Store token for detachment in after_request
 
         # Add to current span attributes
         span = trace.get_current_span()
@@ -288,7 +317,14 @@ def _instrument_flask(app, service_name: str, baggage_keys: List[str], tracer_pr
             )
         except Exception as e:
             logging.debug(f"Failed to record HTTP metrics: {e}")
-        
+
+        # Detach context to prevent leaks
+        if hasattr(g, '_otel_context_token'):
+            try:
+                context.detach(g._otel_context_token)
+            except Exception as e:
+                logging.debug(f"Error detaching context: {e}")
+
         return response
 
     logging.info(f"Flask app instrumented: {service_name}")
@@ -327,6 +363,9 @@ def _instrument_fastapi(app, service_name: str, baggage_keys: List[str], tracer_
         """Middleware to inject correlation keys"""
 
         async def dispatch(self, request: Request, call_next):
+            # Record request start time for duration metrics
+            start_time = time.perf_counter_ns()
+            
             # Extract correlation keys from headers
             extracted_keys = {}
             for key in baggage_keys:
@@ -357,26 +396,52 @@ def _instrument_fastapi(app, service_name: str, baggage_keys: List[str], tracer_
             ctx = context.get_current()
             for key, value in extracted_keys.items():
                 ctx = baggage.set_baggage(key, str(value), context=ctx)
-            context.attach(ctx)
 
-            # Add to span
-            span = trace.get_current_span()
-            if span and span.is_recording():
-                for key, value in extracted_keys.items():
-                    span.set_attribute(key, str(value))
+            # Attach context and store token for cleanup
+            token = context.attach(ctx)
 
-                # Service-specific attributes
-                span.set_attribute("sense.service", service_name)
+            try:
+                # Add to span
+                span = trace.get_current_span()
+                if span and span.is_recording():
+                    for key, value in extracted_keys.items():
+                        span.set_attribute(key, str(value))
 
-            # Process request
-            response = await call_next(request)
+                    # Service-specific attributes
+                    span.set_attribute("sense.service", service_name)
 
-            # Inject trace ID into response headers
-            if span and span.is_recording():
-                trace_id = format(span.get_span_context().trace_id, '032x')
-                response.headers["X-Trace-Id"] = trace_id
+                # Process request
+                response = await call_next(request)
 
-            return response
+                # Inject trace ID into response headers
+                if span and span.is_recording():
+                    trace_id = format(span.get_span_context().trace_id, '032x')
+                    response.headers["X-Trace-Id"] = trace_id
+
+                # Record RED metrics
+                try:
+                    from .metrics import record_http_request
+                    duration_ms = (time.perf_counter_ns() - start_time) / 1_000_000  # Convert to ms
+
+                    # Get route template (normalized)
+                    route = _normalize_route(str(request.url.path))
+                    record_http_request(
+                        method=request.method,
+                        route=route,
+                        status_code=response.status_code,
+                        duration_ms=duration_ms,
+                    )
+                except Exception as e:
+                    logging.debug(f"Failed to record HTTP metrics: {e}")
+
+                return response
+
+            finally:
+                # Always detach context to prevent leaks
+                try:
+                    context.detach(token)
+                except Exception as e:
+                    logging.debug(f"Error detaching context: {e}")
 
     app.add_middleware(CorrelationMiddleware)
 

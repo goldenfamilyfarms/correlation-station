@@ -6,8 +6,9 @@ from flask_restx import Namespace, Resource, fields
 from palantir_app.bll.circuit_test_v3 import circuit_test_model_v3
 from palantir_app.bll.circuit_test import check_valid_circuit_id
 from common_sense.common.errors import abort
-from palantir_app.common.otel import get_tracer, set_mdso_correlation, add_span_event, set_span_error
-from palantir_app.common.otel.mdso_patterns import ErrorCategorizer
+from sense_common.observability import get_tracer, set_mdso_correlation, add_span_event, set_span_error
+from sense_common.observability.mdso_patterns import ErrorCategorizer
+from opentelemetry.trace import Status, StatusCode
 
 api = Namespace("v3/circuit_test", description="Pull VTA information and status from Granite/MDSO")
 
@@ -122,10 +123,12 @@ class CircuitTest(Resource):
                     span.set_attribute("test.device_count", len(result))
                 
                 add_span_event("circuit_test.complete", circuit_id=cid, device_count=len(result) if isinstance(result, list) else 0)
+                span.set_status(Status(StatusCode.OK))
                 return result
             except Exception as e:
                 set_span_error(e)
                 error_context = error_categorizer.extract_error_context(str(e))
                 span.set_attribute("error.category", error_context.get("category", "UNKNOWN_ERROR"))
                 span.set_attribute("error.severity", error_context.get("severity", "ERROR"))
+                span.set_status(Status(StatusCode.ERROR, str(e)))
                 raise
