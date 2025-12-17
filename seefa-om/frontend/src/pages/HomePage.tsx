@@ -1,328 +1,243 @@
 import { useState } from 'react'
-import { BarChart3, Activity, Flame, Gauge, Users, TrendingUp, BookOpen, CheckCircle2 } from 'lucide-react'
+import { BarChart3, Activity, Shield, BookOpen, Code, Network, ChevronLeft, ChevronRight, ExternalLink, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { QuickLinkCard } from '@/components/QuickLinkCard'
-import { KpiCard } from '@/components/KpiCard'
-import { HealthRow } from '@/components/HealthRow'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { Link } from 'react-router-dom'
 
-// Mock data - TODO: Replace with API calls
-const weeklyErrorData = [
-  { week: 'Week 1', provisioning: 12, compliance: 8, other: 5 },
-  { week: 'Week 2', provisioning: 15, compliance: 10, other: 7 },
-  { week: 'Week 3', provisioning: 8, compliance: 6, other: 4 },
-  { week: 'Week 4', provisioning: 10, compliance: 9, other: 6 },
-]
-
-const learningPathSteps = [
-  { id: 1, title: 'Getting started with Grafana', status: 'completed' },
-  { id: 2, title: 'Logs & Traces (Loki/Tempo)', status: 'in_progress' },
-  { id: 3, title: 'Metrics & Prometheus', status: 'not_started' },
-  { id: 4, title: 'Code Profiling with Pyroscope', status: 'not_started' },
-  { id: 5, title: 'Automation Deep Dives', status: 'not_started' },
-]
-
-const recentErrors = [
-  { service: 'ARDA', type: 'Timeout', severity: 'High', status: 'Open', owner: 'John D.', link: '#' },
-  { service: 'BEORN', type: 'Parse Error', severity: 'Medium', status: 'Triage', owner: 'Jane S.', link: '#' },
-  { service: 'PALANTIR', type: 'Upstream 5xx', severity: 'High', status: 'Open', owner: 'Bob M.', link: '#' },
-  { service: 'MDSO', type: 'Config Error', severity: 'Low', status: 'Resolved', owner: 'Alice K.', link: '#' },
-]
-
-const healthServices = [
-  { service: 'Correlation Engine', status: 'healthy' as const, description: 'All systems operational' },
-  { service: 'Grafana Stack', status: 'healthy' as const, description: 'Loki, Tempo, Prometheus running' },
-  { service: 'Redis Cache', status: 'partial' as const, description: 'High memory usage' },
-  { service: 'MDSO Alloy Agent', status: 'healthy' as const, description: 'Collecting telemetry' },
-  { service: 'Sense Apps', status: 'limited' as const, description: 'Some endpoints degraded' },
+const carouselSections = [
+  {
+    id: 'grafana',
+    title: 'Grafana Stack & Observability',
+    description: 'Learn and master the Grafana observability stack including Loki, Tempo, Prometheus, and Pyroscope. Master distributed systems observability with OpenTelemetry.',
+    icon: BarChart3,
+    color: 'from-blue-500/20 to-cyan-500/20',
+    borderColor: 'border-blue-500/30',
+    items: [
+      { title: 'Grafana Dashboards', description: 'Access unified dashboards for logs, traces, and metrics', link: '/docs' },
+      { title: 'Query Languages', description: 'Master LogQL, TraceQL, and PromQL', link: '/docs' },
+      { title: 'OpenTelemetry', description: 'Learn distributed tracing and instrumentation', link: '/docs' },
+      { title: 'Correlation Engine', description: 'Understand our correlation and processing pipeline', link: '/correlation-engine' },
+    ]
+  },
+  {
+    id: 'compliance',
+    title: 'Compliance & SECA Team',
+    description: 'Resources and tools for the Compliance workstream. Network Compliance, Network Acceptance, and automation support for Spectrum Business boundary partners.',
+    icon: Shield,
+    color: 'from-orange-500/20 to-red-500/20',
+    borderColor: 'border-orange-500/30',
+    items: [
+      { title: 'SECA Review', description: 'Review and analyze SECA automation errors', link: '/seca-review' },
+      { title: 'Compliance Team', description: 'Team resources, standards, and documentation', link: '/compliance' },
+      { title: 'MDSO Products', description: 'Service Mapper, Disconnect Mapper, WIA Mapper', link: '/compliance' },
+      { title: 'SEnSE Microservices', description: 'Palantir and Beorn compliance endpoints', link: '/compliance' },
+    ]
+  },
+  {
+    id: 'architecture',
+    title: 'SEEFA Architecture',
+    description: 'Understand the architecture, design decisions, and technical implementation of our observability and automation platform.',
+    icon: Network,
+    color: 'from-purple-500/20 to-pink-500/20',
+    borderColor: 'border-purple-500/30',
+    items: [
+      { title: 'System Architecture', description: 'High-level system design and components', link: '/architecture' },
+      { title: 'Data Flow', description: 'How data moves through our systems', link: '/architecture' },
+      { title: 'Deployment Guide', description: 'Deployment and scaling strategies', link: '/architecture' },
+      { title: 'Best Practices', description: 'Development and operational standards', link: '/architecture' },
+    ]
+  },
+  {
+    id: 'learning',
+    title: 'Learning & Development',
+    description: 'Onboarding resources, tutorials, and learning paths for engineers new to observability and our platform.',
+    icon: BookOpen,
+    color: 'from-green-500/20 to-emerald-500/20',
+    borderColor: 'border-green-500/30',
+    items: [
+      { title: 'NetDev101', description: 'Learning path for network developers', link: '/netdev101' },
+      { title: 'Getting Started', description: 'Quick start guides and tutorials', link: '/docs' },
+      { title: 'Code Examples', description: 'Sample code and implementations', link: '/docs' },
+      { title: 'Team Onboarding', description: 'Resources for new team members', link: '/docs' },
+    ]
+  },
 ]
 
 export default function HomePage() {
-  const [dataDogModalOpen, setDataDogModalOpen] = useState(false)
+  const [currentSection, setCurrentSection] = useState(0)
 
-  const handleConfirmDataDog = () => {
-    window.open('https://app.datadoghq.com', '_blank', 'noopener,noreferrer')
-    setDataDogModalOpen(false)
+  const nextSection = () => {
+    setCurrentSection((prev) => (prev + 1) % carouselSections.length)
   }
 
+  const prevSection = () => {
+    setCurrentSection((prev) => (prev - 1 + carouselSections.length) % carouselSections.length)
+  }
+
+  const current = carouselSections[currentSection]
+  const Icon = current.icon
+
   return (
-    <div className="flex flex-1 flex-col gap-6 animate-in fade-in-50 duration-700">
-      {/* Band 1 - Quick Access Cards */}
+    <div className="flex flex-1 flex-col gap-8 animate-in fade-in-50 duration-700">
+      {/* Welcome Header */}
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="h-1 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-            Quick Access
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <QuickLinkCard
-            title="Grafana Dashboard"
-            description="Access the Grafana UI for logs, traces, and metrics visualization"
-            icon={BarChart3}
-            href="http://159.56.4.94:3000"
-            external
-          />
-          <QuickLinkCard
-            title="Correlation Engine"
-            description="View correlation engine metrics and health status"
-            icon={Activity}
-            href="/correlation-engine"
-          />
-          <QuickLinkCard
-            title="Pyroscope"
-            description="Continuous profiling for performance analysis"
-            icon={Flame}
-            href="http://159.56.4.94:4040"
-            external
-          />
-          <QuickLinkCard
-            title="Prometheus"
-            description="Metrics storage and querying"
-            icon={Gauge}
-            href="http://159.56.4.94:9090"
-            external
-          />
+        <div>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-4 bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text">
+            Welcome to Correlation Station
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl leading-relaxed">
+            Your central hub for observability and monitoring. Learn how to use Grafana, OpenTelemetry, TraceQL, PromQL, LogQL, and master distributed systems observability.
+          </p>
         </div>
       </div>
 
-      {/* Band 2 - Learning KPIs */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="h-1 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
-          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-            Learning KPIs
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard
-            title="Onboarded Engineers"
-            value={18}
-            description="completed observability bootcamp"
-            icon={Users}
-          />
-          <KpiCard
-            title="Loki/Tempo Proficiency"
-            value="72%"
-            description="passed log & trace quiz"
-            icon={TrendingUp}
-            trend={{ value: 5, label: 'vs last month', positive: true }}
-          />
-          <KpiCard
-            title="MTTD Improvement"
-            value="35%"
-            description="reduction vs last quarter"
-            icon={TrendingUp}
-            trend={{ value: 12, label: 'points', positive: true }}
-          />
-          <KpiCard
-            title="Playbooks Covered"
-            value="14 / 20"
-            description="SRE runbooks with dashboards"
-            icon={BookOpen}
-          />
-        </div>
-      </div>
-
-      {/* Band 3 - Chart + Learning Path (2/3 + 1/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left (2/3) - Weekly Automation Errors Chart */}
-        <Card className="lg:col-span-2 hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
-            <CardTitle className="text-xl font-bold">Weekly Automation Errors</CardTitle>
-            <CardDescription className="text-sm">Error counts over the last 4 weeks</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={weeklyErrorData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="provisioning" stackId="1" stroke="#316CB8" fill="#316CB8" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="compliance" stackId="1" stroke="#4DB6AC" fill="#4DB6AC" fillOpacity={0.6} />
-                <Area type="monotone" dataKey="other" stackId="1" stroke="#E0E0E0" fill="#E0E0E0" fillOpacity={0.6} />
-              </AreaChart>
-            </ResponsiveContainer>
-            <div className="flex gap-4 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-[#316CB8]" />
-                <span>Provisioning Failures</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-[#4DB6AC]" />
-                <span>Compliance Failures</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-[#E0E0E0]" />
-                <span>Other</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Right (1/3) - Your Learning Path */}
-        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
-            <CardTitle className="text-xl font-bold">Your Learning Path</CardTitle>
-            <CardDescription className="text-sm">Track your progress</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              {learningPathSteps.map((step, idx) => (
-                <div 
-                  key={step.id} 
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 group/step border border-transparent hover:border-border/50"
-                  style={{ animationDelay: `${idx * 100}ms` }}
-                >
-                  <div className="flex-shrink-0 mt-0.5 relative">
-                    {step.status === 'completed' ? (
-                      <div className="relative">
-                        <CheckCircle2 className="h-6 w-6 text-green-500 group-hover/step:scale-110 transition-transform duration-200" />
-                        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-md opacity-0 group-hover/step:opacity-100 transition-opacity duration-200" />
-                      </div>
-                    ) : step.status === 'in_progress' ? (
-                      <div className="relative">
-                        <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin group-hover/step:scale-110 transition-transform duration-200" />
-                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-50" />
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <div className="h-6 w-6 rounded-full border-2 border-muted-foreground group-hover/step:border-primary/50 transition-colors duration-200" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-foreground group-hover/step:text-primary transition-colors duration-200">
-                      {step.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground capitalize mt-0.5 group-hover/step:text-foreground/70 transition-colors duration-200">
-                      {step.status.replace('_', ' ')}
-                    </div>
-                  </div>
+      {/* Carousel Section */}
+      <div className="relative">
+        <Card className="overflow-hidden border-2 hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm">
+          <CardHeader className={`bg-gradient-to-r ${current.color} border-b ${current.borderColor} pb-4`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${current.color} border ${current.borderColor}`}>
+                  <Icon className="h-8 w-8 text-foreground" />
                 </div>
-              ))}
-            </div>
-            <Button variant="outline" className="w-full mt-4" asChild>
-              <Link to="/netdev101">View Full Path</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Band 4 - Error Reports + Health Snapshot */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left (2/3) - Latest Error Reports */}
-        <Card className="lg:col-span-2 hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
-            <CardTitle className="text-xl font-bold">Latest Error Reports</CardTitle>
-            <CardDescription className="text-sm">Recent internal error records</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-0">
-              <div className="grid grid-cols-6 gap-4 pb-3 border-b border-border/50 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                <div>Service</div>
-                <div>Type</div>
-                <div>Severity</div>
-                <div>Status</div>
-                <div>Owner</div>
-                <div>Link</div>
-              </div>
-              {recentErrors.map((error, idx) => (
-                <div 
-                  key={idx} 
-                  className="grid grid-cols-6 gap-4 py-3 border-b border-border/30 last:border-0 text-sm hover:bg-muted/30 transition-colors duration-200 rounded-md px-2 group/row"
-                >
-                  <div className="font-semibold text-foreground group-hover/row:text-primary transition-colors">{error.service}</div>
-                  <div className="text-muted-foreground">{error.type}</div>
-                  <div>
-                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm ${
-                      error.severity === 'High' ? 'bg-red-500/20 text-red-600 border border-red-500/30' :
-                      error.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-600 border border-yellow-500/30' :
-                      'bg-green-500/20 text-green-600 border border-green-500/30'
-                    }`}>
-                      {error.severity}
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground">{error.status}</div>
-                  <div className="text-muted-foreground">{error.owner}</div>
-                  <div>
-                    <a 
-                      href={error.link} 
-                      className="text-primary hover:text-accent hover:underline font-medium transition-colors duration-200 inline-flex items-center gap-1"
-                    >
-                      View
-                      <span className="opacity-0 group-hover/row:opacity-100 transition-opacity">→</span>
-                    </a>
-                  </div>
+                <div>
+                  <CardTitle className="text-3xl font-bold mb-2">{current.title}</CardTitle>
+                  <CardDescription className="text-base max-w-2xl">{current.description}</CardDescription>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={prevSection}
+                  className="h-10 w-10 rounded-full"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex gap-1.5">
+                  {carouselSections.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentSection(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        idx === currentSection ? 'w-8 bg-primary' : 'w-2 bg-muted-foreground/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={nextSection}
+                  className="h-10 w-10 rounded-full"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
-            <Button variant="outline" className="w-full mt-4" asChild>
-              <Link to="/seca-review">View All Errors</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Right (1/3) - Automation Health Snapshot */}
-        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
-            <CardTitle className="text-xl font-bold">Automation Health Snapshot</CardTitle>
-            <CardDescription className="text-sm">Service status overview</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="space-y-0">
-              {healthServices.map((service, idx) => (
-                <HealthRow
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {current.items.map((item, idx) => (
+                <Link
                   key={idx}
-                  service={service.service}
-                  status={service.status}
-                  description={service.description}
-                />
+                  to={item.link}
+                  className="group"
+                >
+                  <Card className="hover:shadow-lg transition-all duration-300 border border-border/50 hover:border-primary/50 hover:scale-[1.02] bg-gradient-to-br from-card to-card/95">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">
+                          {item.title}
+                        </CardTitle>
+                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-sm leading-relaxed">
+                        {item.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Datadog Confirmation Modal */}
-      <Dialog open={dataDogModalOpen} onOpenChange={setDataDogModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Leave Correlation Station?</DialogTitle>
-            <DialogDescription>
-              You're about to leave our open-source observability stack and go to Datadog.
-              Are you sure you want to continue?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="destructive"
-              onClick={handleConfirmDataDog}
-              className="w-full sm:w-auto"
-            >
-              Yes, take me to Datadog
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => setDataDogModalOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              No, keep me in Correlation Station
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Quick Access Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
+          <h2 className="text-3xl font-bold tracking-tight">Quick Access</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border border-border/50 hover:border-primary/50 hover:scale-[1.02] group relative overflow-hidden bg-gradient-to-br from-card to-card/95 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BarChart3 className="h-7 w-7 text-blue-600" />
+              </div>
+              <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
+                Grafana Dashboard
+                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </CardTitle>
+              <CardDescription className="line-clamp-2 leading-relaxed text-sm">
+                Access the Grafana UI for logs, traces, and metrics visualization
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border border-border/50 hover:border-primary/50 hover:scale-[1.02] group relative overflow-hidden bg-gradient-to-br from-card to-card/95 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Shield className="h-7 w-7 text-orange-600" />
+              </div>
+              <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
+                SECA Review
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </CardTitle>
+              <CardDescription className="line-clamp-2 leading-relaxed text-sm">
+                Review and analyze SECA automation errors and compliance issues
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border border-border/50 hover:border-primary/50 hover:scale-[1.02] group relative overflow-hidden bg-gradient-to-br from-card to-card/95 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Network className="h-7 w-7 text-purple-600" />
+              </div>
+              <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
+                Architecture
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </CardTitle>
+              <CardDescription className="line-clamp-2 leading-relaxed text-sm">
+                Explore the SEEFA architecture and system design
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border border-border/50 hover:border-primary/50 hover:scale-[1.02] group relative overflow-hidden bg-gradient-to-br from-card to-card/95 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <CardHeader className="relative z-10">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <BookOpen className="h-7 w-7 text-green-600" />
+              </div>
+              <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
+                Documentation
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+              </CardTitle>
+              <CardDescription className="line-clamp-2 leading-relaxed text-sm">
+                Comprehensive guides and reference documentation
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

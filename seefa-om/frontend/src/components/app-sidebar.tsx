@@ -14,29 +14,50 @@ import {
   Database,
   Bug,
   Calendar,
+  Shield,
+  Code,
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarSeparator,
-} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
 import LoginModal from "./LoginModal"
+import { cn } from "@/lib/utils"
 
 export function AppSidebar() {
   const location = useLocation()
   const { isAuthenticated, user } = useAuth()
   const [loginOpen, setLoginOpen] = React.useState(false)
+
+  const grafanaItems = [
+    {
+      title: "Grafana Stack",
+      url: "/docs",
+      icon: BarChart3,
+    },
+    {
+      title: "OpenTelemetry",
+      url: "/docs",
+      icon: Activity,
+    },
+    {
+      title: "Query Languages",
+      url: "/docs",
+      icon: Code,
+    },
+  ]
+
+  const complianceItems = [
+    {
+      title: "SECA Review",
+      url: "/seca-review",
+      icon: AlertCircle,
+    },
+    {
+      title: "Compliance Team",
+      url: "/compliance",
+      icon: Shield,
+    },
+  ]
 
   const overviewItems = [
     {
@@ -45,19 +66,9 @@ export function AppSidebar() {
       icon: Home,
     },
     {
-      title: "Documentation",
-      url: "/docs",
-      icon: BookOpen,
-    },
-    {
       title: "SEEFA Architecture",
       url: "/architecture",
       icon: Network,
-    },
-    {
-      title: "SECA Review",
-      url: "/seca-review",
-      icon: AlertCircle,
     },
     {
       title: "NetDev101",
@@ -91,192 +102,123 @@ export function AppSidebar() {
       icon: Gauge,
       external: true,
     },
-    {
-      title: "Meta Web Tool",
-      url: "http://159.56.4.94/reports",
-      icon: FileText,
-      external: true,
-    },
-    {
-      title: "Datadog",
-      url: "#",
-      icon: Database,
-      external: false,
-      isModal: true,
-    },
   ]
-
-  const learningItems = [
-    {
-      title: "Learning Path",
-      url: "/netdev101",
-      icon: GraduationCap,
-    },
-    {
-      title: "Error Reports",
-      url: "/seca-review",
-      icon: Bug,
-    },
-    {
-      title: "Weekly Automation Errors",
-      url: "/seca-review",
-      icon: Calendar,
-    },
-  ]
-
-  const handleDatadogClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    // TODO: Open Datadog confirmation modal
-    alert("Datadog modal - coming soon")
-  }
 
   const handleExternalClick = (url: string, e: React.MouseEvent) => {
     e.preventDefault()
     window.open(url, "_blank", "noopener,noreferrer")
   }
 
-  return (
-    <Sidebar variant="inset">
-      <SidebarHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20 hover:scale-110 transition-transform duration-300 relative overflow-hidden group/logo">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300" />
-            <Activity className="h-5 w-5 relative z-10" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">Correlation Station</span>
-            <span className="text-xs text-muted-foreground">Observability & Automation Hub</span>
-          </div>
-        </div>
-      </SidebarHeader>
+  const NavItem = ({ item, isActive }: { item: any; isActive: boolean }) => {
+    const Icon = item.icon
+    const baseClasses = "flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-all duration-200 rounded-md"
+    const activeClasses = isActive 
+      ? "bg-white/10 text-white border-l-2 border-primary" 
+      : "text-white/70 hover:bg-white/5 hover:text-white"
+    
+    if (item.external) {
+      return (
+        <button
+          onClick={(e) => handleExternalClick(item.url, e)}
+          className={cn(baseClasses, activeClasses, "w-full text-left")}
+        >
+          <Icon className="h-4 w-4" />
+          <span>{item.title}</span>
+          <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
+        </button>
+      )
+    }
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {overviewItems.map((item) => {
-                const Icon = item.icon
+    return (
+      <Link
+        to={item.url}
+        className={cn(baseClasses, activeClasses, "w-full")}
+      >
+        <Icon className="h-4 w-4" />
+        <span>{item.title}</span>
+      </Link>
+    )
+  }
+
+  return (
+    <>
+      <aside className="w-64 bg-[#1E1F20] border-r border-white/10 text-white overflow-y-auto flex flex-col" style={{ backgroundColor: '#1E1F20' }}>
+        <div className="flex-1 p-4 space-y-6">
+          {/* Grafana Stack Section */}
+          <div>
+            <h3 className="px-4 mb-2 text-xs font-semibold text-white/50 uppercase tracking-wider">Grafana Stack</h3>
+            <nav className="space-y-1">
+              {grafanaItems.map((item) => {
                 const isActive = location.pathname === item.url
                 return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={isActive}
-                      className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
-                    >
-                      <Link to={item.url}>
-                        <Icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <NavItem key={item.title} item={item} isActive={isActive} />
                 )
               })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            </nav>
+          </div>
 
-        <SidebarSeparator />
+          {/* Compliance/SECA Section */}
+          <div>
+            <h3 className="px-4 mb-2 text-xs font-semibold text-white/50 uppercase tracking-wider">Compliance & SECA</h3>
+            <nav className="space-y-1">
+              {complianceItems.map((item) => {
+                const isActive = location.pathname === item.url
+                return (
+                  <NavItem key={item.title} item={item} isActive={isActive} />
+                )
+              })}
+            </nav>
+          </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+          {/* Overview Section */}
+          <div>
+            <h3 className="px-4 mb-2 text-xs font-semibold text-white/50 uppercase tracking-wider">Overview</h3>
+            <nav className="space-y-1">
+              {overviewItems.map((item) => {
+                const isActive = location.pathname === item.url
+                return (
+                  <NavItem key={item.title} item={item} isActive={isActive} />
+                )
+              })}
+            </nav>
+          </div>
+
+          {/* Tools Section */}
+          <div>
+            <h3 className="px-4 mb-2 text-xs font-semibold text-white/50 uppercase tracking-wider">Tools</h3>
+            <nav className="space-y-1">
               {toolsItems.map((item) => {
-                const Icon = item.icon
                 const isActive = !item.external && location.pathname === item.url
                 return (
-                  <SidebarMenuItem key={item.title}>
-                    {item.isModal ? (
-                      <SidebarMenuButton 
-                        onClick={handleDatadogClick} 
-                        isActive={isActive}
-                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
-                      </SidebarMenuButton>
-                    ) : item.external ? (
-                      <SidebarMenuButton 
-                        onClick={(e) => handleExternalClick(item.url, e)} 
-                        isActive={isActive}
-                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
-                        <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
-                      </SidebarMenuButton>
-                    ) : (
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={isActive}
-                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
-                      >
-                        <Link to={item.url}>
-                          <Icon className="h-4 w-4" />
-                          <span className="font-medium">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
+                  <NavItem key={item.title} item={item} isActive={isActive} />
                 )
               })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Learning & Quality</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {learningItems.map((item) => {
-                const Icon = item.icon
-                const isActive = location.pathname === item.url
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={isActive}
-                      className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
-                    >
-                      <Link to={item.url}>
-                        <Icon className="h-4 w-4" />
-                        <span className="font-medium">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
-        {isAuthenticated ? (
-          <div className="flex items-center gap-2 px-2">
-            <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-sm font-medium truncate">{user?.username}</span>
-              <span className="text-xs text-muted-foreground truncate">Logged in</span>
-            </div>
+            </nav>
           </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => setLoginOpen(true)}
-          >
-            Login
-          </Button>
-        )}
-      </SidebarFooter>
+        </div>
 
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10">
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2 px-2">
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-sm font-medium truncate text-white">{user?.username}</span>
+                <span className="text-xs text-white/50 truncate">Logged in</span>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
+              onClick={() => setLoginOpen(true)}
+            >
+              Login
+            </Button>
+          )}
+        </div>
+      </aside>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
-    </Sidebar>
+    </>
   )
 }
-
