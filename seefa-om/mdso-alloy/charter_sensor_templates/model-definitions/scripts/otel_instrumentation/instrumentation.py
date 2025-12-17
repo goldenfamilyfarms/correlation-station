@@ -11,15 +11,32 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 from pathlib import Path
 
-from opentelemetry import trace, baggage, context
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter, SpanExportResult
-from opentelemetry.sdk.trace import ReadableSpan
-import structlog
+# Try importing OpenTelemetry - gracefully degrade if not available
+try:
+    from opentelemetry import trace, baggage, context
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter, SpanExportResult
+    from opentelemetry.sdk.trace import ReadableSpan
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    trace = baggage = context = None
+    SpanExporter = object
+
+try:
+    import structlog
+    STRUCTLOG_AVAILABLE = True
+except ImportError:
+    STRUCTLOG_AVAILABLE = False
+    structlog = None
+
 
 logger = logging.getLogger(__name__)
+
+if not OTEL_AVAILABLE:
+    logger.warning("OpenTelemetry not available - instrumentation will be disabled")
 
 # Try importing Pyroscope
 try:
@@ -34,130 +51,138 @@ DEFAULT_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"
 DEFAULT_TRACE_LOG_FILE = "traces.ndjson"
 
 
-class FileSpanExporter(SpanExporter):
-    """
-    File-based span exporter for isolated containers that can't reach Alloy agent.
-    
-    Writes OTLP traces as JSON lines (NDJSON) to a file that Alloy can tail.
-    This is necessary when MDSO scripts run in isolated Docker networks managed
-    by BluePlanet's solution manager.
-    """
-    
-    def __init__(self, file_path: str):
+if OTEL_AVAILABLE:
+    class FileSpanExporter(SpanExporter):
         """
-        Initialize file-based span exporter.
-        
-        Args:
-            file_path: Path to the trace log file (e.g., /opt/ciena/bp2/alloy-collector/traces.ndjson)
-        """
-        self.file_path = Path(file_path)
-        self.file_path.parent.mkdir(parents=True, exist_ok=True)
-        self.file_handle = None
-        self._open_file()
+        File-based span exporter for isolated containers that can't reach Alloy agent.
     
-    def _open_file(self):
-        """Open file in append mode"""
-        try:
-            self.file_handle = open(self.file_path, "a", encoding="utf-8")
-        except Exception as e:
-            logger.error(f"Failed to open trace log file {self.file_path}: {e}")
-            raise
+        Writes OTLP traces as JSON lines (NDJSON) to a file that Alloy can tail.
+        This is necessary when MDSO scripts run in isolated Docker networks managed
+        by BluePlanet's solution manager.
+        """
     
-    def export(self, spans) -> SpanExportResult:
-        """
-        Export spans to file as JSON lines.
+        def __init__(self, file_path: str):
+            """
+            Initialize file-based span exporter.
         
-        Each span is written as a single JSON line (NDJSON format).
-        """
-        if not spans:
-            return SpanExportResult.SUCCESS
-        
-        try:
-            for span in spans:
-                # Convert span to OTLP-compatible JSON format
-                span_data = self._span_to_dict(span)
-                json_line = json.dumps(span_data, default=str)
-                self.file_handle.write(json_line + "\n")
-            
-            self.file_handle.flush()
-            return SpanExportResult.SUCCESS
-        except Exception as e:
-            logger.error(f"Failed to export spans to file: {e}")
-            return SpanExportResult.FAILURE
+            Args:
+                file_path: Path to the trace log file (e.g., /opt/ciena/bp2/alloy-collector/traces.ndjson)
+            """
+            self.file_path = Path(file_path)
+            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            self.file_handle = None
+            self._open_file()
     
-    def _span_to_dict(self, span: ReadableSpan) -> Dict[str, Any]:
-        """
-        Convert OpenTelemetry span to OTLP-compatible dictionary.
-        
-        Format matches what Alloy's filelog receiver expects for OTLP traces.
-        """
-        # Get trace context
-        trace_id = format(span.context.trace_id, "032x")
-        span_id = format(span.context.span_id, "016x")
-        
-        # Convert attributes
-        attributes = {}
-        for key, value in span.attributes.items():
-            if isinstance(value, (str, int, float, bool)):
-                attributes[key] = value
-            else:
-                attributes[key] = str(value)
-        
-        # Get resource attributes
-        resource_attributes = {}
-        if span.resource:
-            for key, value in span.resource.attributes.items():
-                if isinstance(value, (str, int, float, bool)):
-                    resource_attributes[key] = value
-                else:
-                    resource_attributes[key] = str(value)
-        
-        # Build OTLP-compatible structure
-        span_data = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "trace_id": trace_id,
-            "span_id": span_id,
-            "name": span.name,
-            "kind": span.kind.name if hasattr(span.kind, "name") else str(span.kind),
-            "start_time": span.start_time,
-            "end_time": span.end_time if span.end_time else None,
-            "duration_ns": (span.end_time - span.start_time) if span.end_time else None,
-            "status": {
-                "code": span.status.status_code.name if hasattr(span.status.status_code, "name") else str(span.status.status_code),
-                "message": span.status.description if span.status.description else None,
-            },
-            "attributes": attributes,
-            "resource": resource_attributes,
-            "events": [
-                {
-                    "name": event.name,
-                    "timestamp": event.timestamp,
-                    "attributes": dict(event.attributes) if hasattr(event, "attributes") else {},
-                }
-                for event in span.events
-            ],
-        }
-        
-        return span_data
-    
-    def shutdown(self):
-        """Close file handle"""
-        if self.file_handle:
+        def _open_file(self):
+            """Open file in append mode"""
             try:
-                self.file_handle.close()
+                self.file_handle = open(self.file_path, "a", encoding="utf-8")
             except Exception as e:
-                logger.error(f"Error closing trace log file: {e}")
+                logger.error(f"Failed to open trace log file {self.file_path}: {e}")
+                raise
     
-    def force_flush(self, timeout_millis: int = 30000) -> bool:
-        """Flush file buffer"""
-        try:
-            if self.file_handle:
+        def export(self, spans) -> SpanExportResult:
+            """
+            Export spans to file as JSON lines.
+        
+            Each span is written as a single JSON line (NDJSON format).
+            """
+            if not spans:
+                return SpanExportResult.SUCCESS
+        
+            try:
+                for span in spans:
+                    # Convert span to OTLP-compatible JSON format
+                    span_data = self._span_to_dict(span)
+                    json_line = json.dumps(span_data, default=str)
+                    self.file_handle.write(json_line + "\n")
+            
                 self.file_handle.flush()
-            return True
-        except Exception as e:
-            logger.error(f"Error flushing trace log file: {e}")
-            return False
+                return SpanExportResult.SUCCESS
+            except Exception as e:
+                logger.error(f"Failed to export spans to file: {e}")
+                return SpanExportResult.FAILURE
+    
+        def _span_to_dict(self, span: ReadableSpan) -> Dict[str, Any]:
+            """
+            Convert OpenTelemetry span to OTLP-compatible dictionary.
+        
+            Format matches what Alloy's filelog receiver expects for OTLP traces.
+            """
+            # Get trace context
+            trace_id = format(span.context.trace_id, "032x")
+            span_id = format(span.context.span_id, "016x")
+        
+            # Convert attributes
+            attributes = {}
+            for key, value in span.attributes.items():
+                if isinstance(value, (str, int, float, bool)):
+                    attributes[key] = value
+                else:
+                    attributes[key] = str(value)
+        
+            # Get resource attributes
+            resource_attributes = {}
+            if span.resource:
+                for key, value in span.resource.attributes.items():
+                    if isinstance(value, (str, int, float, bool)):
+                        resource_attributes[key] = value
+                    else:
+                        resource_attributes[key] = str(value)
+        
+            # Build OTLP-compatible structure
+            span_data = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "trace_id": trace_id,
+                "span_id": span_id,
+                "name": span.name,
+                "kind": span.kind.name if hasattr(span.kind, "name") else str(span.kind),
+                "start_time": span.start_time,
+                "end_time": span.end_time if span.end_time else None,
+                "duration_ns": (span.end_time - span.start_time) if span.end_time else None,
+                "status": {
+                    "code": span.status.status_code.name if hasattr(span.status.status_code, "name") else str(span.status.status_code),
+                    "message": span.status.description if span.status.description else None,
+                },
+                "attributes": attributes,
+                "resource": resource_attributes,
+                "events": [
+                    {
+                        "name": event.name,
+                        "timestamp": event.timestamp,
+                        "attributes": dict(event.attributes) if hasattr(event, "attributes") else {},
+                    }
+                    for event in span.events
+                ],
+            }
+        
+            return span_data
+    
+        def shutdown(self):
+            """Close file handle"""
+            if self.file_handle:
+                try:
+                    self.file_handle.close()
+                except Exception as e:
+                    logger.error(f"Error closing trace log file: {e}")
+    
+        def force_flush(self, timeout_millis: int = 30000) -> bool:
+            """Flush file buffer"""
+            try:
+                if self.file_handle:
+                    self.file_handle.flush()
+                return True
+            except Exception as e:
+                logger.error(f"Error flushing trace log file: {e}")
+                return False
 
+
+else:
+    class FileSpanExporter:
+        def __init__(self, *args, **kwargs): pass
+        def export(self, *args, **kwargs): return None
+        def shutdown(self): pass
+        def force_flush(self, *args, **kwargs): return True
 
 def setup_otel(
     service_name: str = "mdso-scriptplan",
@@ -166,7 +191,7 @@ def setup_otel(
     version: str = "1.0.0",
     use_file_export: Optional[bool] = None,
     trace_log_dir: str = None
-) -> trace.Tracer:
+) -> Optional[Any]:  # Returns trace.Tracer when OTEL available
     """
     Setup OpenTelemetry tracer for MDSO scriptplan
 
@@ -201,6 +226,9 @@ def setup_otel(
         ...     span.set_attribute("circuit_id", "123-456")
         ...     # ... do work ...
     """
+    if not OTEL_AVAILABLE:
+        return None
+    
     # Determine export mode
     export_mode = os.getenv("OTEL_EXPORT_MODE", "").lower()
     
@@ -281,7 +309,7 @@ def setup_otel(
     return trace.get_tracer(__name__)
 
 
-def get_otel_logger(service_name: str = "mdso-scriptplan") -> structlog.BoundLogger:
+def get_otel_logger(service_name: str = "mdso-scriptplan") -> Optional[Any]:  # Returns structlog.BoundLogger when available
     """
     Get structured logger for OTel-compatible logging
 
@@ -298,6 +326,9 @@ def get_otel_logger(service_name: str = "mdso-scriptplan") -> structlog.BoundLog
         >>> logger = get_otel_logger("mdso-scriptplan")
         >>> logger.info("Processing started", circuit_id="123", resource_id="456")
     """
+    if not OTEL_AVAILABLE:
+        return None
+    
     # Configure structlog with trace context enhancement
     def add_trace_context(logger, method_name, event_dict):
         """Add trace_id, span_id, and baggage to logs automatically"""
@@ -339,7 +370,7 @@ def get_otel_logger(service_name: str = "mdso-scriptplan") -> structlog.BoundLog
 def otel_enter_exit_log(
     message: str,
     state: str = "STARTED",
-    tracer: trace.Tracer = None,
+    tracer = None,
     **context: Any
 ):
     """
@@ -360,6 +391,9 @@ def otel_enter_exit_log(
         >>> otel_enter_exit_log("Provisioning complete", "COMPLETED",
         ...                     circuit_id="123", resource_id="456")
     """
+    if not OTEL_AVAILABLE:
+        return
+    
     logger = get_otel_logger()
 
     # Determine log level
@@ -415,6 +449,9 @@ def inject_correlation_context(
         ...     resource_id="7c9e6679-7425-40de-944b-e07fc1f90ae7"
         ... )
     """
+    if not OTEL_AVAILABLE:
+        return {}
+    
     # Get current span
     span = trace.get_current_span()
 
@@ -475,6 +512,9 @@ def extract_correlation_context() -> Dict[str, Optional[str]]:
         >>> print(context["circuit_id"])
         550e8400-e29b-41d4-a716-446655440000
     """
+    if not OTEL_AVAILABLE:
+        return {}
+    
     # Extract from baggage (OTel propagation)
     baggage_context = {}
     for key in ["circuit_id", "product_id", "resource_id", "resource_type_id"]:
@@ -508,6 +548,9 @@ def clear_correlation_context():
         >>> clear_correlation_context()
         >>> # Start fresh operation
     """
+    if not OTEL_AVAILABLE:
+        return
+    
     from opentelemetry import context
     
     # Clear baggage
@@ -522,10 +565,10 @@ def clear_correlation_context():
 
 def create_mdso_span(
     name: str,
-    kind: trace.SpanKind = trace.SpanKind.INTERNAL,
+    kind = None,  # trace.SpanKind.INTERNAL when OTEL available
     attributes: Optional[Dict[str, Any]] = None,
-    tracer: Optional[trace.Tracer] = None
-) -> trace.Span:
+    tracer: Optional[Any] = None
+) -> Optional[Any]:  # Returns trace.Span when OTEL available
     """
     Create a span with MDSO-specific attributes
 
@@ -552,6 +595,9 @@ def create_mdso_span(
         ... finally:
         ...     span.end()
     """
+    if not OTEL_AVAILABLE:
+        return None
+    
     if tracer is None:
         tracer = trace.get_tracer(__name__)
 
@@ -582,7 +628,7 @@ class mdso_span:
     def __init__(
         self,
         name: str,
-        kind: trace.SpanKind = trace.SpanKind.INTERNAL,
+        kind = None,  # trace.SpanKind.INTERNAL when OTEL available
         **attributes: Any
     ):
         self.name = name
@@ -590,7 +636,7 @@ class mdso_span:
         self.attributes = attributes
         self.span = None
 
-    def __enter__(self) -> trace.Span:
+    def __enter__(self) -> Optional[Any]:  # Returns trace.Span when OTEL available
         self.span = create_mdso_span(
             name=self.name,
             kind=self.kind,
@@ -601,11 +647,13 @@ class mdso_span:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.span:
             if exc_type is not None:
-                self.span.set_status(
-                    trace.Status(trace.StatusCode.ERROR, str(exc_val))
-                )
+                if OTEL_AVAILABLE and self.span:
+                    self.span.set_status(
+                        trace.Status(trace.StatusCode.ERROR, str(exc_val))
+                    )
             else:
-                self.span.set_status(trace.Status(trace.StatusCode.OK))
+                if OTEL_AVAILABLE and self.span:
+                    self.span.set_status(trace.Status(trace.StatusCode.OK))
             self.span.end()
         return False  # Don't suppress exceptions
 
@@ -617,8 +665,8 @@ class mdso_span:
 def create_topology_span(
     circuit_id: str,
     operation: str = "fetch",
-    tracer: Optional[trace.Tracer] = None
-) -> trace.Span:
+    tracer: Optional[Any] = None
+) -> Optional[Any]:  # Returns trace.Span when OTEL available
     """
     Create a span for Beorn topology operations using MDSOSpanHelper
     
@@ -651,8 +699,8 @@ def create_network_function_span(
     tid: str,
     fqdn: Optional[str] = None,
     operation: str = "check",
-    tracer: Optional[trace.Tracer] = None
-) -> trace.Span:
+    tracer: Optional[Any] = None
+) -> Optional[Any]:  # Returns trace.Span when OTEL available
     """
     Create a span for network function operations using MDSOSpanHelper
     
@@ -683,7 +731,7 @@ def create_network_function_span(
 
 
 def add_topology_attributes(
-    span: trace.Span,
+    span,
     service_type: Optional[str] = None,
     vendor: Optional[str] = None,
     fqdn: Optional[str] = None,
@@ -725,7 +773,7 @@ def add_topology_attributes(
 
 
 def add_network_function_attributes(
-    span: trace.Span,
+    span,
     communication_state: Optional[str] = None,
     ip_address: Optional[str] = None,
     vendor: Optional[str] = None,
@@ -767,7 +815,7 @@ def add_network_function_attributes(
 
 
 def add_error_attributes(
-    span: trace.Span,
+    span,
     error_code: Optional[str] = None,
     error_category: Optional[str] = None,
     error_message: Optional[str] = None,
@@ -844,7 +892,7 @@ def set_correlation_baggage(
 
 
 def record_span_event(
-    span: trace.Span,
+    span,
     event_name: str,
     attributes: Optional[Dict[str, Any]] = None,
 ):

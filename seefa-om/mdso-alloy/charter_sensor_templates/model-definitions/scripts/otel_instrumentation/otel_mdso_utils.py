@@ -12,8 +12,15 @@ Version: 1.0.0
 
 import re
 from typing import Optional, Dict, Any, List
-from opentelemetry import trace, baggage
-from opentelemetry.trace import Status, StatusCode
+# Try importing OpenTelemetry - gracefully degrade if not available
+try:
+    from opentelemetry import trace, baggage
+    from opentelemetry.trace import Status, StatusCode
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    trace = baggage = Status = StatusCode = None
+
 import logging
 
 logger = logging.getLogger(__name__)

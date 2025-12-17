@@ -7,7 +7,13 @@ Based on: OTEL_IMPLEMENTATION_STRATEGY.md
 import os
 import logging
 from typing import Optional, Dict, Any, List
-from opentelemetry import trace
+# Try importing OpenTelemetry - gracefully degrade if not available
+try:
+    from opentelemetry import trace
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    trace = None
 
 from otel_instrumentation.instrumentation import (
     setup_otel,

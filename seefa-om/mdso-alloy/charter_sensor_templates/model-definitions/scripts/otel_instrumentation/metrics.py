@@ -8,11 +8,19 @@ Version: 1.0.0
 
 import logging
 from typing import Optional, Dict, Any
-from opentelemetry import metrics
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
-from opentelemetry.sdk.resources import Resource
+# Try importing OpenTelemetry - gracefully degrade if not available
+try:
+    from opentelemetry import metrics
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+    from opentelemetry.sdk.resources import Resource
+    OTEL_AVAILABLE = True
+except ImportError:
+    OTEL_AVAILABLE = False
+    metrics = MeterProvider = PeriodicExportingMetricReader = None
+    OTLPMetricExporter = Resource = None
+
 import os
 
 logger = logging.getLogger(__name__)
