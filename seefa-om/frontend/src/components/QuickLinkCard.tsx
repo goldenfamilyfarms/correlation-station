@@ -33,25 +33,35 @@ export function QuickLinkCard({
 
   return (
     <Card
-      className="hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary hover:scale-105 group relative overflow-hidden"
+      className="hover:shadow-2xl transition-all duration-500 cursor-pointer border border-border/50 hover:border-primary/50 hover:scale-[1.02] group relative overflow-hidden bg-gradient-to-br from-card to-card/95 backdrop-blur-sm"
       onClick={handleClick}
     >
-      {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Animated gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      {/* Shine effect on hover */}
+      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      
+      {/* Subtle border glow */}
+      <div className="absolute inset-0 rounded-lg border-2 border-primary/0 group-hover:border-primary/20 transition-colors duration-300 pointer-events-none" />
 
       <CardHeader className="relative z-10">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#FFF3E0] to-[#FFE0B2] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
-          <Icon className="h-7 w-7 text-[#FF9800]" />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 via-accent/10 to-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/20 relative overflow-hidden">
+          {/* Icon background glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-primary/20 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
+          <Icon className="h-8 w-8 text-accent relative z-10 group-hover:text-primary transition-colors duration-300" />
         </div>
-        <CardTitle className="flex items-center gap-2 text-lg group-hover:text-primary transition-colors">
+        <CardTitle className="flex items-center gap-2 text-lg font-bold group-hover:text-primary transition-colors duration-300 mb-1">
           {title}
-          {external ? (
-            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          ) : (
-            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-          )}
+          <span className="ml-auto">
+            {external ? (
+              <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:scale-110 transition-all duration-300" />
+            ) : (
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-300" />
+            )}
+          </span>
         </CardTitle>
-        <CardDescription className="line-clamp-2 leading-relaxed text-sm">
+        <CardDescription className="line-clamp-2 leading-relaxed text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300">
           {description}
         </CardDescription>
       </CardHeader>

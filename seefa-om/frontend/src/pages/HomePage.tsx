@@ -56,10 +56,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex flex-1 flex-col gap-6 animate-in fade-in-50 duration-700">
       {/* Band 1 - Quick Access Cards */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Quick Access</h2>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Quick Access
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <QuickLinkCard
             title="Grafana Dashboard"
@@ -92,8 +97,13 @@ export default function HomePage() {
       </div>
 
       {/* Band 2 - Learning KPIs */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Learning KPIs</h2>
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-12 bg-gradient-to-r from-primary to-accent rounded-full" />
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Learning KPIs
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard
             title="Onboarded Engineers"
@@ -127,12 +137,12 @@ export default function HomePage() {
       {/* Band 3 - Chart + Learning Path (2/3 + 1/3) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left (2/3) - Weekly Automation Errors Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Weekly Automation Errors</CardTitle>
-            <CardDescription>Error counts over the last 4 weeks</CardDescription>
+        <Card className="lg:col-span-2 hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
+            <CardTitle className="text-xl font-bold">Weekly Automation Errors</CardTitle>
+            <CardDescription className="text-sm">Error counts over the last 4 weeks</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={weeklyErrorData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -162,27 +172,43 @@ export default function HomePage() {
         </Card>
 
         {/* Right (1/3) - Your Learning Path */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Learning Path</CardTitle>
-            <CardDescription>Track your progress</CardDescription>
+        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
+            <CardTitle className="text-xl font-bold">Your Learning Path</CardTitle>
+            <CardDescription className="text-sm">Track your progress</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-3">
-              {learningPathSteps.map((step) => (
-                <div key={step.id} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-1">
+              {learningPathSteps.map((step, idx) => (
+                <div 
+                  key={step.id} 
+                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 group/step border border-transparent hover:border-border/50"
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  <div className="flex-shrink-0 mt-0.5 relative">
                     {step.status === 'completed' ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <div className="relative">
+                        <CheckCircle2 className="h-6 w-6 text-green-500 group-hover/step:scale-110 transition-transform duration-200" />
+                        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-md opacity-0 group-hover/step:opacity-100 transition-opacity duration-200" />
+                      </div>
                     ) : step.status === 'in_progress' ? (
-                      <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                      <div className="relative">
+                        <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin group-hover/step:scale-110 transition-transform duration-200" />
+                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-50" />
+                      </div>
                     ) : (
-                      <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
+                      <div className="relative">
+                        <div className="h-6 w-6 rounded-full border-2 border-muted-foreground group-hover/step:border-primary/50 transition-colors duration-200" />
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium">{step.title}</div>
-                    <div className="text-xs text-muted-foreground capitalize">{step.status.replace('_', ' ')}</div>
+                    <div className="text-sm font-semibold text-foreground group-hover/step:text-primary transition-colors duration-200">
+                      {step.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground capitalize mt-0.5 group-hover/step:text-foreground/70 transition-colors duration-200">
+                      {step.status.replace('_', ' ')}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -197,14 +223,14 @@ export default function HomePage() {
       {/* Band 4 - Error Reports + Health Snapshot */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left (2/3) - Latest Error Reports */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Latest Error Reports</CardTitle>
-            <CardDescription>Recent internal error records</CardDescription>
+        <Card className="lg:col-span-2 hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
+            <CardTitle className="text-xl font-bold">Latest Error Reports</CardTitle>
+            <CardDescription className="text-sm">Recent internal error records</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-0">
-              <div className="grid grid-cols-6 gap-4 pb-2 border-b text-sm font-medium text-muted-foreground">
+              <div className="grid grid-cols-6 gap-4 pb-3 border-b border-border/50 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 <div>Service</div>
                 <div>Type</div>
                 <div>Severity</div>
@@ -213,22 +239,31 @@ export default function HomePage() {
                 <div>Link</div>
               </div>
               {recentErrors.map((error, idx) => (
-                <div key={idx} className="grid grid-cols-6 gap-4 py-2 border-b last:border-0 text-sm">
-                  <div className="font-medium">{error.service}</div>
-                  <div>{error.type}</div>
+                <div 
+                  key={idx} 
+                  className="grid grid-cols-6 gap-4 py-3 border-b border-border/30 last:border-0 text-sm hover:bg-muted/30 transition-colors duration-200 rounded-md px-2 group/row"
+                >
+                  <div className="font-semibold text-foreground group-hover/row:text-primary transition-colors">{error.service}</div>
+                  <div className="text-muted-foreground">{error.type}</div>
                   <div>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      error.severity === 'High' ? 'bg-red-500/20 text-red-500' :
-                      error.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-500' :
-                      'bg-green-500/20 text-green-500'
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold shadow-sm ${
+                      error.severity === 'High' ? 'bg-red-500/20 text-red-600 border border-red-500/30' :
+                      error.severity === 'Medium' ? 'bg-yellow-500/20 text-yellow-600 border border-yellow-500/30' :
+                      'bg-green-500/20 text-green-600 border border-green-500/30'
                     }`}>
                       {error.severity}
                     </span>
                   </div>
-                  <div>{error.status}</div>
-                  <div>{error.owner}</div>
+                  <div className="text-muted-foreground">{error.status}</div>
+                  <div className="text-muted-foreground">{error.owner}</div>
                   <div>
-                    <a href={error.link} className="text-[#1B6AC7] hover:underline">View</a>
+                    <a 
+                      href={error.link} 
+                      className="text-primary hover:text-accent hover:underline font-medium transition-colors duration-200 inline-flex items-center gap-1"
+                    >
+                      View
+                      <span className="opacity-0 group-hover/row:opacity-100 transition-opacity">→</span>
+                    </a>
                   </div>
                 </div>
               ))}
@@ -240,12 +275,12 @@ export default function HomePage() {
         </Card>
 
         {/* Right (1/3) - Automation Health Snapshot */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Automation Health Snapshot</CardTitle>
-            <CardDescription>Service status overview</CardDescription>
+        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-accent/5 to-transparent">
+            <CardTitle className="text-xl font-bold">Automation Health Snapshot</CardTitle>
+            <CardDescription className="text-sm">Service status overview</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-0">
               {healthServices.map((service, idx) => (
                 <HealthRow

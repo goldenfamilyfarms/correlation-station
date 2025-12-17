@@ -27,20 +27,21 @@ export default function DocumentationPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in-50 duration-700">
       {/* Page Header */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-1 w-16 bg-gradient-to-r from-primary to-accent rounded-full" />
+            <Badge variant="outline" className="text-xs font-semibold">v2.1.0</Badge>
+            <Badge variant="outline" className="text-xs font-semibold">Updated Dec 2025</Badge>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text">
             Observability & Correlation Engine
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl leading-relaxed">
             Comprehensive guide to our observability stack, correlation engine, and best practices for monitoring distributed systems
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Badge variant="outline" className="text-xs">v2.1.0</Badge>
-          <Badge variant="outline" className="text-xs">Updated Dec 2025</Badge>
         </div>
       </div>
 
@@ -48,16 +49,17 @@ export default function DocumentationPage() {
 
       {/* Horizontal Tab Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8 h-12">
+        <TabsList className="grid w-full grid-cols-3 mb-8 h-14 bg-muted/50 border border-border/50 shadow-sm">
           {tabs.map((tab) => {
             const Icon = tab.icon
+            const isActive = activeTab === tab.id
             return (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex items-center gap-2 text-sm md:text-base"
+                className="flex items-center gap-2 text-sm md:text-base font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/10 data-[state=active]:to-accent/10 data-[state=active]:shadow-md data-[state=active]:text-primary"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className={`h-4 w-4 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
               </TabsTrigger>
@@ -70,9 +72,9 @@ export default function DocumentationPage() {
           <section className="space-y-6">
             <div>
               <h2 className="text-3xl font-bold mb-4">What is Correlation Station?</h2>
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
                 <CardContent className="pt-6">
-                  <p className="text-base leading-relaxed mb-4">
+                  <p className="text-base leading-relaxed mb-4 text-foreground/90">
                     Correlation Station is our internal developer portal and observability hub that provides:
                   </p>
                   <ul className="space-y-3 ml-6">
@@ -104,48 +106,48 @@ export default function DocumentationPage() {
             <div>
               <h2 className="text-3xl font-bold mb-4">Problems We Were Solving</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Fragmented Observability</CardTitle>
+                <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group hover:border-primary/30">
+                  <CardHeader className="border-b border-border/30">
+                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors duration-300">Fragmented Observability</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
                       Multiple tools (DataDog, internal logs, Grafana) with no unified view. Engineers spent
                       too much time context-switching between tools.
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Manual SECA Analysis</CardTitle>
+                <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group hover:border-primary/30">
+                  <CardHeader className="border-b border-border/30">
+                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors duration-300">Manual SECA Analysis</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
                       Weekly SECA reviews required manual Excel parsing, Selenium scraping, and traceback
                       extraction. This took hours per week.
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Limited Telemetry</CardTitle>
+                <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group hover:border-primary/30">
+                  <CardHeader className="border-b border-border/30">
+                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors duration-300">Limited Telemetry</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
                       Sense apps and MDSO lacked comprehensive OpenTelemetry instrumentation, making
                       debugging distributed workflows difficult.
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Storage Constraints</CardTitle>
+                <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group hover:border-primary/30">
+                  <CardHeader className="border-b border-border/30">
+                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors duration-300">Storage Constraints</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
                       META server storage limits required intelligent log reduction and enrichment before
                       sending to Loki/Tempo.
                     </p>
@@ -229,14 +231,14 @@ export default function DocumentationPage() {
             <h2 className="text-3xl font-bold">Architecture & Design Decisions</h2>
 
             <div className="space-y-6">
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader>
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+                <CardHeader className="border-b border-border/30">
                   <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">Why Grafana Stack?</span>
+                    <span className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">Why Grafana Stack?</span>
                   </CardTitle>
-                  <CardDescription>Loki, Tempo, Prometheus, Pyroscope</CardDescription>
+                  <CardDescription className="text-sm">Loki, Tempo, Prometheus, Pyroscope</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <Badge variant="outline" className="mt-1">Open Source</Badge>
@@ -262,11 +264,11 @@ export default function DocumentationPage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Grafana Alloy Agent on MDSO</CardTitle>
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+                <CardHeader className="border-b border-border/30">
+                  <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">Grafana Alloy Agent on MDSO</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-6">
                   <p className="leading-relaxed">
                     MDSO runs in proprietary Solution Manager containers. We needed a low-invasiveness
                     solution that could collect telemetry without modifying container images.
@@ -296,12 +298,12 @@ export default function DocumentationPage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Correlation Engine Design</CardTitle>
-                  <CardDescription>Why process data before storage?</CardDescription>
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+                <CardHeader className="border-b border-border/30">
+                  <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">Correlation Engine Design</CardTitle>
+                  <CardDescription className="text-sm">Why process data before storage?</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-6">
                   <p className="leading-relaxed">
                     <strong>META storage limits</strong> require intelligent log reduction. The Correlation Engine:
                   </p>
@@ -330,11 +332,11 @@ export default function DocumentationPage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Redis Caching & Backpressure</CardTitle>
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+                <CardHeader className="border-b border-border/30">
+                  <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">Redis Caching & Backpressure</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-6">
                   <p className="leading-relaxed">
                     The Correlation Engine uses Redis to cache <strong>partial traces</strong> until they
                     are complete. This enables:
@@ -360,12 +362,12 @@ export default function DocumentationPage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Horizontal Scaling</CardTitle>
-                  <CardDescription>Multiple instances + gateway</CardDescription>
+              <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+                <CardHeader className="border-b border-border/30">
+                  <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">Horizontal Scaling</CardTitle>
+                  <CardDescription className="text-sm">Multiple instances + gateway</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <p className="leading-relaxed mb-4">
                     Multiple Correlation Engine instances can run behind a gateway. The gateway:
                   </p>
@@ -398,12 +400,12 @@ export default function DocumentationPage() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold">Query Reference</h2>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">TraceQL - Trace Query Language</CardTitle>
-                <CardDescription>Query and analyze distributed traces in Grafana Tempo</CardDescription>
+            <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+              <CardHeader className="border-b border-border/30">
+                <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">TraceQL - Trace Query Language</CardTitle>
+                <CardDescription className="text-sm">Query and analyze distributed traces in Grafana Tempo</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 <div>
                   <h3 className="font-semibold text-lg mb-3">Basic Syntax</h3>
                   <CodeBlock language="traceql" code={`// Find all traces for a specific service
@@ -429,12 +431,12 @@ export default function DocumentationPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">LogQL - Log Query Language</CardTitle>
-                <CardDescription>Query logs in Grafana Loki</CardDescription>
+            <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+              <CardHeader className="border-b border-border/30">
+                <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">LogQL - Log Query Language</CardTitle>
+                <CardDescription className="text-sm">Query logs in Grafana Loki</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 <CodeBlock language="logql" code={`// Simple log stream selector
 {service="arda"} |= "error"
 
@@ -449,12 +451,12 @@ rate({service="correlation-engine"}[5m])`} />
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">PromQL - Prometheus Query Language</CardTitle>
-                <CardDescription>Query metrics in Prometheus</CardDescription>
+            <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 bg-gradient-to-br from-card to-card/95 backdrop-blur-sm group">
+              <CardHeader className="border-b border-border/30">
+                <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">PromQL - Prometheus Query Language</CardTitle>
+                <CardDescription className="text-sm">Query metrics in Prometheus</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 <CodeBlock language="promql" code={`// Simple metric query
 http_requests_total{service="arda"}
 

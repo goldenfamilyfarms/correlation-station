@@ -137,13 +137,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="inset">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Activity className="h-5 w-5" />
+      <SidebarHeader className="border-b border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
+        <div className="flex items-center gap-3 px-2 py-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20 hover:scale-110 transition-transform duration-300 relative overflow-hidden group/logo">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-transparent opacity-0 group-hover/logo:opacity-100 transition-opacity duration-300" />
+            <Activity className="h-5 w-5 relative z-10" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Correlation Station</span>
+            <span className="text-sm font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">Correlation Station</span>
             <span className="text-xs text-muted-foreground">Observability & Automation Hub</span>
           </div>
         </div>
@@ -159,10 +160,14 @@ export function AppSidebar() {
                 const isActive = location.pathname === item.url
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
+                    >
                       <Link to={item.url}>
-                        <Icon />
-                        <span>{item.title}</span>
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -184,21 +189,33 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     {item.isModal ? (
-                      <SidebarMenuButton onClick={handleDatadogClick} isActive={isActive}>
-                        <Icon />
-                        <span>{item.title}</span>
+                      <SidebarMenuButton 
+                        onClick={handleDatadogClick} 
+                        isActive={isActive}
+                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium">{item.title}</span>
                       </SidebarMenuButton>
                     ) : item.external ? (
-                      <SidebarMenuButton onClick={(e) => handleExternalClick(item.url, e)} isActive={isActive}>
-                        <Icon />
-                        <span>{item.title}</span>
-                        <ExternalLink className="ml-auto h-3 w-3" />
+                      <SidebarMenuButton 
+                        onClick={(e) => handleExternalClick(item.url, e)} 
+                        isActive={isActive}
+                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium">{item.title}</span>
+                        <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
                       </SidebarMenuButton>
                     ) : (
-                      <SidebarMenuButton asChild isActive={isActive}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={isActive}
+                        className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
+                      >
                         <Link to={item.url}>
-                          <Icon />
-                          <span>{item.title}</span>
+                          <Icon className="h-4 w-4" />
+                          <span className="font-medium">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     )}
@@ -220,10 +237,14 @@ export function AppSidebar() {
                 const isActive = location.pathname === item.url
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="transition-all duration-300 hover:bg-primary/10 hover:translate-x-1 data-[active=true]:bg-primary/15 data-[active=true]:border-l-2 data-[active=true]:border-primary"
+                    >
                       <Link to={item.url}>
-                        <Icon />
-                        <span>{item.title}</span>
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -234,7 +255,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-border/50 bg-gradient-to-r from-transparent via-primary/5 to-transparent">
         {isAuthenticated ? (
           <div className="flex items-center gap-2 px-2">
             <div className="flex flex-col flex-1 min-w-0">
