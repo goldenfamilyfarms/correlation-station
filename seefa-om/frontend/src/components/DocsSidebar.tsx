@@ -1,142 +1,125 @@
 import { useState } from 'react'
-import { 
-  BookOpen, 
-  Network, 
-  Code, 
-  HelpCircle,
-  ChevronRight,
-  Search
+import {
+  BookOpen,
+  Network,
+  Code,
+  Lightbulb,
+  FileText,
+  Home
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
+import { Link } from 'react-router-dom'
 
-// Define sections here to avoid circular dependency
 const docsSections = [
   {
     id: 'overview',
     title: 'Overview',
     icon: BookOpen,
-    subsections: [
-      { id: 'what-is', title: 'What is Correlation Station' },
-      { id: 'problems', title: 'Problems we were solving' },
-      { id: 'architecture-diagram', title: 'High-level architecture' },
-    ],
+    description: 'Introduction and architecture',
   },
   {
     id: 'architecture',
-    title: 'Architecture & Design Decisions',
-    icon: Network,
-    subsections: [
-      { id: 'why-grafana', title: 'Why Grafana' },
-      { id: 'why-alloy', title: 'Why Grafana Alloy agent on MDSO' },
-      { id: 'constraints', title: 'Constraints of Solution Manager' },
-      { id: 'correlation-engine', title: 'Why a Correlation Engine' },
-      { id: 'redis-caching', title: 'Redis caching & backpressure' },
-      { id: 'horizontal-scaling', title: 'Horizontal scaling' },
-    ],
+    title: 'Architecture',
+    icon: Lightbulb,
+    description: 'Design decisions',
   },
   {
     id: 'query-reference',
     title: 'Query Reference',
     icon: Code,
-    subsections: [
-      { id: 'logql', title: 'LogQL examples' },
-      { id: 'traceql', title: 'TraceQL examples' },
-      { id: 'promql', title: 'PromQL examples' },
-    ],
-  },
-  {
-    id: 'faq',
-    title: 'FAQ & Glossary',
-    icon: HelpCircle,
-    subsections: [],
+    description: 'LogQL, TraceQL, PromQL',
   },
 ]
 
-interface DocsSidebarProps {
-  currentSection?: string
-  currentSubsection?: string
-}
+const quickLinks = [
+  { title: 'Home', href: '/', icon: Home },
+  { title: 'Tutorials', href: '/netdev101', icon: FileText },
+  { title: 'SECA Reviews', href: '/seca-review', icon: Network },
+]
 
-export function DocsSidebar({ currentSection, currentSubsection }: DocsSidebarProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['overview'])
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    )
-  }
+export function DocsSidebar() {
+  const [activeSection] = useState('overview')
 
   return (
-    <div className="w-64 border-r bg-[#1a1a1a] text-white h-full overflow-y-auto">
-      <div className="p-4 border-b border-gray-700">
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Search docs (⌘K)"
-            className="pl-9 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 h-8 text-sm"
-            readOnly
-          />
+    <div className="w-full bg-[#1a1a1a] text-white h-full overflow-y-auto">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-700">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-bold text-lg text-white">Documentation</h2>
+            <p className="text-xs text-gray-400">Observability Handbook</p>
+          </div>
         </div>
-        <h2 className="font-semibold text-lg text-white">Documentation</h2>
-        <p className="text-sm text-gray-400 mt-1">Observability Handbook</p>
       </div>
-      <nav className="p-2">
-        {docsSections.map((section) => {
-          const Icon = section.icon
-          const isExpanded = expandedSections.includes(section.id)
-          const isActive = currentSection === section.id
 
-          return (
-            <div key={section.id} className="mb-1">
-              <button
-                onClick={() => toggleSection(section.id)}
-                className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-white border-l-2 border-primary"
-                    : "hover:bg-gray-800 text-gray-300"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="flex-1 text-left">{section.title}</span>
-                {section.subsections.length > 0 && (
-                  <ChevronRight
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      isExpanded && "rotate-90"
-                    )}
-                  />
-                )}
-              </button>
-              {isExpanded && section.subsections.length > 0 && (
-                <div className="ml-6 mt-1 space-y-1">
-                  {section.subsections.map((subsection) => {
-                    const isSubActive = currentSubsection === subsection.id
-                    return (
-                      <a
-                        key={subsection.id}
-                        href={`#${subsection.id}`}
-                        className={cn(
-                          "block px-3 py-1.5 rounded-md text-sm transition-colors",
-                          isSubActive
-                            ? "bg-primary/20 text-primary font-medium border-l-2 border-primary"
-                            : "text-gray-400 hover:text-white hover:bg-gray-800"
-                        )}
-                      >
-                        {subsection.title}
-                      </a>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </nav>
+      {/* Main Sections */}
+      <div className="p-4">
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">
+            Sections
+          </h3>
+          <nav className="space-y-1">
+            {docsSections.map((section) => {
+              const Icon = section.icon
+              const isActive = activeSection === section.id
+
+              return (
+                <a
+                  key={section.id}
+                  href={`#${section.id}`}
+                  className={cn(
+                    "flex items-start gap-3 px-3 py-3 rounded-lg transition-all group",
+                    isActive
+                      ? "bg-primary/10 border-l-2 border-primary"
+                      : "hover:bg-gray-800 border-l-2 border-transparent"
+                  )}
+                >
+                  <Icon className={cn(
+                    "h-5 w-5 mt-0.5 flex-shrink-0",
+                    isActive ? "text-primary" : "text-gray-400 group-hover:text-white"
+                  )} />
+                  <div className="flex-1 min-w-0">
+                    <div className={cn(
+                      "font-medium text-sm",
+                      isActive ? "text-white" : "text-gray-300 group-hover:text-white"
+                    )}>
+                      {section.title}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {section.description}
+                    </div>
+                  </div>
+                </a>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Quick Links */}
+        <div className="pt-4 border-t border-gray-700">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">
+            Quick Links
+          </h3>
+          <nav className="space-y-1">
+            {quickLinks.map((link) => {
+              const Icon = link.icon
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-all group"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{link.title}</span>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+      </div>
     </div>
   )
 }
