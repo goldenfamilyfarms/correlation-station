@@ -3,13 +3,14 @@ import time
 import sys
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 import datetime
 import calendar
 import re
 from ra_plugins.ra_cutthrough import RaCutThrough
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     """
     Get the Network function/ Device from BPO
     If the device is in market:
@@ -26,72 +27,111 @@ class Activate(CommonPlan):
     """
 
     def process(self):
-        # GET the resource its properties from the market as only the resource_id is passed i.
-        resource_id = self.params["resourceId"]
-        resource = self.bpo.resources.get(resource_id)
-        properties = resource["properties"]
-        expiry_time = properties["terminationTime"]
-        resource_removal_time = 30
+        # Initialize OTel instrumentation
+        self.__init_otel__()
 
-        # Pull out relative properties & set defaults
-        device_name = properties["deviceName"]
-        port_name = properties["portname"].lower()
+        # Create root span for port activation
+        with self.create_root_span(operation_name="port_activation"):
+            # GET the resource its properties from the market as only the resource_id is passed i.
+            resource_id = self.params["resourceId"]
+            resource = self.bpo.resources.get(resource_id)
+            properties = resource["properties"]
+            expiry_time = properties["terminationTime"]
+            resource_removal_time = 30
 
-        port_activation_resources = self.check_port_activation_resources(device_name, port_name)
-        status = port_activation_resources["status"]
-        self.logger.info(
-            "Existing port activation resource for %s_%s (if any): %s"
-            % (device_name, port_name, port_activation_resources)
-        )
+            # Pull out relative properties & set defaults
+            device_name = properties["deviceName"]
+            port_name = properties["portname"].lower()
 
-        # resync network function if its found
-        self.resync_network_function(device_name)
+            # Set correlation baggage and device attributes
+            if getattr(self, '_otel_initialized', False):
+                self.set_correlation_baggage_from_instance()
+                from opentelemetry import trace
+                span = trace.get_current_span()
+                if span and span.is_recording():
+                    span.set_attribute("port_activation.device_name", device_name)
+                    span.set_attribute("port_activation.port_name", port_name)
+                    span.set_attribute("port_activation.expiry_time", expiry_time)
+                self.record_span_event_from_instance("port_activation.started", {
+                    "device_name": device_name,
+                    "port_name": port_name
+                })
 
-        if "already available" in status:
-            output = {"status": status}
-            if expiry_time == 0:
-                # Create Resource Scheduler Instance
-                self.create_scheduler_resource(resource_id, resource, resource_removal_time)
+            with self.timed_operation("port_activation.check_existing") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                port_activation_resources = self.check_port_activation_resources(device_name, port_name)
+                status = port_activation_resources["status"]
+                self.logger.info(
+                    "Existing port activation resource for %s_%s (if any): %s"
+                    % (device_name, port_name, port_activation_resources)
+                )
+
+            # resync network function if its found
+            with self.timed_operation("port_activation.resync_nf", {"device_name": device_name}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                self.resync_network_function(device_name)
+
+            if "already available" in status:
+                output = {"status": status}
+                with self.timed_operation("port_activation.create_scheduler", {"expiry_time": expiry_time if expiry_time != 0 else resource_removal_time}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    if expiry_time == 0:
+                        # Create Resource Scheduler Instance
+                        self.create_scheduler_resource(resource_id, resource, resource_removal_time)
+                    else:
+                        # Create Resource Scheduler Instance
+                        self.create_scheduler_resource(resource_id, resource, expiry_time)
+                self.logger.info("Output: " + json.dumps(output))
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("port_activation.completed", {"status": status})
+                return output
+
+            # get TPE resource
+            with self.timed_operation("port_activation.get_tpe", {"device_name": device_name, "port_name": port_name}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                tpe = self.get_tpe_by_name_and_host_return_errors(device_name, port_name)
+                self.logger.info("First TPE under Activate: %s" % tpe)
+
+            # getting the status and check the status value
+            if "status" in tpe:
+                status = tpe["status"]
+
+                # If the status is "Device not present " then add/onboard the device
+                if "Device not present" in status:
+                    with self.timed_operation("port_activation.onboard_device", {"device_name": device_name}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        device_onboard_result = self.addDevice(resource_id)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("port_activation.device_onboarded", {
+                                "device_name": device_name,
+                                "result": device_onboard_result
+                            })
+                        tpe = self.get_tpe_by_name_and_host_return_errors(device_name, port_name)
+                        if "Device deployed successfully" in device_onboard_result:
+                            self.logger.info("TPE under successful deploy in Activate: %s" % tpe)
+                            if "properties" in tpe:
+                                status = "Ready to configure"
+                            else:
+                                status = "Port not present on the device - PA Onboard"
+                        elif "Device deployment was unsuccessful" in device_onboard_result:
+                            self.logger.info("TPE under unsuccessful onboarding in Activate: %s" % tpe)
+                            status = "Device onboarding was unsuccessful"
             else:
-                # Create Resource Scheduler Instance
-                self.create_scheduler_resource(resource_id, resource, expiry_time)
+                status = "Ready to configure"
+
+            with self.timed_operation("port_activation.create_scheduler", {"expiry_time": expiry_time if expiry_time != 0 else resource_removal_time}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                if expiry_time == 0:
+                    # Create Resource Scheduler Instance
+                    self.create_scheduler_resource(resource_id, resource, resource_removal_time)
+                else:
+                    # Create Resource Scheduler Instance
+                    self.create_scheduler_resource(resource_id, resource, expiry_time)
+
+            output = {"status": status}
             self.logger.info("Output: " + json.dumps(output))
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("port_activation.completed", {"status": status})
             return output
 
-        # get TPE resource
-        tpe = self.get_tpe_by_name_and_host_return_errors(device_name, port_name)
-        self.logger.info("First TPE under Activate: %s" % tpe)
-
-        # getting the status and check the status value
-        if "status" in tpe:
-            status = tpe["status"]
-
-            # If the status is "Device not present " then add/onboard the device
-            if "Device not present" in status:
-                device_onboard_result = self.addDevice(resource_id)
-                tpe = self.get_tpe_by_name_and_host_return_errors(device_name, port_name)
-                if "Device deployed successfully" in device_onboard_result:
-                    self.logger.info("TPE under successful deploy in Activate: %s" % tpe)
-                    if "properties" in tpe:
-                        status = "Ready to configure"
-                    else:
-                        status = "Port not present on the device - PA Onboard"
-                elif "Device deployment was unsuccessful" in device_onboard_result:
-                    self.logger.info("TPE under unsuccessful onboarding in Activate: %s" % tpe)
-                    status = "Device onboarding was unsuccessful"
-        else:
-            status = "Ready to configure"
-
-        if expiry_time == 0:
-            # Create Resource Scheduler Instance
-            self.create_scheduler_resource(resource_id, resource, resource_removal_time)
-        else:
-            # Create Resource Scheduler Instance
-            self.create_scheduler_resource(resource_id, resource, expiry_time)
-
-        output = {"status": status}
-        self.logger.info("Output: " + json.dumps(output))
-        return output
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
     def create_scheduler_resource(self, resource_id, resource, expiry_time):
         # Create Resource Scheduler Instance
