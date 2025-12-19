@@ -33,12 +33,20 @@ class CircuitDetailsHandler:
         self.logger.info("Creating circuit details collector resource")
         payload = self._create_payload_base(self.BUILT_IN_CIRCUIT_DATA_COLLECTOR_TYPE)
         try:
-            resource = self.bpo.resources.create(self.resource_id, payload).resource
-        except RuntimeError:
+            # Use parent plan's OTel if available
+            if getattr(self.plan, '_otel_initialized', False):
+                with self.plan.timed_operation("circuit_details.create_collector", {"circuit_id": self.circuit_id, "operation": self.operation}):
+                    resource = self.bpo.resources.create(self.resource_id, payload).resource
+                    self.plan.record_span_event_from_instance("circuit_details.collector.created", {"circuit_id": self.circuit_id})
+            else:
+                resource = self.bpo.resources.create(self.resource_id, payload).resource
+        except RuntimeError as err:
             self.logger.warning("Unable to create Circuit Details Collector resource")
             error = self.error_formatter(
                 self.SYSTEM_ERROR_TYPE, self.RESOURCE_CREATE_SUBCATEGORY, "Circuit Details Collector"
             )
+            if getattr(self.plan, '_otel_initialized', False):
+                self.plan.otel_error_handler("Failed to create circuit details collector", exception=err)
             self.exit_error(error)
         self.logger.info(f"Circuit details resource: {resource}")
         return resource
@@ -49,12 +57,20 @@ class CircuitDetailsHandler:
         payload = self._create_payload_base(self.BUILT_IN_SERVICE_DEVICE_VALIDATORY_TYPE)
         payload["properties"]["circuit_details_id"] = circuit_details_id
         try:
-            resource = self.bpo.resources.create(self.resource_id, payload).resource
-        except RuntimeError:
+            # Use parent plan's OTel if available
+            if getattr(self.plan, '_otel_initialized', False):
+                with self.plan.timed_operation("circuit_details.create_validator", {"circuit_id": self.circuit_id}):
+                    resource = self.bpo.resources.create(self.resource_id, payload).resource
+                    self.plan.record_span_event_from_instance("circuit_details.validator.created", {"circuit_id": self.circuit_id})
+            else:
+                resource = self.bpo.resources.create(self.resource_id, payload).resource
+        except RuntimeError as err:
             self.logger.warning("Unable to create Service Device Validator resource")
             error = self.error_formatter(
                 self.SYSTEM_ERROR_TYPE, self.RESOURCE_CREATE_SUBCATEGORY, "Service Device Validator"
             )
+            if getattr(self.plan, '_otel_initialized', False):
+                self.plan.otel_error_handler("Failed to create service device validator", exception=err)
             self.exit_error(error)
         self.logger.info(f"Circuit details resource: {resource}")
         return resource
@@ -71,35 +87,65 @@ class CircuitDetailsHandler:
         }
 
     def device_onboarding_process(self, circuit_details_id=None, onboarding_context="ALL"):
-        # update circuit details with devices to onboard, call service device onboarder
-        self.create_service_device_validator_resource()
-        self.onboard_devices(circuit_details_id, onboarding_context)
-        # grab updated circuit details
-        self.circuit_details = self.bpo.resources.get(self.circuit_details_id)
+        # Use parent plan's OTel if available
+        if getattr(self.plan, '_otel_initialized', False):
+            with self.plan.timed_operation("circuit_details.onboarding_process", {"circuit_id": self.circuit_id, "context": onboarding_context}):
+                # update circuit details with devices to onboard, call service device onboarder
+                self.create_service_device_validator_resource()
+                self.onboard_devices(circuit_details_id, onboarding_context)
+                # grab updated circuit details
+                self.circuit_details = self.bpo.resources.get(self.circuit_details_id)
+                self.plan.record_span_event_from_instance("circuit_details.onboarding.completed", {"circuit_id": self.circuit_id})
+        else:
+            # update circuit details with devices to onboard, call service device onboarder
+            self.create_service_device_validator_resource()
+            self.onboard_devices(circuit_details_id, onboarding_context)
+            # grab updated circuit details
+            self.circuit_details = self.bpo.resources.get(self.circuit_details_id)
 
     def onboard_devices(self, circuit_details_id=None, onboarding_context="ALL"):
         if not circuit_details_id:
             circuit_details_id = self.circuit_details_id
         self.logger.info("Onboarding devices!")
         try:
-            onboarder = self.bpo.resources.create(
-                self.resource_id,
-                {
-                    "label": f"{self.circuit_id}.ServiceDeviceOnboarder",
-                    "productId": self.get_built_in_product(self.BUILT_IN_SERVICE_DEVICE_ONBOARDER_TYPE)["id"],
-                    "properties": {
-                        "circuit_details_id": circuit_details_id,
-                        "circuit_id": self.circuit_id,
-                        "context": onboarding_context,
-                        "operation": self.operation,
+            # Use parent plan's OTel if available
+            if getattr(self.plan, '_otel_initialized', False):
+                with self.plan.timed_operation("circuit_details.onboard_devices", {"circuit_id": self.circuit_id, "context": onboarding_context}):
+                    onboarder = self.bpo.resources.create(
+                        self.resource_id,
+                        {
+                            "label": f"{self.circuit_id}.ServiceDeviceOnboarder",
+                            "productId": self.get_built_in_product(self.BUILT_IN_SERVICE_DEVICE_ONBOARDER_TYPE)["id"],
+                            "properties": {
+                                "circuit_details_id": circuit_details_id,
+                                "circuit_id": self.circuit_id,
+                                "context": onboarding_context,
+                                "operation": self.operation,
+                            },
+                        },
+                    )
+                    self.plan.record_span_event_from_instance("circuit_details.devices_onboarded", {"circuit_id": self.circuit_id, "context": onboarding_context})
+            else:
+                onboarder = self.bpo.resources.create(
+                    self.resource_id,
+                    {
+                        "label": f"{self.circuit_id}.ServiceDeviceOnboarder",
+                        "productId": self.get_built_in_product(self.BUILT_IN_SERVICE_DEVICE_ONBOARDER_TYPE)["id"],
+                        "properties": {
+                            "circuit_details_id": circuit_details_id,
+                            "circuit_id": self.circuit_id,
+                            "context": onboarding_context,
+                            "operation": self.operation,
+                        },
                     },
-                },
-            )
-        except RuntimeError:
+                )
+        except RuntimeError as err:
             self.logger.warning("Unable to create Service Device Onboarder resource")
             error = self.error_formatter(
                 self.SYSTEM_ERROR_TYPE, self.RESOURCE_CREATE_SUBCATEGORY, "Service Device Onboarder"
             )
+            if getattr(self.plan, '_otel_initialized', False):
+                self.plan.otel_error_handler("Failed to onboard devices", exception=err)
             self.exit_error(error)
         self.logger.info(f"Onboarding circuit details resource: {onboarder}")
         return self.bpo.resources.get(onboarder.resource["properties"]["circuit_details_id"])
