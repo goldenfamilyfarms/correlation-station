@@ -64,43 +64,63 @@ class OTelMixin:
 
     def __init_otel__(self):
         """Initialize OTel tracer and structured logger"""
+        logger.info(f"OTelMixin.__init_otel__: Starting OTel initialization for {self.__class__.__name__}")
+        
         # Check feature flag
         if not is_otel_enabled():
-            logger.debug("OTel instrumentation disabled via feature flag")
+            logger.warning(f"OTelMixin.__init_otel__: OTel instrumentation disabled via feature flag for {self.__class__.__name__}")
             self._otel_initialized = False
             return
         
         # Prevent double initialization
         if hasattr(self, '_otel_initialized') and self._otel_initialized:
+            logger.debug(f"OTelMixin.__init_otel__: OTel already initialized for {self.__class__.__name__}, skipping")
             return
 
         # Get product/resource type from class name
         product_type = self.__class__.__name__
         service_name = f"mdso.{product_type.lower()}"
+        logger.info(f"OTelMixin.__init_otel__: Product type: {product_type}, Service name: {service_name}")
 
         # Get environment from instance or env var
         environment = getattr(self, 'environment', None) or os.getenv("MDSO_ENV", "dev")
+        logger.info(f"OTelMixin.__init_otel__: Environment: {environment}")
+
+        # Check export mode environment variable
+        export_mode = os.getenv("OTEL_EXPORT_MODE", "not set")
+        logger.info(f"OTelMixin.__init_otel__: OTEL_EXPORT_MODE: {export_mode}")
 
         # Setup OTel tracer
+        logger.info(f"OTelMixin.__init_otel__: Calling setup_otel() for {service_name}")
         self.tracer = setup_otel(
             service_name=service_name,
             environment=environment
         )
+        
+        if self.tracer is None:
+            logger.error(f"OTelMixin.__init_otel__: setup_otel() returned None - OTel may not be available")
+            self._otel_initialized = False
+            return
+        
+        logger.info(f"OTelMixin.__init_otel__: Tracer created successfully: {self.tracer}")
 
         # Setup structured logger
         self.otel_logger = get_otel_logger(service_name)
+        logger.info(f"OTelMixin.__init_otel__: Structured logger created")
 
         # Helper for span management
         self.span_helper = MDSOSpanHelper()
         self.error_matcher = ErrorPatternMatcher()
+        logger.info(f"OTelMixin.__init_otel__: Span helpers initialized")
         
         # Metrics helper
         self.metrics = MDSOMetrics(service_name=service_name)
+        logger.info(f"OTelMixin.__init_otel__: Metrics helper initialized")
 
         # Mark as initialized
         self._otel_initialized = True
 
-        logger.info(f"OTel initialized for {product_type}", service_name=service_name, environment=environment)
+        logger.info(f"OTelMixin.__init_otel__: OTel initialization complete for {product_type} (service={service_name}, env={environment})")
 
     def create_root_span(self, operation_name: Optional[str] = None):
         """
@@ -113,15 +133,18 @@ class OTelMixin:
                 return super().run()
         """
         if not hasattr(self, '_otel_initialized') or not self._otel_initialized:
+            logger.info(f"OTelMixin.create_root_span: OTel not initialized, calling __init_otel__()")
             self.__init_otel__()
         
         # Return no-op context manager if OTel disabled
         if not getattr(self, '_otel_initialized', False):
+            logger.warning(f"OTelMixin.create_root_span: OTel not initialized, returning no-op context manager")
             from contextlib import nullcontext
             return nullcontext()
 
         product_name = self.__class__.__name__
         span_name = operation_name or f"mdso.product.{product_name}"
+        logger.info(f"OTelMixin.create_root_span: Creating root span '{span_name}' for {product_name}")
 
         # Extract correlation context from instance attributes
         correlation_attrs = {}
@@ -132,14 +155,19 @@ class OTelMixin:
         if hasattr(self, 'product_id') and self.product_id:
             correlation_attrs['product_id'] = self.product_id
 
-        # Inject correlation context
         if correlation_attrs:
+            logger.info(f"OTelMixin.create_root_span: Injecting correlation context: {correlation_attrs}")
             inject_correlation_context(**correlation_attrs)
+        else:
+            logger.debug(f"OTelMixin.create_root_span: No correlation context found in instance attributes")
 
-        return mdso_span(
+        logger.info(f"OTelMixin.create_root_span: Creating mdso_span with name='{span_name}'")
+        span_context = mdso_span(
             name=span_name,
             **correlation_attrs
         )
+        logger.info(f"OTelMixin.create_root_span: Root span context created successfully")
+        return span_context
 
     def otel_log(self, message: str, level: str = "info", **context):
         """

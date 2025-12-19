@@ -7,6 +7,8 @@ Provides standalone functions for products that don't inherit from OTelPlan
 import os
 import json
 import logging
+import subprocess
+import tempfile
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 from pathlib import Path
@@ -61,46 +63,263 @@ if OTEL_AVAILABLE:
         by BluePlanet's solution manager.
         """
     
-        def __init__(self, file_path: str):
+        def __init__(self, file_path: str, use_sudo: bool = None):
             """
             Initialize file-based span exporter.
         
             Args:
                 file_path: Path to the trace log file (e.g., /opt/ciena/bp2/alloy-collector/traces.ndjson)
+                use_sudo: Whether to use sudo for file operations. If None, auto-detects based on permissions.
             """
             self.file_path = Path(file_path)
-            self.file_path.parent.mkdir(parents=True, exist_ok=True)
+            logger.info(f"FileSpanExporter: Initializing with file path: {self.file_path}")
+            
+            # Determine if sudo is needed
+            if use_sudo is None:
+                # Auto-detect: check if we can write to the directory
+                parent_dir = self.file_path.parent
+                if parent_dir.exists():
+                    use_sudo = not os.access(parent_dir, os.W_OK)
+                else:
+                    # Try to create directory first, if that fails we'll need sudo
+                    try:
+                        parent_dir.mkdir(parents=True, exist_ok=True)
+                        use_sudo = False
+                    except PermissionError:
+                        use_sudo = True
+                    except Exception:
+                        use_sudo = True
+                
+                # Also check environment variable
+                if os.getenv("OTEL_USE_SUDO", "").lower() in ("true", "1", "yes"):
+                    use_sudo = True
+                elif os.getenv("OTEL_USE_SUDO", "").lower() in ("false", "0", "no"):
+                    use_sudo = False
+            
+            self.use_sudo = use_sudo
+            logger.info(f"FileSpanExporter: Using sudo for file operations: {self.use_sudo}")
+            
+            # Check if parent directory exists and log its status
+            parent_dir = self.file_path.parent
+            if parent_dir.exists():
+                logger.info(f"FileSpanExporter: Parent directory exists: {parent_dir}")
+                # Check permissions
+                if os.access(parent_dir, os.W_OK):
+                    logger.info(f"FileSpanExporter: Parent directory is writable: {parent_dir}")
+                else:
+                    logger.warning(f"FileSpanExporter: Parent directory exists but is NOT writable: {parent_dir}")
+                    if self.use_sudo:
+                        logger.info(f"FileSpanExporter: Will use sudo to write to directory")
+            else:
+                logger.info(f"FileSpanExporter: Parent directory does not exist, creating: {parent_dir}")
+            
+            # Create directory if needed
+            if self.use_sudo:
+                try:
+                    self._create_directory_with_sudo(parent_dir)
+                    logger.info(f"FileSpanExporter: Directory created/verified with sudo: {self.file_path.parent}")
+                except Exception as e:
+                    logger.error(f"FileSpanExporter: Failed to create directory with sudo {self.file_path.parent}: {e}")
+                    raise
+            else:
+                try:
+                    self.file_path.parent.mkdir(parents=True, exist_ok=True)
+                    logger.info(f"FileSpanExporter: Directory created/verified: {self.file_path.parent}")
+                except Exception as e:
+                    logger.error(f"FileSpanExporter: Failed to create directory {self.file_path.parent}: {e}")
+                    # Try with sudo as fallback
+                    logger.info(f"FileSpanExporter: Attempting to create directory with sudo as fallback")
+                    try:
+                        self._create_directory_with_sudo(parent_dir)
+                        self.use_sudo = True
+                        logger.info(f"FileSpanExporter: Directory created with sudo, enabling sudo mode")
+                    except Exception as sudo_error:
+                        logger.error(f"FileSpanExporter: Failed to create directory with sudo: {sudo_error}")
+                        raise
+            
+            # Check directory permissions after creation
+            if parent_dir.exists():
+                stat_info = os.stat(parent_dir)
+                logger.info(f"FileSpanExporter: Directory permissions - mode: {oct(stat_info.st_mode)}, uid: {stat_info.st_uid}, gid: {stat_info.st_gid}")
+            
             self.file_handle = None
-            self._open_file()
+            self._pending_writes = []  # Buffer for sudo writes
+            if not self.use_sudo:
+                self._open_file()
+            else:
+                logger.info(f"FileSpanExporter: Skipping direct file open, will use sudo for writes")
     
+        def _create_directory_with_sudo(self, directory: Path):
+            """Create directory using sudo"""
+            try:
+                cmd = ["sudo", "mkdir", "-p", str(directory)]
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if result.returncode != 0:
+                    raise Exception(f"sudo mkdir failed: {result.stderr}")
+                logger.info(f"FileSpanExporter: Created directory with sudo: {directory}")
+            except subprocess.TimeoutExpired:
+                raise Exception("sudo mkdir timed out")
+            except FileNotFoundError:
+                raise Exception("sudo command not found")
+            except Exception as e:
+                raise Exception(f"Failed to create directory with sudo: {e}")
+        
         def _open_file(self):
             """Open file in append mode"""
             try:
+                # Check if file exists before opening
+                file_exists = self.file_path.exists()
+                if file_exists:
+                    file_size = self.file_path.stat().st_size
+                    logger.info(f"FileSpanExporter: Opening existing file: {self.file_path} (size: {file_size} bytes)")
+                else:
+                    logger.info(f"FileSpanExporter: Creating new file: {self.file_path}")
+                
                 self.file_handle = open(self.file_path, "a", encoding="utf-8")
-            except Exception as e:
-                logger.error(f"Failed to open trace log file {self.file_path}: {e}")
+                logger.info(f"FileSpanExporter: Successfully opened file handle: {self.file_path}")
+                
+                # Log file permissions
+                if self.file_path.exists():
+                    stat_info = self.file_path.stat()
+                    logger.info(f"FileSpanExporter: File permissions - mode: {oct(stat_info.st_mode)}, uid: {stat_info.st_uid}, gid: {stat_info.st_gid}, size: {stat_info.st_size} bytes")
+                
+            except PermissionError as e:
+                logger.error(f"FileSpanExporter: Permission denied opening file {self.file_path}: {e}")
+                logger.error(f"FileSpanExporter: Current user: {os.getuid()}, Current group: {os.getgid()}")
                 raise
+            except Exception as e:
+                logger.error(f"FileSpanExporter: Failed to open trace log file {self.file_path}: {e}", exc_info=True)
+                raise
+        
+        def _write_with_sudo(self, content: str):
+            """Write content to file using sudo tee"""
+            try:
+                # Use sudo tee -a to append to file
+                cmd = ["sudo", "tee", "-a", str(self.file_path)]
+                result = subprocess.run(
+                    cmd,
+                    input=content,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if result.returncode != 0:
+                    logger.error(f"FileSpanExporter: sudo tee failed: {result.stderr}")
+                    return False
+                return True
+            except subprocess.TimeoutExpired:
+                logger.error(f"FileSpanExporter: sudo tee timed out")
+                return False
+            except FileNotFoundError:
+                logger.error(f"FileSpanExporter: sudo command not found")
+                return False
+            except Exception as e:
+                logger.error(f"FileSpanExporter: Failed to write with sudo: {e}")
+                return False
     
         def export(self, spans) -> SpanExportResult:
             """
             Export spans to file as JSON lines.
         
             Each span is written as a single JSON line (NDJSON format).
+            Uses sudo if configured or if permission denied.
             """
             if not spans:
+                logger.debug(f"FileSpanExporter: export() called with empty spans list")
                 return SpanExportResult.SUCCESS
         
+            num_spans = len(spans)
+            logger.info(f"FileSpanExporter: Exporting {num_spans} span(s) to {self.file_path} (sudo={self.use_sudo})")
+            
+            # Get file size before write
             try:
-                for span in spans:
-                    # Convert span to OTLP-compatible JSON format
+                file_size_before = self.file_path.stat().st_size if self.file_path.exists() else 0
+            except Exception:
+                file_size_before = 0
+            
+            try:
+                if self.use_sudo:
+                    # Use sudo for writing
+                    return self._export_with_sudo(spans, num_spans, file_size_before)
+                else:
+                    # Use direct file writing
+                    if self.file_handle is None or self.file_handle.closed:
+                        logger.warning(f"FileSpanExporter: File handle is None or closed, reopening file: {self.file_path}")
+                        try:
+                            self._open_file()
+                        except PermissionError:
+                            logger.warning(f"FileSpanExporter: Permission denied, falling back to sudo")
+                            self.use_sudo = True
+                            return self._export_with_sudo(spans, num_spans, file_size_before)
+                    
+                    bytes_written = 0
+                    for idx, span in enumerate(spans):
+                        # Convert span to OTLP-compatible JSON format
+                        span_data = self._span_to_dict(span)
+                        json_line = json.dumps(span_data, default=str)
+                        line_bytes = self.file_handle.write(json_line + "\n")
+                        bytes_written += line_bytes
+                        logger.debug(f"FileSpanExporter: Wrote span {idx+1}/{num_spans} ({span.name}) - {line_bytes} bytes")
+                
+                    # Flush to ensure data is written
+                    self.file_handle.flush()
+                    
+                    # Get file size after write
+                    try:
+                        file_size_after = self.file_path.stat().st_size if self.file_path.exists() else 0
+                        bytes_added = file_size_after - file_size_before
+                    except Exception:
+                        file_size_after = file_size_before
+                        bytes_added = 0
+                    
+                    logger.info(f"FileSpanExporter: Successfully exported {num_spans} span(s) - wrote {bytes_written} bytes, file size: {file_size_before} -> {file_size_after} bytes (+{bytes_added})")
+                    return SpanExportResult.SUCCESS
+            except PermissionError as e:
+                logger.warning(f"FileSpanExporter: Permission denied, falling back to sudo: {e}")
+                self.use_sudo = True
+                return self._export_with_sudo(spans, num_spans, file_size_before)
+            except Exception as e:
+                logger.error(f"FileSpanExporter: Failed to export {num_spans} span(s) to file {self.file_path}: {e}", exc_info=True)
+                return SpanExportResult.FAILURE
+        
+        def _export_with_sudo(self, spans, num_spans, file_size_before) -> SpanExportResult:
+            """Export spans using sudo"""
+            try:
+                # Build all lines to write
+                lines_to_write = []
+                for idx, span in enumerate(spans):
                     span_data = self._span_to_dict(span)
                     json_line = json.dumps(span_data, default=str)
-                    self.file_handle.write(json_line + "\n")
-            
-                self.file_handle.flush()
-                return SpanExportResult.SUCCESS
+                    lines_to_write.append(json_line)
+                    logger.debug(f"FileSpanExporter: Prepared span {idx+1}/{num_spans} ({span.name}) for sudo write")
+                
+                # Combine all lines
+                content = "\n".join(lines_to_write) + "\n"
+                bytes_to_write = len(content.encode('utf-8'))
+                
+                # Write using sudo
+                logger.info(f"FileSpanExporter: Writing {num_spans} span(s) using sudo ({bytes_to_write} bytes)")
+                if self._write_with_sudo(content):
+                    # Get file size after write
+                    try:
+                        file_size_after = self.file_path.stat().st_size if self.file_path.exists() else 0
+                        bytes_added = file_size_after - file_size_before
+                    except Exception:
+                        file_size_after = file_size_before
+                        bytes_added = bytes_to_write
+                    
+                    logger.info(f"FileSpanExporter: Successfully exported {num_spans} span(s) with sudo - wrote {bytes_to_write} bytes, file size: {file_size_before} -> {file_size_after} bytes (+{bytes_added})")
+                    return SpanExportResult.SUCCESS
+                else:
+                    logger.error(f"FileSpanExporter: Failed to write {num_spans} span(s) with sudo")
+                    return SpanExportResult.FAILURE
             except Exception as e:
-                logger.error(f"Failed to export spans to file: {e}")
+                logger.error(f"FileSpanExporter: Error in _export_with_sudo: {e}", exc_info=True)
                 return SpanExportResult.FAILURE
     
         def _span_to_dict(self, span: ReadableSpan) -> Dict[str, Any]:
@@ -169,8 +388,13 @@ if OTEL_AVAILABLE:
         def force_flush(self, timeout_millis: int = 30000) -> bool:
             """Flush file buffer"""
             try:
-                if self.file_handle:
+                if self.use_sudo:
+                    # For sudo mode, writes are immediate, nothing to flush
+                    logger.debug(f"FileSpanExporter: force_flush called in sudo mode (no-op)")
+                    return True
+                elif self.file_handle:
                     self.file_handle.flush()
+                    return True
                 return True
             except Exception as e:
                 logger.error(f"Error flushing trace log file: {e}")
@@ -231,19 +455,25 @@ def setup_otel(
     
     # Determine export mode
     export_mode = os.getenv("OTEL_EXPORT_MODE", "").lower()
+    logger.info(f"setup_otel: Export mode detection - OTEL_EXPORT_MODE env var: '{os.getenv('OTEL_EXPORT_MODE', 'not set')}', use_file_export parameter: {use_file_export}")
     
     if use_file_export is None:
         # Auto-detect: prefer file mode if explicitly set, or if in isolated container
         if export_mode == "file":
             use_file_export = True
+            logger.info("setup_otel: Export mode explicitly set to 'file' via OTEL_EXPORT_MODE environment variable")
         elif export_mode == "otlp":
             use_file_export = False
+            logger.info("setup_otel: Export mode explicitly set to 'otlp' via OTEL_EXPORT_MODE environment variable")
         else:
             # Auto-detect: try to connect to Alloy agent
             # If we're in an isolated container, localhost:4318 won't be reachable
             # Default to file mode for safety (works in all scenarios)
             use_file_export = True  # Default to file mode for isolated containers
-            logger.info("Auto-detecting export mode: defaulting to file-based (safe for isolated containers)")
+            logger.info("setup_otel: Auto-detecting export mode: defaulting to file-based (safe for isolated containers)")
+            logger.info("setup_otel: No OTEL_EXPORT_MODE set, and use_file_export=None, so defaulting to file mode")
+    else:
+        logger.info(f"setup_otel: Export mode explicitly set via use_file_export parameter: {use_file_export}")
     
     # Create resource with service metadata
     resource = Resource.create({
@@ -266,16 +496,40 @@ def setup_otel(
         )
         trace_log_file = os.path.join(trace_log_dir, DEFAULT_TRACE_LOG_FILE)
         
-        logger.info(f"Using file-based trace export: {trace_log_file}")
-        logger.info("This mode is required for isolated containers that cannot reach Alloy agent")
+        logger.info(f"setup_otel: Using file-based trace export mode")
+        logger.info(f"setup_otel: Trace log directory: {trace_log_dir}")
+        logger.info(f"setup_otel: Trace log file: {trace_log_file}")
+        logger.info(f"setup_otel: OTEL_TRACE_LOG_DIR env var: {os.getenv('OTEL_TRACE_LOG_DIR', 'not set')}")
+        logger.info("setup_otel: This mode is required for isolated containers that cannot reach Alloy agent")
         
-        file_exporter = FileSpanExporter(trace_log_file)
+        # Verify directory exists and is writable before creating exporter
+        trace_log_dir_path = Path(trace_log_dir)
+        if trace_log_dir_path.exists():
+            logger.info(f"setup_otel: Trace log directory exists: {trace_log_dir_path}")
+            if os.access(trace_log_dir_path, os.W_OK):
+                logger.info(f"setup_otel: Trace log directory is writable: {trace_log_dir_path}")
+            else:
+                logger.warning(f"setup_otel: Trace log directory exists but is NOT writable: {trace_log_dir_path}")
+        else:
+            logger.info(f"setup_otel: Trace log directory does not exist, will be created: {trace_log_dir_path}")
+        
+        # Check if sudo should be used
+        use_sudo = os.getenv("OTEL_USE_SUDO", "").lower() in ("true", "1", "yes")
+        if use_sudo:
+            logger.info(f"setup_otel: OTEL_USE_SUDO is set, will use sudo for file operations")
+        
+        logger.info(f"setup_otel: Creating FileSpanExporter instance for: {trace_log_file}")
+        file_exporter = FileSpanExporter(trace_log_file, use_sudo=use_sudo if use_sudo else None)
+        logger.info(f"setup_otel: FileSpanExporter created successfully (sudo={file_exporter.use_sudo})")
+        
+        logger.info(f"setup_otel: Creating BatchSpanProcessor with max_queue_size=2048, max_export_batch_size=512, schedule_delay_millis=5000")
         processor = BatchSpanProcessor(
             file_exporter,
             max_queue_size=2048,
             max_export_batch_size=512,
             schedule_delay_millis=5000,
         )
+        logger.info(f"setup_otel: BatchSpanProcessor created successfully")
         export_info = f"file:{trace_log_file}"
     else:
         # Direct OTLP export to Alloy agent
@@ -284,29 +538,191 @@ def setup_otel(
             "http://localhost:4318"  # Alloy OTLP HTTP receiver
         )
         
-        logger.info(f"Using direct OTLP export to: {endpoint}")
+        logger.info(f"setup_otel: Using direct OTLP export mode")
+        logger.info(f"setup_otel: OTLP endpoint: {endpoint}")
+        logger.info(f"setup_otel: OTEL_EXPORTER_OTLP_ENDPOINT env var: {os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', 'not set')}")
+        logger.warning(f"setup_otel: WARNING - Using OTLP mode instead of file mode. If scripts are in isolated containers, this may fail!")
         
         otlp_exporter = OTLPSpanExporter(
             endpoint=f"{endpoint}/v1/traces",
             timeout=30,
         )
+        logger.info(f"setup_otel: OTLPSpanExporter created for endpoint: {endpoint}/v1/traces")
+        
         processor = BatchSpanProcessor(
             otlp_exporter,
             max_queue_size=2048,
             max_export_batch_size=512,
             schedule_delay_millis=5000,
         )
+        logger.info(f"setup_otel: BatchSpanProcessor created successfully for OTLP export")
         export_info = f"otlp:{endpoint}"
 
     # Add processor to provider
+    logger.info(f"setup_otel: Adding span processor to TracerProvider")
     provider.add_span_processor(processor)
+    logger.info(f"setup_otel: Span processor added successfully")
 
     # Set global tracer provider
+    logger.info(f"setup_otel: Setting global tracer provider")
     trace.set_tracer_provider(provider)
+    logger.info(f"setup_otel: Global tracer provider set successfully")
 
-    logger.info(f"OTel initialized: service={service_name}, export={export_info}, env={environment}")
+    logger.info(f"setup_otel: OTel initialization complete - service={service_name}, export={export_info}, env={environment}")
+    
+    # If using file export, verify the file is writable
+    if use_file_export:
+        trace_log_file = os.path.join(
+            trace_log_dir or os.getenv("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR),
+            DEFAULT_TRACE_LOG_FILE
+        )
+        trace_log_path = Path(trace_log_file)
+        if trace_log_path.exists():
+            try:
+                # Try to write a test byte to verify writability
+                with open(trace_log_path, "a") as test_file:
+                    test_file.write("")
+                logger.info(f"setup_otel: Verified trace log file is writable: {trace_log_file}")
+            except Exception as e:
+                logger.error(f"setup_otel: WARNING - Trace log file exists but is NOT writable: {trace_log_file}, error: {e}")
 
     return trace.get_tracer(__name__)
+
+
+def test_file_export(trace_log_dir: str = None) -> Dict[str, Any]:
+    """
+    Diagnostic function to test file-based trace export.
+    
+    Creates a test span and verifies it can be written to the trace log file.
+    Useful for debugging why logs aren't appearing in /opt/ciena/bp2/alloy-collector.
+    
+    Args:
+        trace_log_dir: Directory for trace log files (default: /opt/ciena/bp2/alloy-collector)
+    
+    Returns:
+        Dictionary with test results including success status, file path, and any errors
+    
+    Example:
+        >>> result = test_file_export()
+        >>> print(result)
+        {'success': True, 'file_path': '/opt/ciena/bp2/alloy-collector/traces.ndjson', ...}
+    """
+    result = {
+        "success": False,
+        "file_path": None,
+        "error": None,
+        "file_exists": False,
+        "file_writable": False,
+        "file_size": 0,
+        "test_span_written": False
+    }
+    
+    if not OTEL_AVAILABLE:
+        result["error"] = "OpenTelemetry not available"
+        logger.error(f"test_file_export: {result['error']}")
+        return result
+    
+    try:
+        # Determine file path
+        trace_log_dir = trace_log_dir or os.getenv("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR)
+        trace_log_file = os.path.join(trace_log_dir, DEFAULT_TRACE_LOG_FILE)
+        result["file_path"] = trace_log_file
+        
+        logger.info(f"test_file_export: Testing file export to: {trace_log_file}")
+        
+        # Check directory
+        trace_log_path = Path(trace_log_file)
+        parent_dir = trace_log_path.parent
+        
+        if not parent_dir.exists():
+            logger.warning(f"test_file_export: Parent directory does not exist: {parent_dir}")
+            try:
+                parent_dir.mkdir(parents=True, exist_ok=True)
+                logger.info(f"test_file_export: Created parent directory: {parent_dir}")
+            except Exception as e:
+                result["error"] = f"Failed to create directory: {e}"
+                logger.error(f"test_file_export: {result['error']}")
+                return result
+        
+        # Check if file exists
+        result["file_exists"] = trace_log_path.exists()
+        if result["file_exists"]:
+            result["file_size"] = trace_log_path.stat().st_size
+            logger.info(f"test_file_export: File exists, current size: {result['file_size']} bytes")
+        else:
+            logger.info(f"test_file_export: File does not exist, will be created")
+        
+        # Test file writability
+        try:
+            with open(trace_log_path, "a") as test_file:
+                test_file.write("")
+            result["file_writable"] = True
+            logger.info(f"test_file_export: File is writable")
+        except Exception as e:
+            result["error"] = f"File is not writable: {e}"
+            logger.error(f"test_file_export: {result['error']}")
+            return result
+        
+        # Create a test span using the tracer
+        logger.info(f"test_file_export: Setting up test tracer with file export")
+        test_tracer = setup_otel(
+            service_name="test-file-export",
+            environment="test",
+            use_file_export=True,
+            trace_log_dir=trace_log_dir
+        )
+        
+        if test_tracer is None:
+            result["error"] = "Failed to create test tracer"
+            logger.error(f"test_file_export: {result['error']}")
+            return result
+        
+        # Create and export a test span
+        logger.info(f"test_file_export: Creating test span")
+        with test_tracer.start_as_current_span("test_file_export_span") as span:
+            span.set_attribute("test", True)
+            span.set_attribute("timestamp", datetime.now(timezone.utc).isoformat())
+            span.set_status(trace.Status(trace.StatusCode.OK))
+            logger.info(f"test_file_export: Test span created: {span.name}, trace_id: {format(span.get_span_context().trace_id, '032x')}")
+        
+        # Force flush the span processor
+        logger.info(f"test_file_export: Flushing span processor to ensure spans are written")
+        provider = trace.get_tracer_provider()
+        if hasattr(provider, "force_flush"):
+            try:
+                provider.force_flush(timeout_millis=5000)
+                logger.info(f"test_file_export: Span processor flushed successfully")
+            except Exception as e:
+                logger.warning(f"test_file_export: Failed to flush span processor: {e}")
+        
+        # Also try to get the processor and flush it directly
+        if hasattr(provider, "_span_processors"):
+            for processor in provider._span_processors:
+                if hasattr(processor, "force_flush"):
+                    try:
+                        processor.force_flush(timeout_millis=5000)
+                        logger.info(f"test_file_export: Flushed individual span processor")
+                    except Exception as e:
+                        logger.warning(f"test_file_export: Failed to flush individual processor: {e}")
+        
+        # Check if file was written to
+        if trace_log_path.exists():
+            new_file_size = trace_log_path.stat().st_size
+            if new_file_size > result["file_size"]:
+                result["test_span_written"] = True
+                result["file_size"] = new_file_size
+                logger.info(f"test_file_export: Test span written successfully, file size: {result['file_size']} bytes")
+            else:
+                logger.warning(f"test_file_export: File size did not increase after writing test span")
+        
+        result["success"] = True
+        logger.info(f"test_file_export: Test completed successfully")
+        
+    except Exception as e:
+        result["error"] = str(e)
+        logger.error(f"test_file_export: Test failed with error: {e}", exc_info=True)
+    
+    return result
 
 
 def get_otel_logger(service_name: str = "mdso-scriptplan") -> Optional[Any]:  # Returns structlog.BoundLogger when available
