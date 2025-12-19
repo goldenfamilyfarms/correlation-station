@@ -1,50 +1,98 @@
 import sys
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 import scripts.networkservice.circuitdetailscollector
 import scripts.scriptplan
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
 
     def process(self):
-        self.circuit_id = self.properties['circuit_id']
+        # Initialize OTel instrumentation
+        self.__init_otel__()
 
-        # Create tracelog on multi-leg resource
-        self.enter_exit_log(message="Multi-Leg Circuit")
+        # Create root span for multileg circuit
+        with self.create_root_span(operation_name="multileg_circuit"):
+            # Set correlation baggage
+            self.set_correlation_baggage_from_instance()
 
-        self.use_alternate_url = bool(self.properties.get('use_alternate_circuit_details_server', False))
-        raw_details = scripts.networkservice.circuitdetailscollector.Activate.get_circuit_details_server_response(self, True)
-        self.timeout_per_leg = self.properties['timeout_per_leg']
+            self.circuit_id = self.properties['circuit_id']
 
-        self.legs_list = []
-        for k in raw_details:
-            self.legs_list.append(k)
+            # Create tracelog on multi-leg resource
+            self.enter_exit_log(message="Multi-Leg Circuit")
 
-        self.logger.info("==== Legs List: {}".format(self.legs_list))
+            self.use_alternate_url = bool(self.properties.get('use_alternate_circuit_details_server', False))
 
-        network_service_prod_id = self.get_products_by_type_and_domain("charter.resourceTypes.NetworkService", "built-in")[0]['id']
+            # Get circuit details with timing
+            with self.timed_operation("multileg.get_circuit_details") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                raw_details = scripts.networkservice.circuitdetailscollector.Activate.get_circuit_details_server_response(self, True)
 
-        for leg_name in self.legs_list:
-            try:
-                cid = raw_details[leg_name]['serviceName'] + "-" + leg_name
-                self.logger.info("The CID I will send is: {}".format(cid))
-                props = {
-                    "circuit_id": cid,
-                    "use_alternate_circuit_details_server": self.resource['properties']['use_alternate_circuit_details_server']}
-                net_serv_body = {
-                    "productId": network_service_prod_id,
-                    "label": cid,
-                    "properties": props}
+            self.timeout_per_leg = self.properties['timeout_per_leg']
 
-                net_serv_response = self.create_active_resource(title=cid, parent_res_id=self.resource_id, body=net_serv_body, waittime=self.timeout_per_leg)
-                self.logger.info("=&=$=%=&=$=%=&=$=% NET_SERV_RESPONSE %=$=&=%=$=&=%=$=&=%=$=&=")
-                self.logger.info(net_serv_response)
+            self.legs_list = []
+            for k in raw_details:
+                self.legs_list.append(k)
 
-            except Exception as e:
-                msg = "Failure in the Multileg process"
-                self.categorized_error = self.ERROR_CATEGORY['MDSO'].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
-                self.exit_error("Failed during the multileg process : %s" % str(e))
+            self.logger.info("==== Legs List: {}".format(self.legs_list))
+
+            # Add span attributes for multileg details
+            if getattr(self, '_otel_initialized', False):
+                from opentelemetry import trace
+                span = trace.get_current_span()
+                if span and span.is_recording():
+                    span.set_attribute("multileg.circuit_id", self.circuit_id)
+                    span.set_attribute("multileg.leg_count", len(self.legs_list))
+                    span.set_attribute("multileg.timeout_per_leg", self.timeout_per_leg)
+                self.record_span_event_from_instance("multileg.legs_identified", {
+                    "leg_count": len(self.legs_list),
+                    "legs": self.legs_list
+                })
+
+            network_service_prod_id = self.get_products_by_type_and_domain("charter.resourceTypes.NetworkService", "built-in")[0]['id']
+
+            for leg_name in self.legs_list:
+                try:
+                    cid = raw_details[leg_name]['serviceName'] + "-" + leg_name
+                    self.logger.info("The CID I will send is: {}".format(cid))
+                    props = {
+                        "circuit_id": cid,
+                        "use_alternate_circuit_details_server": self.resource['properties']['use_alternate_circuit_details_server']}
+                    net_serv_body = {
+                        "productId": network_service_prod_id,
+                        "label": cid,
+                        "properties": props}
+
+                    # Create network service for each leg with timing
+                    with self.timed_operation("multileg.create_leg", {"leg_name": leg_name, "cid": cid}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("multileg.leg.creation.started", {"leg_name": leg_name, "cid": cid})
+
+                        net_serv_response = self.create_active_resource(title=cid, parent_res_id=self.resource_id, body=net_serv_body, waittime=self.timeout_per_leg)
+                        self.logger.info("=&=$=%=&=$=%=&=$=% NET_SERV_RESPONSE %=$=&=%=$=&=%=$=&=%=$=&=")
+                        self.logger.info(net_serv_response)
+
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("multileg.leg.creation.completed", {"leg_name": leg_name, "cid": cid})
+
+                except Exception as e:
+                    msg = "Failure in the Multileg process"
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(f"Failed to create leg {leg_name}: {msg}", exception=e)
+                    self.categorized_error = self.ERROR_CATEGORY['MDSO'].format(msg) if self.ERROR_CATEGORY.get("MDSO") else ""
+                    self.exit_error("Failed during the multileg process : %s" % str(e))
+
+            # Record completion
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("multileg.circuit.completed", {
+                    "circuit_id": self.circuit_id,
+                    "total_legs": len(self.legs_list)
+                })
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
 
 class Terminate(CommonPlan):
