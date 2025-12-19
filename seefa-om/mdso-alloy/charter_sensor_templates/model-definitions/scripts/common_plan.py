@@ -33,17 +33,16 @@ from scripts.utils import Utils
 
 # OpenTelemetry imports
 try:
+    from scripts.otel_instrumentation.otel_mixin import OTelMixin
     from scripts.otel_instrumentation.instrumentation import (
-        setup_otel,
-        get_otel_logger,
         inject_correlation_context,
-        otel_enter_exit_log,
     )
     from opentelemetry import trace
     OTEL_AVAILABLE = True
 except ImportError:
     OTEL_AVAILABLE = False
-    setup_otel = get_otel_logger = inject_correlation_context = otel_enter_exit_log = None
+    OTelMixin = object  # Fallback to base object if not available
+    inject_correlation_context = None
     trace = None
 
 
@@ -119,7 +118,7 @@ class sensitiveLogDataFormatter(object):
         return getattr(self.orig_formatter, attr)
 
 
-class CommonPlan(Plan, Utils):
+class CommonPlan(Plan, Utils, OTelMixin):
     BUILT_IN_DOMAIN_ID = "built-in"
     BUILT_IN_CIRCUIT_DATA_COLLECTOR_TYPE = "charter.resourceTypes.CircuitDetailsCollector"
     BUILT_IN_SERVICE_DEVICE_VALIDATORY_TYPE = "charter.resourceTypes.ServiceDeviceValidator"
@@ -443,33 +442,13 @@ class CommonPlan(Plan, Utils):
         self.logger.info("Starting execution for " + str(self.the_class))
 
         # ========================================
-        # OpenTelemetry Setup and Logging
+        # OpenTelemetry Setup using OTelMixin
         # ========================================
-        self.otel_tracer = None
-        self.otel_logger = None
-        
-        if OTEL_AVAILABLE and self.OTEL_ENABLED:
+        if OTEL_AVAILABLE:
             try:
-                # Determine export mode (file or otlp)
-                use_file_export = None
-                if self.OTEL_EXPORT_MODE:
-                    use_file_export = (self.OTEL_EXPORT_MODE.lower() == "file")
-                
-                # Setup OpenTelemetry tracer
-                self.otel_tracer = setup_otel(
-                    service_name="mdso-scriptplan",
-                    endpoint=self.OTEL_EXPORTER_OTLP_ENDPOINT,
-                    environment=self.MDSO_ENV or os.getenv("DEPLOYMENT_ENV", "dev"),
-                    version="1.0.0",
-                    use_file_export=use_file_export,
-                    trace_log_dir=self.OTEL_TRACE_LOG_DIR,
-                    instance=self
-                )
-                
-                # Get structured logger with trace context
-                self.otel_logger = get_otel_logger("mdso-scriptplan")
-                
-                self.logger.info("OpenTelemetry initialized successfully")
+                self.__init_otel__()
+                if hasattr(self, '_otel_initialized') and self._otel_initialized:
+                    self.logger.info("OpenTelemetry initialized successfully via OTelMixin")
             except Exception as e:
                 self.logger.warning(f"Failed to initialize OpenTelemetry: {e}", exc_info=True)
                 # Continue execution without OTEL
@@ -516,6 +495,10 @@ class CommonPlan(Plan, Utils):
             product_id = self.properties.get("productId") or self.properties.get("product_id")
             resource_type_id = self.properties.get("resourceTypeId") or self.properties.get("resource_type_id")
         
+        # Store correlation context as instance attributes for OTelMixin
+        self.circuit_id = circuit_id
+        self.product_id = product_id
+
         # Inject correlation context into OTEL
         if OTEL_AVAILABLE and self.OTEL_ENABLED and inject_correlation_context:
             try:
@@ -528,140 +511,108 @@ class CommonPlan(Plan, Utils):
             except Exception as e:
                 self.logger.warning(f"Failed to inject correlation context: {e}")
 
-        # Create main span for plan execution using context manager
-        if OTEL_AVAILABLE and self.OTEL_ENABLED and self.otel_tracer:
-            span_ctx = self.otel_tracer.start_as_current_span(
-                f"plan.execute.{self.the_class}",
-                kind=trace.SpanKind.INTERNAL
-            )
-            span = span_ctx.__enter__()
-        else:
-            span = None
-            span_ctx = None
+        # Create main span for plan execution using OTelMixin context manager
+        with self.create_root_span(f"plan.execute.{self.the_class}"):
+            try:
+                # Get current span for setting attributes
+                span = trace.get_current_span() if OTEL_AVAILABLE and trace else None
 
-        try:
-            # Set span attributes if span was created
-            if span and span.is_recording():
-                try:
-                    span.set_attribute("plan.class", self.the_class)
-                    span.set_attribute("plan.resource_id", str(self.resource_id))
-                    if circuit_id:
-                        span.set_attribute("circuit_id", str(circuit_id))
-                    if product_id:
-                        span.set_attribute("product_id", str(product_id))
-                    if resource_type_id:
-                        span.set_attribute("resource_type_id", str(resource_type_id))
-                    span.set_attribute("mdso.component", "scriptplan")
-                except Exception:
-                    pass
-            
-            # Log with OTEL structured logger if available
-            if self.otel_logger:
-                try:
-                    self.otel_logger.info(
-                        "Plan execution started",
-                        plan_class=self.the_class,
-                        resource_id=self.resource_id,
-                        circuit_id=circuit_id,
-                        product_id=product_id,
-                        state="STARTED"
+                # Set span attributes if span was created
+                if span and span.is_recording():
+                    try:
+                        span.set_attribute("plan.class", self.the_class)
+                        span.set_attribute("plan.resource_id", str(self.resource_id))
+                        if circuit_id:
+                            span.set_attribute("circuit_id", str(circuit_id))
+                        if product_id:
+                            span.set_attribute("product_id", str(product_id))
+                        if resource_type_id:
+                            span.set_attribute("resource_type_id", str(resource_type_id))
+                        span.set_attribute("mdso.component", "scriptplan")
+                    except Exception:
+                        pass
+
+                # Log with OTelMixin's structured logging
+                if hasattr(self, 'otel_log'):
+                    try:
+                        self.otel_log(
+                            "Plan execution started",
+                            level="info",
+                            plan_class=self.the_class,
+                            circuit_id=circuit_id,
+                            product_id=product_id,
+                            state="STARTED"
+                        )
+                    except Exception as e:
+                        self.logger.warning(f"Failed to log with OTEL: {e}")
+
+                self.enter_exit_log("STARTED PROCESSING")
+                self.logger.debug(" ###################### STARTING PROCESSING ######################")
+
+                # Add span event
+                if span and span.is_recording():
+                    try:
+                        span.add_event("plan.execution.started", {
+                            "plan_class": self.the_class,
+                            "resource_id": str(self.resource_id)
+                        })
+                    except Exception:
+                        pass
+
+                response = self.process()
+
+                self.logger.debug(" ###################### FINISHED PROCESSING ######################")
+
+                # Log completion with OTelMixin's structured logging
+                if hasattr(self, 'otel_log'):
+                    try:
+                        self.otel_log(
+                            "Plan execution completed",
+                            level="info",
+                            plan_class=self.the_class,
+                            circuit_id=circuit_id,
+                            product_id=product_id,
+                            state="COMPLETED"
+                        )
+                    except Exception:
+                        pass
+
+                # Mark span as successful
+                if span and span.is_recording():
+                    try:
+                        span.add_event("plan.execution.completed", {
+                            "plan_class": self.the_class,
+                            "resource_id": str(self.resource_id)
+                        })
+                        span.set_status(trace.Status(trace.StatusCode.OK))
+                    except Exception:
+                        pass
+
+            except Exception as ex:
+                self.logger.exception(ex)
+                reason = "Error: " + str(ex)
+
+                # Use OTelMixin's error handler
+                if hasattr(self, 'otel_error_handler'):
+                    try:
+                        self.otel_error_handler(
+                            error_message=f"Plan execution failed: {str(ex)}",
+                            exception=ex
+                        )
+                    except Exception:
+                        pass
+
+                if any(formatted_system in str(ex) for formatted_system in self.FORMATTED_SYSTEM_LEVELS):
+                    # error is categorized and formatted appropriately
+                    msg = str(ex)
+                    self.categorized_error = msg
+                else:
+                    # generic categorization
+                    msg = reason
+                    self.categorized_error = self.error_formatter(
+                        self.PROCESS_ERROR_TYPE, "Exception Raised", f"class: {str(self.the_class)} reason: {msg}"
                     )
-                except Exception as e:
-                    self.logger.warning(f"Failed to log with OTEL logger: {e}")
-            
-            self.enter_exit_log("STARTED PROCESSING")
-            self.logger.debug(" ###################### STARTING PROCESSING ######################")
-            
-            # Add span event
-            if span and span.is_recording():
-                try:
-                    span.add_event("plan.execution.started", {
-                        "plan_class": self.the_class,
-                        "resource_id": str(self.resource_id)
-                    })
-                except Exception:
-                    pass
-            
-            response = self.process()
-            
-            self.logger.debug(" ###################### FINISHED PROCESSING ######################")
-            
-            # Log completion with OTEL structured logger
-            if self.otel_logger:
-                try:
-                    self.otel_logger.info(
-                        "Plan execution completed",
-                        plan_class=self.the_class,
-                        resource_id=self.resource_id,
-                        circuit_id=circuit_id,
-                        product_id=product_id,
-                        state="COMPLETED"
-                    )
-                except Exception:
-                    pass
-            
-            # Mark span as successful
-            if span and span.is_recording():
-                try:
-                    span.add_event("plan.execution.completed", {
-                        "plan_class": self.the_class,
-                        "resource_id": str(self.resource_id)
-                    })
-                    span.set_status(trace.Status(trace.StatusCode.OK))
-                except Exception:
-                    pass
-                    
-        except Exception as ex:
-            self.logger.exception(ex)
-            reason = "Error: " + str(ex)
-            
-            # Log failure with OTEL structured logger
-            if self.otel_logger:
-                try:
-                    self.otel_logger.error(
-                        "Plan execution failed",
-                        plan_class=self.the_class,
-                        resource_id=self.resource_id,
-                        circuit_id=circuit_id,
-                        product_id=product_id,
-                        error=str(ex),
-                        state="FAILED",
-                        exc_info=True
-                    )
-                except Exception:
-                    pass
-            
-            # Mark span as failed
-            if span and span.is_recording():
-                try:
-                    span.add_event("plan.execution.failed", {
-                        "plan_class": self.the_class,
-                        "resource_id": str(self.resource_id),
-                        "error": str(ex)
-                    })
-                    span.set_status(trace.Status(trace.StatusCode.ERROR, str(ex)))
-                    span.record_exception(ex)
-                except Exception:
-                    pass
-            
-            if any(formatted_system in str(ex) for formatted_system in self.FORMATTED_SYSTEM_LEVELS):
-                # error is categorized and formatted appropriately
-                msg = str(ex)
-                self.categorized_error = msg
-            else:
-                # generic categorization
-                msg = reason
-                self.categorized_error = self.error_formatter(
-                    self.PROCESS_ERROR_TYPE, "Exception Raised", f"class: {str(self.the_class)} reason: {msg}"
-                )
-            self.exit_error(msg)
-        finally:
-            # Exit span context if it was created
-            if span_ctx:
-                try:
-                    span_ctx.__exit__(None, None, None)
-                except Exception:
-                    pass
+                self.exit_error(msg)
 
         self.complete()
         return response
