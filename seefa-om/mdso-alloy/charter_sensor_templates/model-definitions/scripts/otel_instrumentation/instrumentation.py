@@ -53,6 +53,45 @@ DEFAULT_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"
 DEFAULT_TRACE_LOG_FILE = "traces.ndjson"
 
 
+def _get_otel_config(key: str, default_value=None, instance=None):
+    """
+    Get OTel configuration value from CommonPlan constants or environment variable.
+    
+    Priority:
+    1. CommonPlan class constant (if instance is provided and has the attribute)
+    2. Environment variable
+    3. Default value
+    
+    Args:
+        key: Configuration key name (e.g., "OTEL_EXPORT_MODE")
+        default_value: Default value if not found
+        instance: Optional instance of CommonPlan (or class with OTel constants)
+    
+    Returns:
+        Configuration value
+    """
+    # Try to get from instance/class constants first
+    if instance is not None:
+        # Check if instance has the constant
+        if hasattr(instance, key):
+            value = getattr(instance, key)
+            if value is not None:
+                return value
+        # Also check the class
+        if hasattr(instance.__class__, key):
+            value = getattr(instance.__class__, key)
+            if value is not None:
+                return value
+    
+    # Fall back to environment variable
+    env_value = os.getenv(key, None)
+    if env_value is not None:
+        return env_value
+    
+    # Return default
+    return default_value
+
+
 if OTEL_AVAILABLE:
     class FileSpanExporter(SpanExporter):
         """
@@ -63,38 +102,43 @@ if OTEL_AVAILABLE:
         by BluePlanet's solution manager.
         """
     
-        def __init__(self, file_path: str, use_sudo: bool = None):
+        def __init__(self, file_path: str, use_sudo: bool = None, instance=None):
             """
             Initialize file-based span exporter.
         
             Args:
                 file_path: Path to the trace log file (e.g., /opt/ciena/bp2/alloy-collector/traces.ndjson)
                 use_sudo: Whether to use sudo for file operations. If None, auto-detects based on permissions.
+                instance: Optional CommonPlan instance to get constants from
             """
             self.file_path = Path(file_path)
             logger.info(f"FileSpanExporter: Initializing with file path: {self.file_path}")
             
             # Determine if sudo is needed
             if use_sudo is None:
-                # Auto-detect: check if we can write to the directory
-                parent_dir = self.file_path.parent
-                if parent_dir.exists():
-                    use_sudo = not os.access(parent_dir, os.W_OK)
+                # Check CommonPlan constant or environment variable
+                sudo_config = _get_otel_config("OTEL_USE_SUDO", None, instance)
+                if sudo_config is not None:
+                    if isinstance(sudo_config, bool):
+                        use_sudo = sudo_config
+                    elif isinstance(sudo_config, str):
+                        use_sudo = sudo_config.lower() in ("true", "1", "yes")
+                    else:
+                        use_sudo = bool(sudo_config)
                 else:
-                    # Try to create directory first, if that fails we'll need sudo
-                    try:
-                        parent_dir.mkdir(parents=True, exist_ok=True)
-                        use_sudo = False
-                    except PermissionError:
-                        use_sudo = True
-                    except Exception:
-                        use_sudo = True
-                
-                # Also check environment variable
-                if os.getenv("OTEL_USE_SUDO", "").lower() in ("true", "1", "yes"):
-                    use_sudo = True
-                elif os.getenv("OTEL_USE_SUDO", "").lower() in ("false", "0", "no"):
-                    use_sudo = False
+                    # Auto-detect: check if we can write to the directory
+                    parent_dir = self.file_path.parent
+                    if parent_dir.exists():
+                        use_sudo = not os.access(parent_dir, os.W_OK)
+                    else:
+                        # Try to create directory first, if that fails we'll need sudo
+                        try:
+                            parent_dir.mkdir(parents=True, exist_ok=True)
+                            use_sudo = False
+                        except PermissionError:
+                            use_sudo = True
+                        except Exception:
+                            use_sudo = True
             
             self.use_sudo = use_sudo
             logger.info(f"FileSpanExporter: Using sudo for file operations: {self.use_sudo}")
@@ -414,7 +458,8 @@ def setup_otel(
     environment: str = "dev",
     version: str = "1.0.0",
     use_file_export: Optional[bool] = None,
-    trace_log_dir: str = None
+    trace_log_dir: str = None,
+    instance: Optional[Any] = None
 ) -> Optional[Any]:  # Returns trace.Tracer when OTEL available
     """
     Setup OpenTelemetry tracer for MDSO scriptplan
@@ -440,6 +485,7 @@ def setup_otel(
         version: Service version
         use_file_export: Force file-based export (True) or OTLP (False). None = auto-detect
         trace_log_dir: Directory for trace log files (default: /opt/ciena/bp2/alloy-collector)
+        instance: Optional CommonPlan instance to get constants from
 
     Returns:
         Configured tracer instance
@@ -453,9 +499,10 @@ def setup_otel(
     if not OTEL_AVAILABLE:
         return None
     
-    # Determine export mode
-    export_mode = os.getenv("OTEL_EXPORT_MODE", "").lower()
-    logger.info(f"setup_otel: Export mode detection - OTEL_EXPORT_MODE env var: '{os.getenv('OTEL_EXPORT_MODE', 'not set')}', use_file_export parameter: {use_file_export}")
+    # Determine export mode from CommonPlan constant or environment variable
+    export_mode_config = _get_otel_config("OTEL_EXPORT_MODE", "", instance)
+    export_mode = export_mode_config.lower() if export_mode_config else ""
+    logger.info(f"setup_otel: Export mode detection - OTEL_EXPORT_MODE: '{export_mode_config or 'not set'}', use_file_export parameter: {use_file_export}")
     
     if use_file_export is None:
         # Auto-detect: prefer file mode if explicitly set, or if in isolated container
@@ -490,16 +537,18 @@ def setup_otel(
 
     if use_file_export:
         # File-based export for isolated containers
-        trace_log_dir = trace_log_dir or os.getenv(
+        trace_log_dir = trace_log_dir or _get_otel_config(
             "OTEL_TRACE_LOG_DIR", 
-            DEFAULT_TRACE_LOG_DIR
+            DEFAULT_TRACE_LOG_DIR,
+            instance
         )
         trace_log_file = os.path.join(trace_log_dir, DEFAULT_TRACE_LOG_FILE)
         
         logger.info(f"setup_otel: Using file-based trace export mode")
         logger.info(f"setup_otel: Trace log directory: {trace_log_dir}")
         logger.info(f"setup_otel: Trace log file: {trace_log_file}")
-        logger.info(f"setup_otel: OTEL_TRACE_LOG_DIR env var: {os.getenv('OTEL_TRACE_LOG_DIR', 'not set')}")
+        trace_log_dir_config = _get_otel_config("OTEL_TRACE_LOG_DIR", "not set", instance)
+        logger.info(f"setup_otel: OTEL_TRACE_LOG_DIR config: {trace_log_dir_config}")
         logger.info("setup_otel: This mode is required for isolated containers that cannot reach Alloy agent")
         
         # Verify directory exists and is writable before creating exporter
@@ -513,13 +562,21 @@ def setup_otel(
         else:
             logger.info(f"setup_otel: Trace log directory does not exist, will be created: {trace_log_dir_path}")
         
-        # Check if sudo should be used
-        use_sudo = os.getenv("OTEL_USE_SUDO", "").lower() in ("true", "1", "yes")
+        # Check if sudo should be used from CommonPlan constant or environment variable
+        use_sudo_config = _get_otel_config("OTEL_USE_SUDO", None, instance)
+        use_sudo = None
+        if use_sudo_config is not None:
+            if isinstance(use_sudo_config, bool):
+                use_sudo = use_sudo_config
+            elif isinstance(use_sudo_config, str):
+                use_sudo = use_sudo_config.lower() in ("true", "1", "yes")
+            else:
+                use_sudo = bool(use_sudo_config)
         if use_sudo:
             logger.info(f"setup_otel: OTEL_USE_SUDO is set, will use sudo for file operations")
         
         logger.info(f"setup_otel: Creating FileSpanExporter instance for: {trace_log_file}")
-        file_exporter = FileSpanExporter(trace_log_file, use_sudo=use_sudo if use_sudo else None)
+        file_exporter = FileSpanExporter(trace_log_file, use_sudo=use_sudo, instance=instance)
         logger.info(f"setup_otel: FileSpanExporter created successfully (sudo={file_exporter.use_sudo})")
         
         logger.info(f"setup_otel: Creating BatchSpanProcessor with max_queue_size=2048, max_export_batch_size=512, schedule_delay_millis=5000")
@@ -533,14 +590,16 @@ def setup_otel(
         export_info = f"file:{trace_log_file}"
     else:
         # Direct OTLP export to Alloy agent
-        endpoint = endpoint or os.getenv(
+        endpoint = endpoint or _get_otel_config(
             "OTEL_EXPORTER_OTLP_ENDPOINT", 
-            "http://localhost:4318"  # Alloy OTLP HTTP receiver
+            "http://localhost:4318",  # Alloy OTLP HTTP receiver
+            instance
         )
         
         logger.info(f"setup_otel: Using direct OTLP export mode")
         logger.info(f"setup_otel: OTLP endpoint: {endpoint}")
-        logger.info(f"setup_otel: OTEL_EXPORTER_OTLP_ENDPOINT env var: {os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', 'not set')}")
+        otlp_endpoint_config = _get_otel_config("OTEL_EXPORTER_OTLP_ENDPOINT", "not set", instance)
+        logger.info(f"setup_otel: OTEL_EXPORTER_OTLP_ENDPOINT config: {otlp_endpoint_config}")
         logger.warning(f"setup_otel: WARNING - Using OTLP mode instead of file mode. If scripts are in isolated containers, this may fail!")
         
         otlp_exporter = OTLPSpanExporter(
@@ -573,7 +632,7 @@ def setup_otel(
     # If using file export, verify the file is writable
     if use_file_export:
         trace_log_file = os.path.join(
-            trace_log_dir or os.getenv("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR),
+            trace_log_dir or _get_otel_config("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR, instance),
             DEFAULT_TRACE_LOG_FILE
         )
         trace_log_path = Path(trace_log_file)
@@ -589,7 +648,7 @@ def setup_otel(
     return trace.get_tracer(__name__)
 
 
-def test_file_export(trace_log_dir: str = None) -> Dict[str, Any]:
+def test_file_export(trace_log_dir: str = None, instance: Optional[Any] = None) -> Dict[str, Any]:
     """
     Diagnostic function to test file-based trace export.
     
@@ -598,6 +657,7 @@ def test_file_export(trace_log_dir: str = None) -> Dict[str, Any]:
     
     Args:
         trace_log_dir: Directory for trace log files (default: /opt/ciena/bp2/alloy-collector)
+        instance: Optional CommonPlan instance to get constants from
     
     Returns:
         Dictionary with test results including success status, file path, and any errors
@@ -623,8 +683,8 @@ def test_file_export(trace_log_dir: str = None) -> Dict[str, Any]:
         return result
     
     try:
-        # Determine file path
-        trace_log_dir = trace_log_dir or os.getenv("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR)
+        # Determine file path from CommonPlan constant or environment variable
+        trace_log_dir = trace_log_dir or _get_otel_config("OTEL_TRACE_LOG_DIR", DEFAULT_TRACE_LOG_DIR, instance)
         trace_log_file = os.path.join(trace_log_dir, DEFAULT_TRACE_LOG_FILE)
         result["file_path"] = trace_log_file
         
@@ -669,7 +729,8 @@ def test_file_export(trace_log_dir: str = None) -> Dict[str, Any]:
             service_name="test-file-export",
             environment="test",
             use_file_export=True,
-            trace_log_dir=trace_log_dir
+            trace_log_dir=trace_log_dir,
+            instance=instance
         )
         
         if test_tracer is None:
@@ -1470,6 +1531,8 @@ def setup_pyroscope(
         logger.warning("Pyroscope not available - install with: pip install pyroscope-io")
         return False
 
+    # Get Pyroscope server address from CommonPlan constant or environment variable
+    # Note: instance parameter would need to be added to this function signature if needed
     server_address = server_address or os.getenv("PYROSCOPE_SERVER_ADDRESS", "http://pyroscope:4040")
 
     # Merge default tags with provided tags

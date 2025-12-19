@@ -7,6 +7,7 @@ Version: 1.0.0
 """
 
 import logging
+import os
 from typing import Optional, Dict, Any
 # Try importing OpenTelemetry - gracefully degrade if not available
 try:
@@ -21,8 +22,6 @@ except ImportError:
     metrics = MeterProvider = PeriodicExportingMetricReader = None
     OTLPMetricExporter = Resource = None
 
-import os
-
 logger = logging.getLogger(__name__)
 
 # Global meter provider
@@ -34,7 +33,8 @@ def setup_metrics(
     service_name: str = "mdso-scriptplan",
     endpoint: str = None,
     environment: str = "dev",
-    version: str = "1.0.0"
+    version: str = "1.0.0",
+    instance: Optional[Any] = None
 ) -> metrics.Meter:
     """
     Setup OpenTelemetry metrics for MDSO scriptplan
@@ -44,6 +44,7 @@ def setup_metrics(
         endpoint: OTLP exporter endpoint
         environment: Deployment environment (dev/staging/prod)
         version: Service version
+        instance: Optional CommonPlan instance to get constants from
     
     Returns:
         Configured meter instance
@@ -65,11 +66,31 @@ def setup_metrics(
         "deployment.environment": environment,
     })
     
-    # Determine export endpoint
-    endpoint = endpoint or os.getenv(
-        "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
-        "http://localhost:4318"  # Alloy OTLP HTTP receiver
-    )
+    # Determine export endpoint from CommonPlan constant or environment variable
+    # First try metrics-specific endpoint, then fall back to general OTLP endpoint
+    metrics_endpoint = None
+    if instance is not None:
+        if hasattr(instance, 'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT'):
+            metrics_endpoint = getattr(instance, 'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT')
+        elif hasattr(instance.__class__, 'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT'):
+            metrics_endpoint = getattr(instance.__class__, 'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT')
+    
+    if metrics_endpoint is None:
+        metrics_endpoint = os.getenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", None)
+    
+    # If no metrics-specific endpoint, try general OTLP endpoint
+    if metrics_endpoint is None:
+        if instance is not None:
+            if hasattr(instance, 'OTEL_EXPORTER_OTLP_ENDPOINT'):
+                metrics_endpoint = getattr(instance, 'OTEL_EXPORTER_OTLP_ENDPOINT')
+            elif hasattr(instance.__class__, 'OTEL_EXPORTER_OTLP_ENDPOINT'):
+                metrics_endpoint = getattr(instance.__class__, 'OTEL_EXPORTER_OTLP_ENDPOINT')
+        
+        if metrics_endpoint is None:
+            metrics_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", None)
+    
+    # Final fallback
+    endpoint = endpoint or metrics_endpoint or "http://localhost:4318"  # Alloy OTLP HTTP receiver
     
     # Create metric exporter
     metric_exporter = OTLPMetricExporter(

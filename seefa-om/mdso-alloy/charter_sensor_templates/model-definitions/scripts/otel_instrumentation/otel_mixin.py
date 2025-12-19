@@ -66,8 +66,8 @@ class OTelMixin:
         """Initialize OTel tracer and structured logger"""
         logger.info(f"OTelMixin.__init_otel__: Starting OTel initialization for {self.__class__.__name__}")
         
-        # Check feature flag
-        if not is_otel_enabled():
+        # Check feature flag (pass self to access CommonPlan constants)
+        if not is_otel_enabled(self):
             logger.warning(f"OTelMixin.__init_otel__: OTel instrumentation disabled via feature flag for {self.__class__.__name__}")
             self._otel_initialized = False
             return
@@ -82,19 +82,28 @@ class OTelMixin:
         service_name = f"mdso.{product_type.lower()}"
         logger.info(f"OTelMixin.__init_otel__: Product type: {product_type}, Service name: {service_name}")
 
-        # Get environment from instance or env var
-        environment = getattr(self, 'environment', None) or os.getenv("MDSO_ENV", "dev")
+        # Get environment from instance constant, instance attribute, or env var
+        environment = (
+            getattr(self.__class__, 'MDSO_ENV', None) or
+            getattr(self, 'MDSO_ENV', None) or
+            getattr(self, 'environment', None) or
+            os.getenv("MDSO_ENV", "dev")
+        )
         logger.info(f"OTelMixin.__init_otel__: Environment: {environment}")
 
-        # Check export mode environment variable
-        export_mode = os.getenv("OTEL_EXPORT_MODE", "not set")
+        # Check export mode from CommonPlan constant or environment variable
+        export_mode = (
+            getattr(self.__class__, 'OTEL_EXPORT_MODE', None) or
+            os.getenv("OTEL_EXPORT_MODE", "not set")
+        )
         logger.info(f"OTelMixin.__init_otel__: OTEL_EXPORT_MODE: {export_mode}")
 
-        # Setup OTel tracer
+        # Setup OTel tracer (pass self as instance to access CommonPlan constants)
         logger.info(f"OTelMixin.__init_otel__: Calling setup_otel() for {service_name}")
         self.tracer = setup_otel(
             service_name=service_name,
-            environment=environment
+            environment=environment,
+            instance=self  # Pass self to access CommonPlan constants
         )
         
         if self.tracer is None:
