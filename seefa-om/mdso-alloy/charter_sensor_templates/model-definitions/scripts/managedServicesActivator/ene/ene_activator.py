@@ -1,4 +1,5 @@
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 from .utilities.ssh_connection import SSHConnection
 from .utilities.fortigateAPI import Fortigate
 from .utilities.ene_logger import ENElogger
@@ -21,82 +22,179 @@ import json
 import traceback
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     def process(self):
-        self.ene_logger = ENElogger(self)
-        try:
-            self.load_resource_vars()
-            self.load_private_vars()
-        except Exception as e:
-            tb = traceback.format_exc()
-            self.ene_logger.log_step("Loading resource variables")
-            external_message = "Failed to initialize resource variables"
-            internal_message = "Failed to initialize resource variables"
-            self.ene_logger.log_issue(
-                external_message=external_message,
-                internal_message=internal_message,
-                api_response=str(e.args),
-                code=3001,
-                details=tb,
-                category=5
-            )
-        try:
-            self.ene_logger.log_step("Creating SSH connection to device")
-            self.create_ssh_connection()
+        # Initialize OTel instrumentation
+        self.__init_otel__()
 
-            self.ene_logger.log_step("Creating API User")
-            self.create_api_user()
+        # Create root span for entire ENE activation process
+        with self.create_root_span(operation_name="ene_activation"):
+            # Set correlation baggage
+            self.set_correlation_baggage_from_instance()
 
-            self.ene_logger.log_step("Checking device status")
-            self.serial_check()
+            self.ene_logger = ENElogger(self)
+            try:
+                with self.timed_operation("ene.load_variables") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.load_resource_vars()
+                    self.load_private_vars()
 
-            self.ene_logger.log_step("Updating firmware")
-            self.upgrade_firmware()
+                    # Add device attributes to span
+                    if getattr(self, '_otel_initialized', False):
+                        from opentelemetry import trace
+                        span = trace.get_current_span()
+                        if span and span.is_recording():
+                            span.set_attribute("ene.serial", self.serial)
+                            span.set_attribute("ene.tid", self.tid)
+                            span.set_attribute("ene.ip", self.ip)
+                            span.set_attribute("ene.model", self.fortigate.model if hasattr(self, 'fortigate') and hasattr(self.fortigate, 'model') else "unknown")
+                        self.record_span_event_from_instance("ene.activation.started", {
+                            "serial": self.serial,
+                            "tid": self.tid,
+                            "ip": self.ip
+                        })
+            except Exception as e:
+                tb = traceback.format_exc()
+                self.ene_logger.log_step("Loading resource variables")
+                external_message = "Failed to initialize resource variables"
+                internal_message = "Failed to initialize resource variables"
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(external_message, exception=e)
+                self.ene_logger.log_issue(
+                    external_message=external_message,
+                    internal_message=internal_message,
+                    api_response=str(e.args),
+                    code=3001,
+                    details=tb,
+                    category=5
+                )
+            try:
+                # Step 1: Create SSH connection
+                self.ene_logger.log_step("Creating SSH connection to device")
+                with self.timed_operation("ene.create_ssh_connection", {"ip": self.ip}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.create_ssh_connection()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.ssh_connection.created")
 
-            self.ene_logger.log_step("Applying base configuration")
-            self.apply_base_script()
+                # Step 2: Create API User
+                self.ene_logger.log_step("Creating API User")
+                with self.timed_operation("ene.create_api_user") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.create_api_user()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.api_user.created")
 
-            self.ene_logger.log_step("Onboarding Device")
-            self.onboard_device()
+                # Step 3: Serial check
+                self.ene_logger.log_step("Checking device status")
+                with self.timed_operation("ene.serial_check", {"serial": self.serial}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.serial_check()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.serial_check.completed", {"serial": self.fortigate.serial})
 
-            self.ene_logger.log_step("Applying Services")
-            self.apply_services()
+                # Step 4: Firmware upgrade
+                self.ene_logger.log_step("Updating firmware")
+                with self.timed_operation("ene.upgrade_firmware", {"target_version": self.private_vars.get("FORTIGATE_FIRMWARE", "7.4.8")}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.upgrade_firmware()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.firmware.upgraded")
 
-            self.ene_logger.log_step("Applying interface configs")
-            self.apply_interface_configs()
+                # Step 5: Apply base configuration
+                self.ene_logger.log_step("Applying base configuration")
+                with self.timed_operation("ene.apply_base_config", {"model": self.fortigate.model}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_base_script()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.base_config.applied")
 
-            self.ene_logger.log_step("Applying IP pools")
-            self.apply_ip_pools()
+                # Step 6: Onboard device
+                self.ene_logger.log_step("Onboarding Device")
+                with self.timed_operation("ene.onboard_device") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.onboard_device()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.device.onboarded")
 
-            self.ene_logger.log_step("Applying VIPs")
-            self.apply_vips()
+                # Step 7: Apply services
+                self.ene_logger.log_step("Applying Services")
+                with self.timed_operation("ene.apply_services", {"has_services": self.services is not None, "has_service_groups": self.service_groups is not None}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_services()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.services.applied")
 
-            self.ene_logger.log_step("Applying Users")
-            self.apply_users()
+                # Step 8: Apply interface configs
+                self.ene_logger.log_step("Applying interface configs")
+                with self.timed_operation("ene.apply_interfaces", {"interface_count": len(self.interfaces) if self.interfaces else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_interface_configs()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.interfaces.applied")
 
-            self.ene_logger.log_step("Applying Routing")
-            self.apply_routing()
+                # Step 9: Apply IP pools
+                self.ene_logger.log_step("Applying IP pools")
+                with self.timed_operation("ene.apply_ip_pools", {"pool_count": len(self.ippools) if self.ippools else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_ip_pools()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.ip_pools.applied")
 
-            self.ene_logger.log_step("Applying firewall policies")
-            self.apply_firewall_policies()
+                # Step 10: Apply VIPs
+                self.ene_logger.log_step("Applying VIPs")
+                with self.timed_operation("ene.apply_vips", {"vip_count": len(self.vips) if self.vips else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_vips()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.vips.applied")
 
-            self.ene_logger.log_step("Deleting API user")
-            self.clean_up_users()
-        except Exception as e:
-            tb = traceback.format_exc()
-            resource_id = ""
-            label = ""
-            external_message = "An unknown error occurred while activating. Please reach out to MS fulfillment"
-            internal_message = ("Outer try except caught an exception, please the review the traceback."
-                                f" resource_id={resource_id}; label={label}; error={e.args}")
-            self.ene_logger.log_issue(
-                external_message=external_message,
-                internal_message=internal_message,
-                api_response="",
-                code=3001,
-                details=tb,
-                category=5
-            )
+                # Step 11: Apply users
+                self.ene_logger.log_step("Applying Users")
+                with self.timed_operation("ene.apply_users", {"has_ldap": self.ldap is not None, "has_radius": self.radius is not None, "has_user_groups": self.user_groups is not None}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_users()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.users.applied")
+
+                # Step 12: Apply routing
+                self.ene_logger.log_step("Applying Routing")
+                with self.timed_operation("ene.apply_routing", {"has_static_routes": self.static_routes is not None, "has_ospf": self.ospf is not None, "has_bgp": self.bgp is not None}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_routing()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.routing.applied")
+
+                # Step 13: Apply firewall policies
+                self.ene_logger.log_step("Applying firewall policies")
+                with self.timed_operation("ene.apply_firewall_policies", {"policy_count": len(self.firewall_policies) if self.firewall_policies else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.apply_firewall_policies()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.firewall_policies.applied")
+
+                # Step 14: Cleanup - Delete API user
+                self.ene_logger.log_step("Deleting API user")
+                with self.timed_operation("ene.cleanup") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    self.clean_up_users()
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("ene.cleanup.completed")
+
+                # Record successful completion
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("ene.activation.completed", {
+                        "serial": self.serial,
+                        "tid": self.tid,
+                        "ip": self.ip
+                    })
+            except Exception as e:
+                tb = traceback.format_exc()
+                resource_id = ""
+                label = ""
+                external_message = "An unknown error occurred while activating. Please reach out to MS fulfillment"
+                internal_message = ("Outer try except caught an exception, please the review the traceback."
+                                    f" resource_id={resource_id}; label={label}; error={e.args}")
+                if getattr(self, '_otel_initialized', False):
+                    self.otel_error_handler(f"ENE activation failed: {external_message}", exception=e)
+                self.ene_logger.log_issue(
+                    external_message=external_message,
+                    internal_message=internal_message,
+                    api_response="",
+                    code=3001,
+                    details=tb,
+                    category=5
+                )
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
     def create_ssh_connection(self):
         self.ene_logger.info('--- Beginning ssh connection ---')
