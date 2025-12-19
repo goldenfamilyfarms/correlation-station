@@ -382,6 +382,38 @@ class CommonPlan(Plan, Utils):
 
     EnableEnterExitLog = True
 
+    # ========================================
+    # OpenTelemetry Configuration Constants
+    # ========================================
+    # These constants can be overridden in subclasses or via environment variables
+    # Environment variables take precedence if set
+    
+    # OTel Export Mode: "file" or "otlp" (default: "file" for isolated containers)
+    OTEL_EXPORT_MODE = None  # None = auto-detect (defaults to "file")
+    
+    # Trace log directory for file-based export
+    OTEL_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"
+    
+    # Use sudo for file operations (None = auto-detect, True/False = override)
+    OTEL_USE_SUDO = None  # None = auto-detect based on permissions
+    
+    # OTLP exporter endpoint (for direct OTLP mode)
+    OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
+    
+    # OTLP metrics endpoint
+    OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = None  # None = use OTEL_EXPORTER_OTLP_ENDPOINT
+    
+    # OTel feature flags
+    OTEL_ENABLED = True
+    OTEL_SAMPLING_ENABLED = True
+    OTEL_SAMPLING_RATE = 1.0
+    
+    # MDSO environment
+    MDSO_ENV = "dev"
+    
+    # Pyroscope server address
+    PYROSCOPE_SERVER_ADDRESS = "http://pyroscope:4040"
+
     def run(self):
         """ """
         self.plansdk_logger = logging.getLogger("plansdk.bpo.http")
