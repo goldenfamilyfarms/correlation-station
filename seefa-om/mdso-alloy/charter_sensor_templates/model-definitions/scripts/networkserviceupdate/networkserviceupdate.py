@@ -50,31 +50,50 @@ class Activate(CommonPlan, OTelMixin):
 
         # resyncs to all devices onboarded and the RA supports poll free
         circuit_details_res = self.bpo.resources.get(self.circuit_details_res_id)
-        self.resync_poll_free_network_functions(circuit_details_res)
+        with self.timed_operation("nsu.resync_poll_free") if getattr(self, '_otel_initialized', False) else nullcontext():
+            self.resync_poll_free_network_functions(circuit_details_res)
 
         # create the service device validator resource to make sure all devices are present.
-        self.create_service_device_validator_resource(self.circuit_details_res_id, self.circuit_id)
+        with self.timed_operation("nsu.create_device_validator") if getattr(self, '_otel_initialized', False) else nullcontext():
+            self.create_service_device_validator_resource(self.circuit_details_res_id, self.circuit_id)
 
         # creating the Device Onboarders for both PE and CPE context
-        self.create_service_device_onboarder_resource(self.circuit_details_res_id, self.circuit_id)
+        with self.timed_operation("nsu.create_device_onboarder") if getattr(self, '_otel_initialized', False) else nullcontext():
+            self.create_service_device_onboarder_resource(self.circuit_details_res_id, self.circuit_id)
 
         # create bandwidth update resource if bw update is requested.
         if self.properties["bandwidth"] is True:
             # creating the Device Profile configurators for PE & CPE context.
-            self.create_service_device_profile_configurator_resource(self.circuit_details_res_id, self.circuit_id)
-            self.create_network_service_bandwidth_update_resource()
+            with self.timed_operation("nsu.create_profile_configurator") if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_service_device_profile_configurator_resource(self.circuit_details_res_id, self.circuit_id)
+            with self.timed_operation("nsu.create_bandwidth_update") if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_network_service_bandwidth_update_resource()
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("nsu.bandwidth_update.created")
 
         if self.properties["description"] is True:
-            self.create_network_service_description_update_resource()
+            with self.timed_operation("nsu.create_description_update") if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_network_service_description_update_resource()
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("nsu.description_update.created")
 
         if self.properties["serviceStatedisable"] is True:
-            self.create_network_service_state_toggle_resource("disable")
+            with self.timed_operation("nsu.create_state_toggle", {"state": "disable"}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_network_service_state_toggle_resource("disable")
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("nsu.state_toggle.created", {"state": "disable"})
 
         if self.properties["serviceStateenable"] is True:
-            self.create_network_service_state_toggle_resource("enable")
+            with self.timed_operation("nsu.create_state_toggle", {"state": "enable"}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_network_service_state_toggle_resource("enable")
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("nsu.state_toggle.created", {"state": "enable"})
 
         if self.properties["ip"] is True:
-            self.create_network_service_ip_update_resource()
+            with self.timed_operation("nsu.create_ip_update") if getattr(self, '_otel_initialized', False) else nullcontext():
+                self.create_network_service_ip_update_resource()
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("nsu.ip_update.created")
 
         return {}
 
