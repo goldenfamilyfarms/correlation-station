@@ -152,9 +152,10 @@ class Activate(CommonPlan, OTelMixin):
 
         try:
             if vendor == "ADVA":
-                mgmt_tunnel = self.check_mgmt_tunnel(target_prid, vendor, model)
-                self.logger.info(f"-8-8-8-8-8-8- Management Tunnel Details: {mgmt_tunnel}")
-                self.logger.info(mgmt_tunnel)
+                with self.timed_operation("firmware.mgmt_tunnel.check", {"vendor": vendor, "model": model}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    mgmt_tunnel = self.check_mgmt_tunnel(target_prid, vendor, model)
+                    self.logger.info(f"-8-8-8-8-8-8- Management Tunnel Details: {mgmt_tunnel}")
+                    self.logger.info(mgmt_tunnel)
 
                 mgmt_cir, mgmt_eir, max_mgmt_bw = self.get_mgmt_tunnel_bw_details(model, mgmt_tunnel)
                 self.logger.info("============== GOT THE MGMT TUNNNEL DEETS ===============")
@@ -163,10 +164,19 @@ class Activate(CommonPlan, OTelMixin):
                 if max_mgmt_bw > total_mgmt_bw:
                     eir_increase = max_mgmt_bw - total_mgmt_bw
                     new_mgmt_eir = mgmt_eir + eir_increase
-                    eir_inc_result = self.update_mgmt_bw(target_prid, vendor, model, str(new_mgmt_eir))
-                    self.logger.info(f"-8-8-8-8-8-8- MGMT TUNNEL EIR INCREASE RESPONSE: {eir_inc_result}")
+                    with self.timed_operation("firmware.mgmt_tunnel.update", {"old_eir": mgmt_eir, "new_eir": new_mgmt_eir}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                        eir_inc_result = self.update_mgmt_bw(target_prid, vendor, model, str(new_mgmt_eir))
+                        self.logger.info(f"-8-8-8-8-8-8- MGMT TUNNEL EIR INCREASE RESPONSE: {eir_inc_result}")
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("firmware.mgmt_tunnel.increased", {
+                                "old_eir": mgmt_eir,
+                                "new_eir": new_mgmt_eir,
+                                "increase": eir_increase
+                            })
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Unable to increase bandwidth of management tunnel", exception=ex)
             self.status_update("Unable Increase Bandwidth of Management Tunnel", True, "FIRMUP10400")
             self.exit_error("Unable Increase Bandwidth of Management Tunnel")
 
@@ -212,12 +222,17 @@ class Activate(CommonPlan, OTelMixin):
 
         try:
             if vendor == "ADVA":
-                mgmt_tunnel = self.check_mgmt_tunnel(target_prid, vendor, model)
-                self.logger.info(f"-8-8-8-8-8- Management Tunnel Details: {mgmt_tunnel}")
-                eir_revert_result = self.update_mgmt_bw(target_prid, vendor, model, str(mgmt_eir))
-                self.logger.info(f"-8-8-8-8-8- MGMT TUNNEL EIR REVERT RESULT: {eir_revert_result}")
+                with self.timed_operation("firmware.mgmt_tunnel.revert", {"original_eir": mgmt_eir}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                    mgmt_tunnel = self.check_mgmt_tunnel(target_prid, vendor, model)
+                    self.logger.info(f"-8-8-8-8-8- Management Tunnel Details: {mgmt_tunnel}")
+                    eir_revert_result = self.update_mgmt_bw(target_prid, vendor, model, str(mgmt_eir))
+                    self.logger.info(f"-8-8-8-8-8- MGMT TUNNEL EIR REVERT RESULT: {eir_revert_result}")
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("firmware.mgmt_tunnel.reverted", {"original_eir": mgmt_eir})
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Unable to revert bandwidth of management tunnel", exception=ex)
             self.status_update("Unable to Revert Bandwidth of Management Tunnel", True, "FIRMUP10600")
             self.exit_error("Unable to Revert Bandwidth of Management Tunnel")
 
@@ -287,12 +302,23 @@ class Activate(CommonPlan, OTelMixin):
         self.logger.info("STEP 9. Wait for reboot - Ping CPE until it is accessble again.")
 
         try:
-            cpe_up, ping_msg = self.ping_til_up(ip_address, 60, 300, 15)
-            if not cpe_up:
-                self.status_update(f"After Installation/Activation reboot intiated - {ping_msg}", True, "FIRMUP10900")
-                self.exit_error(f"After Installation/Activation reboot intiated - {ping_msg}")
+            with self.timed_operation("firmware.device.ping_recovery", {"ip": ip_address, "max_wait": 300}) if getattr(self, '_otel_initialized', False) else nullcontext():
+                cpe_up, ping_msg = self.ping_til_up(ip_address, 60, 300, 15)
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("firmware.device.ping_result", {
+                        "ip": ip_address,
+                        "success": cpe_up,
+                        "message": ping_msg
+                    })
+                if not cpe_up:
+                    if getattr(self, '_otel_initialized', False):
+                        self.otel_error_handler(f"Device did not respond after reboot: {ping_msg}")
+                    self.status_update(f"After Installation/Activation reboot intiated - {ping_msg}", True, "FIRMUP10900")
+                    self.exit_error(f"After Installation/Activation reboot intiated - {ping_msg}")
 
-        except Exception:
+        except Exception as ex:
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Unable to obtain response from device IP after reboot", exception=ex)
             self.status_update(
                 "After Installation/Activation reboot intiated, unable to obtain response from device IP", True, "FIRMUP10901"
             )

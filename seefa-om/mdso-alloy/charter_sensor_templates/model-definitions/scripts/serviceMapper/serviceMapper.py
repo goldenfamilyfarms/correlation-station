@@ -53,14 +53,42 @@ class Activate(Common, OTelMixin):
                 skip_rem = False
                 device = Device(device_data)
 
-                self.get_service_differences(device, adva_pro=device.adva_pro)
+                # Skip unsupported vendors
+                if device.vendor.upper() not in ["CISCO", "JUNIPER", "RAD", "ADVA", "NOKIA", "ALCATEL"]:
+                    continue
 
-                skip_rem = self.validate_network_data(device)
+                # Create network function span for each device processing
+                with self.create_network_function_span_context(
+                    device.tid,
+                    fqdn=device.fqdn,
+                    operation="validate_and_remediate"
+                ) if getattr(self, '_otel_initialized', False) else self._nullcontext() as nf_span:
+                    if getattr(self, '_otel_initialized', False) and nf_span:
+                        self.add_network_function_attributes_to_span(
+                            span=nf_span,
+                            vendor=device.vendor.upper(),
+                            ip_address=device.ipAddress,
+                            device_role="service_device"
+                        )
+                        self.record_span_event_from_instance(
+                            "servicemapper.device.processing.started",
+                            {"tid": device.tid, "vendor": device.vendor, "fqdn": device.fqdn}
+                        )
 
-                if self.remediation_flag and not skip_rem:
-                    self.remediate_network(device)
-                else:
-                    self.patch_resource_with_diffs(device, False)
+                    self.get_service_differences(device, adva_pro=device.adva_pro)
+
+                    skip_rem = self.validate_network_data(device)
+
+                    if self.remediation_flag and not skip_rem:
+                        self.remediate_network(device)
+                    else:
+                        self.patch_resource_with_diffs(device, False)
+
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance(
+                            "servicemapper.device.processing.completed",
+                            {"tid": device.tid, "remediated": self.remediation_flag and not skip_rem}
+                        )
 
             if self.slm_eligible:
                 skip_msg = None
@@ -151,32 +179,55 @@ class Activate(Common, OTelMixin):
         return cd_management_ip != provided_management_ip
 
     def get_service_differences(self, device: Device, adva_pro=False):
-        self.network_config = self.get_network_config(device, self.service_type, remove_irr_data=False, full_path=True)[
-            "network_config"
-        ]
-        self.modeled_config = self.get_designed_config(device)
-        self.full_modeled_config = deepcopy(self.modeled_config)["designed_config"]
-        stripped_modeled_config = self.remove_irrelevant_data(
-            self.modeled_config, device, self.service_type, "designed", full_path=True, adva_pro=adva_pro
-        )["designed_config"]
-        self.network_diff, self.design_diff = self.utils.compare_complex_dicts(
-            self.network_config, stripped_modeled_config
-        )
+        # Time the config comparison operation
+        with self.timed_operation("servicemapper.get_differences", {
+            "tid": device.tid,
+            "vendor": device.vendor,
+            "service_type": self.service_type,
+            "adva_pro": adva_pro
+        }) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+            self.network_config = self.get_network_config(device, self.service_type, remove_irr_data=False, full_path=True)[
+                "network_config"
+            ]
+            self.modeled_config = self.get_designed_config(device)
+            self.full_modeled_config = deepcopy(self.modeled_config)["designed_config"]
+            stripped_modeled_config = self.remove_irrelevant_data(
+                self.modeled_config, device, self.service_type, "designed", full_path=True, adva_pro=adva_pro
+            )["designed_config"]
 
-        self.logger.info(f"Full Network config: {self.network_config}")
-        self.logger.info(f"Full Design config: {self.full_modeled_config}")
-        self.logger.info(f"Stripped Design config: {stripped_modeled_config}")
-        self.logger.info(f"Network Diff: {self.network_diff}")
-        self.logger.info(f"Design Diff: {self.design_diff}")
+            # Time the actual comparison
+            with self.timed_operation("servicemapper.compare_dicts", {
+                "tid": device.tid,
+                "vendor": device.vendor
+            }) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                self.network_diff, self.design_diff = self.utils.compare_complex_dicts(
+                    self.network_config, stripped_modeled_config
+                )
 
-        if device.vendor == "RAD":
-            self.check_duplex_against_bw(self.network_config, self.circuit_details)
+            self.logger.info(f"Full Network config: {self.network_config}")
+            self.logger.info(f"Full Design config: {self.full_modeled_config}")
+            self.logger.info(f"Stripped Design config: {stripped_modeled_config}")
+            self.logger.info(f"Network Diff: {self.network_diff}")
+            self.logger.info(f"Design Diff: {self.design_diff}")
 
-        # Remove the slight diffs but still acceptable
-        if self.network_diff:
-            self.remove_acceptable_diffs(device)
-            self.logger.info(f"Network Diff after remove_acceptable_diffs: {self.network_diff}")
-            self.logger.info(f"Design Diff after remove_acceptable_diffs: {self.design_diff}")
+            if device.vendor == "RAD":
+                self.check_duplex_against_bw(self.network_config, self.circuit_details)
+
+            # Remove the slight diffs but still acceptable
+            if self.network_diff:
+                self.remove_acceptable_diffs(device)
+                self.logger.info(f"Network Diff after remove_acceptable_diffs: {self.network_diff}")
+                self.logger.info(f"Design Diff after remove_acceptable_diffs: {self.design_diff}")
+
+            # Record span event with diff results
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("servicemapper.differences.calculated", {
+                    "tid": device.tid,
+                    "has_network_diff": bool(self.network_diff),
+                    "has_design_diff": bool(self.design_diff),
+                    "network_diff_count": len(self.network_diff) if self.network_diff else 0,
+                    "design_diff_count": len(self.design_diff) if self.design_diff else 0
+                })
 
     def remove_acceptable_diffs(self, device: Device):
         if self.order_type == "CHANGE":
@@ -556,16 +607,35 @@ class Activate(Common, OTelMixin):
                     {"properties": {"remediation_attempted": True}},
                 )
                 self.patch_resource_with_diffs(device, True)
+
+                # Add vendor-specific remediation spans
                 if device.vendor == "CISCO":
-                    self.remediate_cisco(device)
+                    with self.timed_operation("servicemapper.remediate.cisco", {"tid": device.tid, "remediation_types": list(device.required_remediation.keys())}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        self.remediate_cisco(device)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("servicemapper.remediation.cisco.completed", {"tid": device.tid})
+
                 if device.vendor == "RAD":
-                    self.remediate_rad(device)
+                    with self.timed_operation("servicemapper.remediate.rad", {"tid": device.tid, "remediation_types": list(device.required_remediation.keys())}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        self.remediate_rad(device)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("servicemapper.remediation.rad.completed", {"tid": device.tid})
+
                 if device.vendor == "ADVA":
-                    self.remediate_adva(device)
+                    with self.timed_operation("servicemapper.remediate.adva", {"tid": device.tid, "remediation_types": list(device.required_remediation.keys()), "is_pro": device.adva_pro}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        self.remediate_adva(device)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("servicemapper.remediation.adva.completed", {"tid": device.tid})
+
                 self.get_service_differences(device, adva_pro=device.adva_pro)
                 self.patch_resource_with_diffs(device, False)
             else:
                 self.patch_resource_with_diffs(device, False)
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
     def patch_resource_with_diffs(self, device: Device, initial_diff: bool, error_msg: dict = None):
         if error_msg:

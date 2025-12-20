@@ -304,9 +304,17 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
         msg = "Get Banner Configuration"
         self.status_messages(msg, parent="mrs_activation")
         try:
-            config, banner_config, delimiter = self.get_banner()
+            with self.timed_operation("mrs.parse_banner_config") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                config, banner_config, delimiter = self.get_banner()
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("mrs.banner_config.parsed", {
+                        "has_banner": bool(banner_config),
+                        "config_lines": len(config) if config else 0
+                    })
         except MRSA_Exception as err:
             err_msg = "Failed: {} - Reason: {}".format(msg, err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
         except Exception as err:
             err_msg = (
@@ -315,17 +323,27 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                 "Manually provision services.".format(msg)
             )
             self.logger.error(err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
 
         # Sending configuration
         msg = "Sending Configuration"
         self.status_messages(msg, parent="mrs_activation")
         try:
-            cli_mngr_result = self.create_cli_manager(config)
-            self.logger.info("Configuration Result: " + str(cli_mngr_result))
-            self.verify_config_delivery(cli_mngr_result, nf["id"])
+            with self.timed_operation("mrs.send_main_config", {"config_lines": len(config) if config else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                cli_mngr_result = self.create_cli_manager(config)
+                self.logger.info("Configuration Result: " + str(cli_mngr_result))
+                self.verify_config_delivery(cli_mngr_result, nf["id"])
+                if getattr(self, '_otel_initialized', False):
+                    self.record_span_event_from_instance("mrs.main_config.sent", {
+                        "status": cli_mngr_result.get("status"),
+                        "config_lines": len(config) if config else 0
+                    })
         except MRSA_Exception as err:
             err_msg = "Failed: {} - Reason: {}".format(msg, err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
         except Exception as err:
             err_msg = (
@@ -334,6 +352,8 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                 "services.".format(msg)
             )
             self.logger.error(err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
 
         # Sending Banner configuration
@@ -341,11 +361,19 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
         self.status_messages(msg, parent="mrs_activation")
         try:
             if banner_config:
-                banner_result = self.create_cli_manager(banner_config, banner=True, delimiter=delimiter)
-                self.logger.info("Banner Result: " + str(banner_result))
-                self.verify_config_delivery(banner_result, nf["id"])
+                with self.timed_operation("mrs.send_banner_config", {"banner_lines": len(banner_config) if banner_config else 0}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                    banner_result = self.create_cli_manager(banner_config, banner=True, delimiter=delimiter)
+                    self.logger.info("Banner Result: " + str(banner_result))
+                    self.verify_config_delivery(banner_result, nf["id"])
+                    if getattr(self, '_otel_initialized', False):
+                        self.record_span_event_from_instance("mrs.banner_config.sent", {
+                            "status": banner_result.get("status"),
+                            "banner_lines": len(banner_config) if banner_config else 0
+                        })
         except MRSA_Exception as err:
             err_msg = "Failed: {} - Reason: {}".format(msg, err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
         except Exception as err:
             err_msg = (
@@ -354,7 +382,14 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                 "Manually provision services.".format(msg)
             )
             self.logger.error(err)
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler(err_msg, exception=err)
             self.update_status_and_exit(err_msg)
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
         # Deleting Network Function
         msg = "Deleting Network Function"

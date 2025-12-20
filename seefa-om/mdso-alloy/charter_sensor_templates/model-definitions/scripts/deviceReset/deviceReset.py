@@ -13,6 +13,7 @@ sys.path.append('model-definitions')
 from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.serviceMapper.common import Common, Device
 from scripts.common_plan import CommonPlan
+from scripts.otel_instrumentation.otel_mixin import OTelMixin
 from scripts.deviceReset.advaReset import AdvaReset
 from scripts.deviceReset.juniperReset import JuniperReset
 from scripts.deviceReset.radReset import RadReset
@@ -46,23 +47,67 @@ class DeviceReset:
         raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, attr))
 
 
-class Activate(CommonPlan):
+class Activate(CommonPlan, OTelMixin):
     def process(self):
-        self.initialize()
-        topology_devices = self.get_all_devices_from_topology()
-        for device_data in topology_devices:
-            device = Device(device_data)
-            if self.device_tid:
-                if self.device_tid == device.tid:
-                    self.logger.info(f"device: {device}")
-                    self.device_reset_payload(device)
-                    break
-            else:
-                self.device_reset_payload(device)
+        # Initialize OTel instrumentation
+        self.__init_otel__()
+
+        # Create root span for device reset
+        with self.create_root_span(operation_name="device_reset"):
+            # Set correlation baggage
+            self.set_correlation_baggage_from_instance()
+
+            self.initialize()
+
+            # Add span attributes
+            if getattr(self, '_otel_initialized', False):
+                from opentelemetry import trace
+                span = trace.get_current_span()
+                if span and span.is_recording():
+                    span.set_attribute("device_reset.circuit_id", self.circuit_id)
+                    span.set_attribute("device_reset.service_type", self.service_type)
+                    if self.device_tid:
+                        span.set_attribute("device_reset.target_device", self.device_tid)
+
+            topology_devices = self.get_all_devices_from_topology()
+
+            # Record device count
+            if getattr(self, '_otel_initialized', False):
+                self.record_span_event_from_instance("device_reset.devices_found", {
+                    "device_count": len(topology_devices),
+                    "service_type": self.service_type
+                })
+
+            for device_data in topology_devices:
+                device = Device(device_data)
+                if self.device_tid:
+                    if self.device_tid == device.tid:
+                        self.logger.info(f"device: {device}")
+                        # Reset specific device with timing
+                        with self.timed_operation("device_reset.execute", {"vendor": device.vendor, "tid": device.tid}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                            self.device_reset_payload(device)
+                            if getattr(self, '_otel_initialized', False):
+                                self.record_span_event_from_instance("device_reset.completed", {"vendor": device.vendor, "tid": device.tid})
+                        break
+                else:
+                    # Reset all devices with timing per device
+                    with self.timed_operation("device_reset.execute", {"vendor": device.vendor, "tid": device.tid}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
+                        self.device_reset_payload(device)
+                        if getattr(self, '_otel_initialized', False):
+                            self.record_span_event_from_instance("device_reset.completed", {"vendor": device.vendor, "tid": device.tid})
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
     def initialize(self):
         self.circuit_id = self.properties["circuit_id"]
-        self.circuit_details = self._get_circuit_details()
+
+        # Get circuit details with timing
+        with self.timed_operation("device_reset.get_circuit_details") if getattr(self, '_otel_initialized', False) else self._nullcontext():
+            self.circuit_details = self._get_circuit_details()
+
         self.circuit_details_id = self.circuit_details["id"]
         self.service_type = self.circuit_details["properties"]["serviceType"]
         self.device_tid = self.properties.get("device_tid")
@@ -96,6 +141,8 @@ class Activate(CommonPlan):
         alternate_server_url = global_values[0]["properties"]["circuit_details_server_info"]["alternate_server_url"]
         if "47.43.111.73" not in alternate_server_url:
             self.logger.info('DEVICE RESET NOT ALLOWED IN PRODUCTION')
+            if getattr(self, '_otel_initialized', False):
+                self.otel_error_handler("Device reset not allowed in production environment")
             self.exit_error("DEVICE RESET NOT ALLOWED IN PRODUCTION")
 
 

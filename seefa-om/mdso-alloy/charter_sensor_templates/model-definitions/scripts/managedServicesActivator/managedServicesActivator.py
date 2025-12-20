@@ -65,10 +65,11 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
             self.status_messages(msg, parent="msa_activation")
             
             try:
-                with self.timed_operation("msa.activator.invoke", {"service_type": service_type}):
-                    if service_type == "MRS":
+                if service_type == "MRS":
+                    # Add granular span for MRS activation
+                    with self.timed_operation("msa.mrs.activation", {"vendor": self.resource_properties.get("vendor")}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
                         if getattr(self, '_otel_initialized', False):
-                            self.record_span_event_from_instance("msa.mrs.activation.started")
+                            self.record_span_event_from_instance("msa.mrs.activation.started", {"vendor": self.resource_properties.get("vendor")})
                         self.invoke_activator(
                             self.get_built_in_product(self.BUILT_IN_MANAGED_ROUTER_SERVICE_ACTIVATOR_TYPE)["id"],
                             label + ".managed_router_services",
@@ -77,9 +78,12 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                             self.record_span_event_from_instance("msa.mrs.activation.completed")
                             if hasattr(self, 'metrics'):
                                 self.metrics.record_operation("msa.mrs.activate", {"vendor": self.resource_properties.get("vendor")})
-                    elif service_type == "MSS":
+
+                elif service_type == "MSS":
+                    # Add granular span for MSS activation
+                    with self.timed_operation("msa.mss.activation", {"vendor": self.resource_properties.get("vendor")}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
                         if getattr(self, '_otel_initialized', False):
-                            self.record_span_event_from_instance("msa.mss.activation.started")
+                            self.record_span_event_from_instance("msa.mss.activation.started", {"vendor": self.resource_properties.get("vendor")})
                         self.invoke_activator(
                             self.get_built_in_product(self.BUILT_IN_MANAGED_SECURITY_SERVICES_TYPE)["id"],
                             label + ".managed_security_services",
@@ -88,10 +92,13 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                             self.record_span_event_from_instance("msa.mss.activation.completed")
                             if hasattr(self, 'metrics'):
                                 self.metrics.record_operation("msa.mss.activate", {"vendor": self.resource_properties.get("vendor")})
-                    elif service_type == "MNE":
-                        if self.resource_properties.get("circuitId"):
+
+                elif service_type == "MNE":
+                    if self.resource_properties.get("circuitId"):
+                        # Add granular span for MNE activation
+                        with self.timed_operation("msa.mne.activation", {"circuit_id": self.resource_properties.get("circuitId")}) if getattr(self, '_otel_initialized', False) else self._nullcontext():
                             if getattr(self, '_otel_initialized', False):
-                                self.record_span_event_from_instance("msa.mne.activation.started")
+                                self.record_span_event_from_instance("msa.mne.activation.started", {"circuit_id": self.resource_properties.get("circuitId")})
                             self.invoke_activator(
                                 self.get_built_in_product(self.BUILT_IN_MANAGED_NETWORK_EDGE_TYPE)["id"], label
                             )
@@ -131,6 +138,11 @@ class Activate(CommonPlan, CliCutthrough, OTelMixin):
                         "duration_ms": duration_ms
                     }
                 )
+
+    def _nullcontext(self):
+        """Return a nullcontext for when OTel is not initialized."""
+        from contextlib import nullcontext
+        return nullcontext()
 
     def invoke_activator(self, product_id, label):
         """Create child resource
