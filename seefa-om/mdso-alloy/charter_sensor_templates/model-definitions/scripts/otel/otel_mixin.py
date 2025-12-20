@@ -15,7 +15,7 @@ except ImportError:
     OTEL_AVAILABLE = False
     trace = None
 
-from otel_instrumentation.instrumentation import (
+from otel.instrumentation import (
     setup_otel,
     get_otel_logger,
     inject_correlation_context,
@@ -32,16 +32,16 @@ from otel_instrumentation.instrumentation import (
     extract_fqdn_from_node_name,
     validate_beorn_response
 )
-from otel_instrumentation.otel_mdso_utils import (
+from otel.otel_mdso_utils import (
     MDSOSpanHelper,
     ErrorPatternMatcher
 )
-from otel_instrumentation.feature_flags import (
+from otel.feature_flags import (
     is_otel_enabled,
     is_otel_sampling_enabled,
     get_otel_sampling_rate
 )
-from otel_instrumentation.metrics import MDSOMetrics
+from otel.metrics import MDSOMetrics
 import time
 
 logger = logging.getLogger(__name__)
@@ -521,7 +521,7 @@ class OTelMixin:
         if not getattr(self, '_otel_initialized', False):
             return
         
-        from otel_instrumentation.otel_mdso_utils import (
+        from otel.otel_mdso_utils import (
             extract_vendor_from_node_name,
             extract_fqdn_from_node_name
         )
@@ -612,7 +612,7 @@ class OTelMixin:
             ...     self.otel_log("Invalid Beorn response", level="warning")
         """
         if not getattr(self, '_otel_initialized', False):
-            from otel_instrumentation.otel_mdso_utils import validate_beorn_response
+            from otel.otel_mdso_utils import validate_beorn_response
             return validate_beorn_response(beorn_data)
         
         is_valid = validate_beorn_response(beorn_data)

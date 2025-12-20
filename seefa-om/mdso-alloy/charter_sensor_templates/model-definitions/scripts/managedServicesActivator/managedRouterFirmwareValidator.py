@@ -4,7 +4,7 @@ import sys
 from contextlib import nullcontext
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 class Activate(CommonPlan, OTelMixin):

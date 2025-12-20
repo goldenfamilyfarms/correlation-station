@@ -16,7 +16,7 @@ from typing import Any
 
 from scripts.common_plan import CommonPlan
 from scripts.networkservice.businesslogic import BusinessLogic
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 sys.path.append("model-definitions")
 

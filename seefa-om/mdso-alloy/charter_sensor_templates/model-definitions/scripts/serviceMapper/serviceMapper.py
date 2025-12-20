@@ -6,7 +6,7 @@ from ra_plugins.ra_cutthrough import RaCutThrough
 from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.configmodeler.utils import NetworkCheckUtils
 from scripts.serviceMapper.common import Common, Device
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 ADVA_PROS_LIST = ["FSP 150-XG116PRO", "FSP 150-XG116PROH", "FSP 150-XG118PRO", "FSP 150-XG120PRO"]

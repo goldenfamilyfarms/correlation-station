@@ -5,7 +5,7 @@ import sys
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 class MRSA_Exception(Exception):

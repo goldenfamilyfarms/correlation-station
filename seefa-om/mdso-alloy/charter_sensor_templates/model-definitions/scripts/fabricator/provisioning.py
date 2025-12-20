@@ -1,7 +1,7 @@
 import time
 from scripts.common_plan import CommonPlan
 from scripts.fabricator.common import FactoryBase
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 class Activate(FactoryBase, OTelMixin):

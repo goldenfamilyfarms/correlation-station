@@ -33,8 +33,8 @@ from scripts.utils import Utils
 
 # OpenTelemetry imports
 try:
-    from scripts.otel_instrumentation.otel_mixin import OTelMixin
-    from scripts.otel_instrumentation.instrumentation import (
+    from scripts.otel.otel_mixin import OTelMixin
+    from scripts.otel.instrumentation import (
         inject_correlation_context,
     )
     from opentelemetry import trace

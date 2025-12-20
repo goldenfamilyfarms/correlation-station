@@ -8,7 +8,7 @@ Versions:
 
 """
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 import json
 import sys
 sys.path.append('model-definitions')

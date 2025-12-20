@@ -68,13 +68,13 @@ Use the provided test script to verify file export:
 
 ```bash
 # From the MDSO script environment
-python otel_instrumentation/test_file_export.py
+python otel/test_file_export.py
 
 # Or with custom directory
-python otel_instrumentation/test_file_export.py --trace-log-dir /opt/ciena/bp2/alloy-collector
+python otel/test_file_export.py --trace-log-dir /opt/ciena/bp2/alloy-collector
 
 # With verbose logging
-python otel_instrumentation/test_file_export.py --verbose
+python otel/test_file_export.py --verbose
 ```
 
 The script will:
@@ -203,7 +203,7 @@ The exporter will automatically detect permission issues and fall back to sudo. 
 You can also call the diagnostic function from your code:
 
 ```python
-from otel_instrumentation.instrumentation import test_file_export
+from otel.instrumentation import test_file_export
 
 result = test_file_export()
 if result['success']:

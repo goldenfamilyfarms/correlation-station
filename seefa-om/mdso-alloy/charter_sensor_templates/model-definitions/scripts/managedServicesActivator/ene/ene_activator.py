@@ -1,5 +1,5 @@
 from scripts.common_plan import CommonPlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 from .utilities.ssh_connection import SSHConnection
 from .utilities.fortigateAPI import Fortigate
 from .utilities.ene_logger import ENElogger

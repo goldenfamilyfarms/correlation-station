@@ -16,7 +16,7 @@ from copy import deepcopy
 sys.path.append("model-definitions")
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
 from scripts.networkservice.update_site_state import UpdateSiteState
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 class Activate(CompleteAndTerminatePlan, OTelMixin):

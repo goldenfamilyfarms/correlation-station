@@ -15,7 +15,7 @@ sys.path.append("model-definitions")
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
 from scripts.common_plan import CommonPlan
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 
 
 class Terminate(CommonPlan, OTelMixin):
