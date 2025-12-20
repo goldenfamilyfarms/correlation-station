@@ -15,7 +15,7 @@ import sys
 import time
 sys.path.append('model-definitions')
 from scripts.common_plan import CommonPlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 import re
 import json
 

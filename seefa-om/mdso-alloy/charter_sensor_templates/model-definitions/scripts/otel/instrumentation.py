@@ -1156,7 +1156,7 @@ def create_topology_span(
         Active span (remember to call .end()!)
     
     Example:
-        >>> from otel_instrumentation.instrumentation import create_topology_span
+        >>> from otel.instrumentation import create_topology_span
         >>> span = create_topology_span("123-456", "fetch")
         >>> try:
         ...     # ... fetch topology ...
@@ -1164,7 +1164,7 @@ def create_topology_span(
         ... finally:
         ...     span.end()
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     if tracer is None:
         tracer = trace.get_tracer(__name__)
@@ -1191,7 +1191,7 @@ def create_network_function_span(
         Active span (remember to call .end()!)
     
     Example:
-        >>> from otel_instrumentation.instrumentation import create_network_function_span
+        >>> from otel.instrumentation import create_network_function_span
         >>> span = create_network_function_span("TID123", "device.example.com", "check")
         >>> try:
         ...     # ... check device ...
@@ -1199,7 +1199,7 @@ def create_network_function_span(
         ... finally:
         ...     span.end()
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     if tracer is None:
         tracer = trace.get_tracer(__name__)
@@ -1237,7 +1237,7 @@ def add_topology_attributes(
         ...     validation_status=True
         ... )
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     MDSOSpanHelper.add_topology_attributes(
         span=span,
@@ -1279,7 +1279,7 @@ def add_network_function_attributes(
         ...     device_role="CPE"
         ... )
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     MDSOSpanHelper.add_network_function_attributes(
         span=span,
@@ -1319,7 +1319,7 @@ def add_error_attributes(
         ...     is_new_error=True
         ... )
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     MDSOSpanHelper.add_error_attributes(
         span=span,
@@ -1357,7 +1357,7 @@ def set_correlation_baggage(
         ...     provider_resource_id="uuid-123"
         ... )
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     MDSOSpanHelper.set_correlation_baggage(
         circuit_id=circuit_id,
@@ -1390,7 +1390,7 @@ def record_span_event(
         ...     {"device_id": "123", "vendor": "juniper"}
         ... )
     """
-    from otel_instrumentation.otel_mdso_utils import MDSOSpanHelper
+    from otel.otel_mdso_utils import MDSOSpanHelper
     
     MDSOSpanHelper.record_span_event(span, event_name, attributes)
 
@@ -1412,7 +1412,7 @@ def extract_error_identifiers(error_message: str) -> Dict[str, Any]:
         >>> print(identifiers.get("circuit_id"))
         123-456
     """
-    from otel_instrumentation.otel_mdso_utils import ErrorPatternMatcher
+    from otel.otel_mdso_utils import ErrorPatternMatcher
     
     matcher = ErrorPatternMatcher()
     return matcher.extract_all_identifiers(error_message)
@@ -1433,7 +1433,7 @@ def categorize_error(error_message: str) -> Dict[str, str]:
         >>> print(result["category"])
         IP_CONFLICT_ERROR
     """
-    from otel_instrumentation.otel_mdso_utils import ErrorPatternMatcher
+    from otel.otel_mdso_utils import ErrorPatternMatcher
     
     matcher = ErrorPatternMatcher()
     return matcher.categorize_error(error_message)
@@ -1455,7 +1455,7 @@ def extract_vendor_from_node_name(node_name_list: List[Dict]) -> Optional[str]:
         >>> print(vendor)
         juniper
     """
-    from otel_instrumentation.otel_mdso_utils import extract_vendor_from_node_name as _extract_vendor
+    from otel.otel_mdso_utils import extract_vendor_from_node_name as _extract_vendor
     
     return _extract_vendor(node_name_list)
 
@@ -1476,7 +1476,7 @@ def extract_fqdn_from_node_name(node_name_list: List[Dict]) -> Optional[str]:
         >>> print(fqdn)
         device.example.com
     """
-    from otel_instrumentation.otel_mdso_utils import extract_fqdn_from_node_name as _extract_fqdn
+    from otel.otel_mdso_utils import extract_fqdn_from_node_name as _extract_fqdn
     
     return _extract_fqdn(node_name_list)
 
@@ -1497,7 +1497,7 @@ def validate_beorn_response(data: Dict) -> bool:
         >>> print(is_valid)
         True
     """
-    from otel_instrumentation.otel_mdso_utils import validate_beorn_response as _validate
+    from otel.otel_mdso_utils import validate_beorn_response as _validate
     
     return _validate(data)
 

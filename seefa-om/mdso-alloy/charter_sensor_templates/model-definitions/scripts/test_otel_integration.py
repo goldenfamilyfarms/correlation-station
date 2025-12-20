@@ -11,8 +11,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 # Import OTelMixin
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.instrumentation import inject_correlation_context
+from otel.otel_mixin import OTelMixin
+from otel.instrumentation import inject_correlation_context
 from opentelemetry import trace
 
 # Mock CommonPlan constants (mimicking real CommonPlan class)

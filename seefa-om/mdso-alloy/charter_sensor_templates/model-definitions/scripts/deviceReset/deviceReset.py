@@ -13,7 +13,7 @@ sys.path.append('model-definitions')
 from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.serviceMapper.common import Common, Device
 from scripts.common_plan import CommonPlan
-from scripts.otel_instrumentation.otel_mixin import OTelMixin
+from scripts.otel.otel_mixin import OTelMixin
 from scripts.deviceReset.advaReset import AdvaReset
 from scripts.deviceReset.juniperReset import JuniperReset
 from scripts.deviceReset.radReset import RadReset
