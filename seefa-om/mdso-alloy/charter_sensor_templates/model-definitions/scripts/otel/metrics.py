@@ -35,7 +35,7 @@ def setup_metrics(
     environment: str = "dev",
     version: str = "1.0.0",
     instance: Optional[Any] = None
-) -> metrics.Meter:
+) -> "metrics.Meter":
     """
     Setup OpenTelemetry metrics for MDSO scriptplan
     
@@ -121,7 +121,7 @@ def setup_metrics(
     return _meter
 
 
-def get_meter() -> Optional[metrics.Meter]:
+def get_meter() -> Optional["metrics.Meter"]:
     """
     Get the global meter instance
     

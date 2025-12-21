@@ -347,7 +347,7 @@ class OTelMixin:
 
     def add_topology_attributes_to_span(
         self,
-        span: Optional[trace.Span] = None,
+        span: Optional["trace.Span"] = None,
         service_type: Optional[str] = None,
         vendor: Optional[str] = None,
         fqdn: Optional[str] = None,
@@ -391,7 +391,7 @@ class OTelMixin:
 
     def add_network_function_attributes_to_span(
         self,
-        span: Optional[trace.Span] = None,
+        span: Optional["trace.Span"] = None,
         communication_state: Optional[str] = None,
         ip_address: Optional[str] = None,
         vendor: Optional[str] = None,
@@ -473,7 +473,7 @@ class OTelMixin:
         self,
         event_name: str,
         attributes: Optional[Dict[str, Any]] = None,
-        span: Optional[trace.Span] = None
+        span: Optional["trace.Span"] = None
     ):
         """
         Record a span event with attributes, optionally merging instance context
