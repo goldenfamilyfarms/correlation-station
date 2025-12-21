@@ -19,6 +19,7 @@ import re
 import time
 import traceback
 from collections import defaultdict
+from contextlib import nullcontext
 from copy import deepcopy
 from logging.handlers import RotatingFileHandler
 
@@ -512,7 +513,13 @@ class CommonPlan(Plan, Utils, OTelMixin):
                 self.logger.warning(f"Failed to inject correlation context: {e}")
 
         # Create main span for plan execution using OTelMixin context manager
-        with self.create_root_span(f"plan.execute.{self.the_class}"):
+        # Use nullcontext if create_root_span is not available (e.g., when OTelMixin import failed)
+        span_context = (
+            self.create_root_span(f"plan.execute.{self.the_class}")
+            if hasattr(self, 'create_root_span') and callable(getattr(self, 'create_root_span', None))
+            else nullcontext()
+        )
+        with span_context:
             try:
                 # Get current span for setting attributes
                 span = trace.get_current_span() if OTEL_AVAILABLE and trace else None
