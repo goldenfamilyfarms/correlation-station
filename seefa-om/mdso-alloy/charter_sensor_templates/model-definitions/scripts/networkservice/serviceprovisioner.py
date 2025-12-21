@@ -14,9 +14,18 @@ import time
 from copy import deepcopy
 
 sys.path.append("model-definitions")
+import logging
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
 from scripts.networkservice.update_site_state import UpdateSiteState
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("serviceprovisioner.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("serviceprovisioner.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"serviceprovisioner.py: Failed to import OTelMixin - Error: {e}")
+    raise
 
 
 class Activate(CompleteAndTerminatePlan, OTelMixin):

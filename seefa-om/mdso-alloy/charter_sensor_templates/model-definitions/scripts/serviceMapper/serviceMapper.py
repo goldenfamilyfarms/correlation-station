@@ -1,4 +1,5 @@
 import ipaddress
+import logging
 
 from copy import deepcopy
 
@@ -6,7 +7,15 @@ from ra_plugins.ra_cutthrough import RaCutThrough
 from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.configmodeler.utils import NetworkCheckUtils
 from scripts.serviceMapper.common import Common, Device
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("serviceMapper.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("serviceMapper.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"serviceMapper.py: Failed to import OTelMixin - Error: {e}")
+    raise
 
 
 ADVA_PROS_LIST = ["FSP 150-XG116PRO", "FSP 150-XG116PROH", "FSP 150-XG118PRO", "FSP 150-XG120PRO"]

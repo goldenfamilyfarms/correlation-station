@@ -2,9 +2,18 @@ import time
 import sys
 from contextlib import nullcontext
 sys.path.append('model-definitions')
+import logging
 from scripts.common_plan import CommonPlan
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("managedRPHY.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("managedRPHY.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"managedRPHY.py: Failed to import OTelMixin - Error: {e}")
+    raise
 
 
 class Activate(CommonPlan, CliCutthrough, OTelMixin):

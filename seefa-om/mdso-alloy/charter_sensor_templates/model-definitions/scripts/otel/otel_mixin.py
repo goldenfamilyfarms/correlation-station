@@ -7,44 +7,79 @@ Based on: OTEL_IMPLEMENTATION_STRATEGY.md
 import os
 import logging
 from typing import Optional, Dict, Any, List
+
+# Setup logger first before imports
+logger = logging.getLogger(__name__)
+logger.info("otel_mixin.py: Starting module import")
+
 # Try importing OpenTelemetry - gracefully degrade if not available
 try:
+    logger.info("otel_mixin.py: Attempting to import opentelemetry.trace")
     from opentelemetry import trace
     OTEL_AVAILABLE = True
-except ImportError:
+    logger.info("otel_mixin.py: Successfully imported opentelemetry.trace - OTEL_AVAILABLE=True")
+except ImportError as e:
     OTEL_AVAILABLE = False
     trace = None
+    logger.warning(f"otel_mixin.py: Failed to import opentelemetry.trace - OTEL_AVAILABLE=False - Error: {e}")
 
-from otel.instrumentation import (
-    setup_otel,
-    get_otel_logger,
-    inject_correlation_context,
-    mdso_span,
-    extract_correlation_context,
-    create_topology_span,
-    create_network_function_span,
-    add_topology_attributes,
-    add_network_function_attributes,
-    add_error_attributes,
-    set_correlation_baggage,
-    record_span_event,
-    extract_vendor_from_node_name,
-    extract_fqdn_from_node_name,
-    validate_beorn_response
-)
-from otel.otel_mdso_utils import (
-    MDSOSpanHelper,
-    ErrorPatternMatcher
-)
-from otel.feature_flags import (
-    is_otel_enabled,
-    is_otel_sampling_enabled,
-    get_otel_sampling_rate
-)
-from otel.metrics import MDSOMetrics
+logger.info("otel_mixin.py: Importing from otel.instrumentation")
+try:
+    from otel.instrumentation import (
+        setup_otel,
+        get_otel_logger,
+        inject_correlation_context,
+        mdso_span,
+        extract_correlation_context,
+        create_topology_span,
+        create_network_function_span,
+        add_topology_attributes,
+        add_network_function_attributes,
+        add_error_attributes,
+        set_correlation_baggage,
+        record_span_event,
+        extract_vendor_from_node_name,
+        extract_fqdn_from_node_name,
+        validate_beorn_response
+    )
+    logger.info("otel_mixin.py: Successfully imported all functions from otel.instrumentation")
+except ImportError as e:
+    logger.error(f"otel_mixin.py: Failed to import from otel.instrumentation - Error: {e}")
+    raise
+
+logger.info("otel_mixin.py: Importing from otel.otel_mdso_utils")
+try:
+    from otel.otel_mdso_utils import (
+        MDSOSpanHelper,
+        ErrorPatternMatcher
+    )
+    logger.info("otel_mixin.py: Successfully imported MDSOSpanHelper and ErrorPatternMatcher")
+except ImportError as e:
+    logger.error(f"otel_mixin.py: Failed to import from otel.otel_mdso_utils - Error: {e}")
+    raise
+
+logger.info("otel_mixin.py: Importing from otel.feature_flags")
+try:
+    from otel.feature_flags import (
+        is_otel_enabled,
+        is_otel_sampling_enabled,
+        get_otel_sampling_rate
+    )
+    logger.info("otel_mixin.py: Successfully imported feature flag functions")
+except ImportError as e:
+    logger.error(f"otel_mixin.py: Failed to import from otel.feature_flags - Error: {e}")
+    raise
+
+logger.info("otel_mixin.py: Importing MDSOMetrics from otel.metrics")
+try:
+    from otel.metrics import MDSOMetrics
+    logger.info("otel_mixin.py: Successfully imported MDSOMetrics")
+except ImportError as e:
+    logger.error(f"otel_mixin.py: Failed to import from otel.metrics - Error: {e}")
+    raise
+
 import time
-
-logger = logging.getLogger(__name__)
+logger.info("otel_mixin.py: All imports completed successfully")
 
 
 class OTelMixin:

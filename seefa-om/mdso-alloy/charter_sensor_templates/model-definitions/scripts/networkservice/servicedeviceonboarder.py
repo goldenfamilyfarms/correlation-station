@@ -8,10 +8,19 @@ Versions:
 
 """
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("servicedeviceonboarder.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("servicedeviceonboarder.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"servicedeviceonboarder.py: Failed to import OTelMixin - Error: {e}")
+    raise
 import json
 import sys
 sys.path.append('model-definitions')
+import logging
 
 
 class Activate(CompleteAndTerminatePlan, OTelMixin):

@@ -16,9 +16,18 @@ from typing import Any
 
 from scripts.common_plan import CommonPlan
 from scripts.networkservice.businesslogic import BusinessLogic
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("circuitdetailscollector.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("circuitdetailscollector.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"circuitdetailscollector.py: Failed to import OTelMixin - Error: {e}")
+    raise
 
 sys.path.append("model-definitions")
+import logging
 
 
 class Activate(CommonPlan, OTelMixin):

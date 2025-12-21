@@ -13,8 +13,13 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Setup logger first before imports
+logger = logging.getLogger(__name__)
+logger.info("instrumentation.py: Starting module import")
+
 # Try importing OpenTelemetry - gracefully degrade if not available
 try:
+    logger.info("instrumentation.py: Attempting to import OpenTelemetry modules (trace, baggage, context, TracerProvider, Resource, etc.)")
     from opentelemetry import trace, baggage, context
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.resources import Resource
@@ -22,31 +27,37 @@ try:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter, SpanExportResult
     from opentelemetry.sdk.trace import ReadableSpan
     OTEL_AVAILABLE = True
-except ImportError:
+    logger.info("instrumentation.py: Successfully imported OpenTelemetry modules - OTEL_AVAILABLE=True")
+except ImportError as e:
     OTEL_AVAILABLE = False
     trace = baggage = context = None
     SpanExporter = object
+    logger.warning(f"instrumentation.py: Failed to import OpenTelemetry modules - OTEL_AVAILABLE=False - Error: {e}")
 
 try:
+    logger.info("instrumentation.py: Attempting to import structlog")
     import structlog
     STRUCTLOG_AVAILABLE = True
-except ImportError:
+    logger.info("instrumentation.py: Successfully imported structlog - STRUCTLOG_AVAILABLE=True")
+except ImportError as e:
     STRUCTLOG_AVAILABLE = False
     structlog = None
-
-
-logger = logging.getLogger(__name__)
+    logger.warning(f"instrumentation.py: Failed to import structlog - STRUCTLOG_AVAILABLE=False - Error: {e}")
 
 if not OTEL_AVAILABLE:
-    logger.warning("OpenTelemetry not available - instrumentation will be disabled")
+    logger.warning("instrumentation.py: OpenTelemetry not available - instrumentation will be disabled")
+else:
+    logger.info("instrumentation.py: OpenTelemetry is available and ready for use")
 
 # Try importing Pyroscope
 try:
+    logger.info("instrumentation.py: Attempting to import pyroscope")
     import pyroscope
     PYROSCOPE_AVAILABLE = True
-except ImportError:
+    logger.info("instrumentation.py: Successfully imported pyroscope - PYROSCOPE_AVAILABLE=True")
+except ImportError as e:
     PYROSCOPE_AVAILABLE = False
-    logger.warning("Pyroscope not available")
+    logger.warning(f"instrumentation.py: Failed to import pyroscope - PYROSCOPE_AVAILABLE=False - Error: {e}")
 
 # Default directory for file-based trace export (for isolated containers)
 DEFAULT_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"

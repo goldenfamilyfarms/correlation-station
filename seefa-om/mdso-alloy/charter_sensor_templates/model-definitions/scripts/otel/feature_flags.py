@@ -1,5 +1,10 @@
 """Feature flags for OTel instrumentation"""
 import os
+import logging
+
+# Setup logger
+logger = logging.getLogger(__name__)
+logger.info("feature_flags.py: Module loaded - providing OTel feature flag functions")
 
 def _get_config_value(key: str, default_value, instance=None):
     """
@@ -29,17 +34,18 @@ def _get_config_value(key: str, default_value, instance=None):
 def is_otel_enabled(instance=None) -> bool:
     """
     Check if OTel instrumentation is enabled.
-    
+
     Args:
         instance: Optional CommonPlan instance to get constants from
-    
+
     Returns:
         True if OTel is enabled, False otherwise
     """
+    logger.debug(f"feature_flags.is_otel_enabled() called with instance={instance}")
     value = _get_config_value("OTEL_ENABLED", "true", instance)
-    if isinstance(value, bool):
-        return value
-    return str(value).lower() == "true"
+    result = value if isinstance(value, bool) else str(value).lower() == "true"
+    logger.info(f"feature_flags.is_otel_enabled() returning {result} (raw value: {value})")
+    return result
 
 def is_otel_sampling_enabled(instance=None) -> bool:
     """
