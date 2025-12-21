@@ -130,10 +130,10 @@ class MDSOSpanHelper:
 
     @staticmethod
     def create_topology_span(
-        tracer: trace.Tracer,
+        tracer: "trace.Tracer",
         circuit_id: str,
         operation: str = "fetch"
-    ) -> trace.Span:
+    ) -> "trace.Span":
         """
         Create a span for Beorn topology operations
 
@@ -152,11 +152,11 @@ class MDSOSpanHelper:
 
     @staticmethod
     def create_network_function_span(
-        tracer: trace.Tracer,
+        tracer: "trace.Tracer",
         tid: str,
         fqdn: Optional[str] = None,
         operation: str = "check"
-    ) -> trace.Span:
+    ) -> "trace.Span":
         """
         Create a span for network function operations
 
@@ -177,7 +177,7 @@ class MDSOSpanHelper:
 
     @staticmethod
     def add_topology_attributes(
-        span: trace.Span,
+        span: "trace.Span",
         service_type: Optional[str] = None,
         vendor: Optional[str] = None,
         fqdn: Optional[str] = None,
@@ -216,7 +216,7 @@ class MDSOSpanHelper:
 
     @staticmethod
     def add_network_function_attributes(
-        span: trace.Span,
+        span: "trace.Span",
         communication_state: Optional[str] = None,
         ip_address: Optional[str] = None,
         vendor: Optional[str] = None,
@@ -254,7 +254,7 @@ class MDSOSpanHelper:
 
     @staticmethod
     def add_error_attributes(
-        span: trace.Span,
+        span: "trace.Span",
         error_code: Optional[str] = None,
         error_category: Optional[str] = None,
         error_message: Optional[str] = None,
@@ -322,7 +322,7 @@ class MDSOSpanHelper:
 
     @staticmethod
     def record_span_event(
-        span: trace.Span,
+        span: "trace.Span",
         event_name: str,
         attributes: Optional[Dict[str, Any]] = None,
     ):
