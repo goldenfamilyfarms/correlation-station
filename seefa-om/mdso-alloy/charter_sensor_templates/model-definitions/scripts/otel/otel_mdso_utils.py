@@ -11,19 +11,26 @@ Version: 1.0.0
 """
 
 import re
+import logging
 from typing import Optional, Dict, Any, List
+
+# Setup logger first before imports
+logger = logging.getLogger(__name__)
+logger.info("otel_mdso_utils.py: Starting module import")
+
 # Try importing OpenTelemetry - gracefully degrade if not available
 try:
+    logger.info("otel_mdso_utils.py: Attempting to import opentelemetry modules (trace, baggage, Status, StatusCode)")
     from opentelemetry import trace, baggage
     from opentelemetry.trace import Status, StatusCode
     OTEL_AVAILABLE = True
-except ImportError:
+    logger.info("otel_mdso_utils.py: Successfully imported OpenTelemetry modules - OTEL_AVAILABLE=True")
+except ImportError as e:
     OTEL_AVAILABLE = False
     trace = baggage = Status = StatusCode = None
+    logger.warning(f"otel_mdso_utils.py: Failed to import OpenTelemetry modules - OTEL_AVAILABLE=False - Error: {e}")
 
-import logging
-
-logger = logging.getLogger(__name__)
+logger.info(f"otel_mdso_utils.py: Module import complete - OTEL_AVAILABLE={OTEL_AVAILABLE}")
 
 # ========================================
 # Vendor Resource Type Mapping

@@ -12,10 +12,19 @@ import time
 import sys
 
 sys.path.append("model-definitions")
+import logging
 from scripts.deviceconfiguration.cli_cutthrough import CliCutthrough
 from scripts.common_plan import CommonPlan
 from scripts.complete_and_terminate_plan import CompleteAndTerminatePlan
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("networkservice.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("networkservice.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"networkservice.py: Failed to import OTelMixin - Error: {e}")
+    raise
 
 
 class Terminate(CommonPlan, OTelMixin):

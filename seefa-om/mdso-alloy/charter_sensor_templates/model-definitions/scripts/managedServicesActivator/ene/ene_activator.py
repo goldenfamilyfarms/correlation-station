@@ -1,5 +1,14 @@
 from scripts.common_plan import CommonPlan
-from scripts.otel.otel_mixin import OTelMixin
+import logging
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("ene_activator.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("ene_activator.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"ene_activator.py: Failed to import OTelMixin - Error: {e}")
+    raise
 from .utilities.ssh_connection import SSHConnection
 from .utilities.fortigateAPI import Fortigate
 from .utilities.ene_logger import ENElogger

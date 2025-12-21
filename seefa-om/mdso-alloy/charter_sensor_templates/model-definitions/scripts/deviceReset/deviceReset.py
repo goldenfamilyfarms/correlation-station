@@ -10,10 +10,19 @@ Versions:
 
 import sys
 sys.path.append('model-definitions')
+import logging
 from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.serviceMapper.common import Common, Device
 from scripts.common_plan import CommonPlan
-from scripts.otel.otel_mixin import OTelMixin
+# Setup logger for otel import tracking
+_import_logger = logging.getLogger(__name__)
+_import_logger.info("deviceReset.py: Attempting to import OTelMixin from scripts.otel.otel_mixin")
+try:
+    from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("deviceReset.py: Successfully imported OTelMixin")
+except ImportError as e:
+    _import_logger.error(f"deviceReset.py: Failed to import OTelMixin - Error: {e}")
+    raise
 from scripts.deviceReset.advaReset import AdvaReset
 from scripts.deviceReset.juniperReset import JuniperReset
 from scripts.deviceReset.radReset import RadReset

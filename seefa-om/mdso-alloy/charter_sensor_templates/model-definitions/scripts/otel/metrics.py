@@ -9,20 +9,28 @@ Version: 1.0.0
 import logging
 import os
 from typing import Optional, Dict, Any
+
+# Setup logger first before imports
+logger = logging.getLogger(__name__)
+logger.info("metrics.py: Starting module import")
+
 # Try importing OpenTelemetry - gracefully degrade if not available
 try:
+    logger.info("metrics.py: Attempting to import OpenTelemetry metrics modules")
     from opentelemetry import metrics
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
     from opentelemetry.sdk.resources import Resource
     OTEL_AVAILABLE = True
-except ImportError:
+    logger.info("metrics.py: Successfully imported OpenTelemetry metrics modules - OTEL_AVAILABLE=True")
+except ImportError as e:
     OTEL_AVAILABLE = False
     metrics = MeterProvider = PeriodicExportingMetricReader = None
     OTLPMetricExporter = Resource = None
+    logger.warning(f"metrics.py: Failed to import OpenTelemetry metrics modules - OTEL_AVAILABLE=False - Error: {e}")
 
-logger = logging.getLogger(__name__)
+logger.info(f"metrics.py: Module import complete - OTEL_AVAILABLE={OTEL_AVAILABLE}")
 
 # Global meter provider
 _meter_provider = None

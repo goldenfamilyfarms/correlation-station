@@ -33,18 +33,33 @@ from scripts.scriptplan import Plan
 from scripts.utils import Utils
 
 # OpenTelemetry imports
+# Setup early logger for import tracking
+_import_logger = logging.getLogger("common_plan")
+_import_logger.info("common_plan.py: Attempting to import OpenTelemetry modules")
+
 try:
+    _import_logger.info("common_plan.py: Importing OTelMixin from scripts.otel.otel_mixin")
     from scripts.otel.otel_mixin import OTelMixin
+    _import_logger.info("common_plan.py: Successfully imported OTelMixin")
+
+    _import_logger.info("common_plan.py: Importing inject_correlation_context from scripts.otel.instrumentation")
     from scripts.otel.instrumentation import (
         inject_correlation_context,
     )
+    _import_logger.info("common_plan.py: Successfully imported inject_correlation_context")
+
+    _import_logger.info("common_plan.py: Importing trace from opentelemetry")
     from opentelemetry import trace
+    _import_logger.info("common_plan.py: Successfully imported trace")
+
     OTEL_AVAILABLE = True
-except ImportError:
+    _import_logger.info("common_plan.py: All OpenTelemetry imports successful - OTEL_AVAILABLE=True")
+except ImportError as e:
     OTEL_AVAILABLE = False
     OTelMixin = object  # Fallback to base object if not available
     inject_correlation_context = None
     trace = None
+    _import_logger.warning(f"common_plan.py: Failed to import OpenTelemetry modules - OTEL_AVAILABLE=False - Error: {e}")
 
 
 class sensitiveLogDataFormatter(object):
