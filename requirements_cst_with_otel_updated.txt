@@ -1,0 +1,31 @@
+--index-url http://blueplanet/vfirewall-templates-pypi/simple/
+#--extra-index-url http://127.0.0.1/plansdk-pypi/simple/
+--extra-index-url http://blueplanet/mdsocharter-pypi/simple
+--extra-index-url http://blueplanet/charter-pypi/simple/
+
+# Existing packages
+jsonpath
+requests
+plansdk
+ipaddress
+
+# OpenTelemetry packages (add after PYPI deployment)
+# Core packages
+opentelemetry-api==1.12.0
+opentelemetry-sdk==1.12.0
+opentelemetry-exporter-otlp-proto-http==1.12.0
+opentelemetry-semantic-conventions==0.33b0
+
+# Structured logging
+structlog==21.5.0
+
+# Optional: Auto-instrumentation
+opentelemetry-instrumentation-requests==0.33b0
+opentelemetry-instrumentation-urllib3==0.33b0
+
+# Optional: Continuous profiling
+pyroscope-io==0.8.14
+
+# Note: Dependencies (aiocontextvars, backoff, contextvars, etc.) will be
+# automatically installed by pip when installing the above packages from PYPI
+

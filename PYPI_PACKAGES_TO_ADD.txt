@@ -1,0 +1,47 @@
+# OpenTelemetry Packages to Add to requirements_python38.txt
+# 
+# Instructions:
+# 1. Open ./model-definitions/requirements_python38.txt in the PYPI repository
+# 2. Add the packages below at the end of the file
+# 3. Do NOT modify existing package versions
+# 4. Do NOT delete previous versions unless deprecated
+#
+# These packages were generated from pip-compile output with Python 3.6
+# All versions are locked to ensure consistency
+
+# OpenTelemetry Core Packages
+aiocontextvars==0.2.2
+backoff==1.11.1
+contextvars==2.4
+dataclasses==0.8
+deprecated==1.3.1
+googleapis-common-protos==1.56.3
+immutables==0.19
+opentelemetry-api==1.12.0
+opentelemetry-exporter-otlp-proto-http==1.12.0
+opentelemetry-exporter-prometheus==0.33b0
+opentelemetry-instrumentation==0.33b0
+opentelemetry-instrumentation-requests==0.33b0
+opentelemetry-instrumentation-urllib3==0.33b0
+opentelemetry-proto==1.12.0
+opentelemetry-sdk==1.12.0
+opentelemetry-semantic-conventions==0.33b0
+opentelemetry-util-http==0.33b0
+prometheus-client==0.17.1
+protobuf==3.19.6
+pyroscope-io==0.8.14
+structlog==21.5.0
+wrapt==1.16.0
+
+# Note: The following packages may already exist in requirements_python38.txt
+# If they do, check if the versions match. If versions differ, you may need
+# to coordinate with the team about which version to use:
+# - certifi (existing may be 2021.10.8, new is 2025.4.26)
+# - cffi (existing is 1.15.1, matches)
+# - charset-normalizer (existing may be 2.0.7, new is 2.0.12)
+# - idna (existing may be 2.10, new is 3.10)
+# - pycparser (existing is 2.21, matches)
+# - requests (existing may be 2.26, new is 2.27.1)
+# - typing-extensions (existing may be 3.10.0.2, new is 4.1.1)
+# - urllib3 (existing may be 1.26.7, new is 1.26.20)
+

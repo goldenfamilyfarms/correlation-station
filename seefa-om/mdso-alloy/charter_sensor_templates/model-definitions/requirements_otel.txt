@@ -1,0 +1,20 @@
+--index-url http://blueplanet/vfirewall-templates-pypi/simple/
+--extra-index-url http://blueplanet/mdsocharter-pypi/simple/
+--extra-index-url http://blueplanet/charter-pypi/simple/
+
+# Base packages (shared with requirements_cst.txt)
+jsonpath
+requests
+plansdk
+ipaddress
+
+# OpenTelemetry instrumentation packages
+opentelemetry-api==1.12.0
+opentelemetry-sdk==1.12.0
+opentelemetry-exporter-otlp-proto-http==1.12.0
+opentelemetry-semantic-conventions==0.33b0
+structlog==21.5.0
+opentelemetry-instrumentation-requests==0.33b0
+opentelemetry-instrumentation-urllib3==0.33b0
+pyroscope-io==0.8.14
+
