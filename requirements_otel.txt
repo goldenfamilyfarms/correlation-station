@@ -1,0 +1,15 @@
+--index-url http://blueplanet/mdsocharter-pypi/simple
+--extra-index-url http://blueplanet/charter-pypi/simple/
+--extra-index-url http://blueplanet/openapi-pypi/simple/
+
+# OpenTelemetry instrumentation packages
+# These should be available in charter-pypi after adding to PYPI
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions
+structlog
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-urllib3
+pyroscope-io
+

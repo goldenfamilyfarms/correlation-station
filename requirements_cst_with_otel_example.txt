@@ -1,0 +1,25 @@
+--index-url http://blueplanet/vfirewall-templates-pypi/simple/
+#--extra-index-url http://127.0.0.1/plansdk-pypi/simple/
+--extra-index-url http://blueplanet/charter-pypi/simple/
+
+# Existing packages
+jsonpath
+requests
+plansdk
+ipaddress
+
+# OpenTelemetry instrumentation packages
+# Add these after OpenTelemetry packages are added to charter-pypi
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions
+structlog
+
+# Optional: Auto-instrumentation
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-urllib3
+
+# Optional: Continuous profiling
+pyroscope-io
+

@@ -1,0 +1,18 @@
+--index-url https://charter_deploy:YOUR_API_KEY_HERE@bphub.blueplanet.com
+
+# Core OpenTelemetry packages
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions
+
+# Structured logging
+structlog
+
+# Optional instrumentation
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-urllib3
+
+# Optional profiling
+pyroscope-io
+
