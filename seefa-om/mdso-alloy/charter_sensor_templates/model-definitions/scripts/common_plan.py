@@ -61,6 +61,14 @@ except ImportError as e:
     trace = None
     _import_logger.warning(f"common_plan.py: Failed to import OpenTelemetry modules - OTEL_AVAILABLE=False - Error: {e}")
 
+# Environment Logger import
+try:
+    from scripts.environment_logger import log_scriptplan_environment
+    _import_logger.info("common_plan.py: Successfully imported environment_logger")
+except ImportError as e:
+    log_scriptplan_environment = None
+    _import_logger.warning(f"common_plan.py: Failed to import environment_logger - Error: {e}")
+
 
 class sensitiveLogDataFormatter(object):
     # custom formatter objects that simply wrap
@@ -468,6 +476,21 @@ class CommonPlan(Plan, Utils, OTelMixin):
             except Exception as e:
                 self.logger.warning(f"Failed to initialize OpenTelemetry: {e}", exc_info=True)
                 # Continue execution without OTEL
+
+        # ========================================
+        # Environment Logging
+        # ========================================
+        if log_scriptplan_environment:
+            try:
+                # Log environment info early in execution
+                # This captures: Python version, system info, OTel packages, and pip-compiled dependencies
+                log_scriptplan_environment(
+                    logger=self.logger,
+                    include_dependencies=True,  # Set to False to skip pip-compile for faster startup
+                    otel_span=None  # Will be set later when span is available
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to log environment information: {e}", exc_info=True)
 
         # splunk logger
         self.splunk_logger = self.splunk_logger_setup()
