@@ -16,3 +16,6 @@ opentelemetry-instrumentation-urllib3==0.41b0
 
 # Pyroscope continuous profiling
 pyroscope-io>=0.8.7
+
+# Development tools for dependency resolution
+pip-tools>=7.0.0
