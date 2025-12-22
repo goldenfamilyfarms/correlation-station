@@ -376,7 +376,7 @@ if OTEL_AVAILABLE:
 
 ### 5. Previous Analysis Document
 
-#### `MDSO_OTEL_INSTRUMENTATION_FINDINGS.md` (12 sections, 800+ lines)
+#### `MDSO_otel_FINDINGS.md` (12 sections, 800+ lines)
 **Purpose:** Comprehensive analysis of MDSO patterns and instrumentation strategy
 
 **Sections:**

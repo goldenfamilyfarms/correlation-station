@@ -705,7 +705,7 @@ async def collect_mdso_logs(product_type: str, time_range_hours: int = 3):
 ├── docker-compose.yml                  ← Main platform composition
 │
 └── docs/
-    ├── MDSO_OTEL_INSTRUMENTATION_FINDINGS.md  ← MDSO attribute guide
+    ├── MDSO_otel_FINDINGS.md  ← MDSO attribute guide
     └── SENSE_OTEL_IMPLEMENTATION_SUMMARY.md   ← OTel implementation guide
 ```
 

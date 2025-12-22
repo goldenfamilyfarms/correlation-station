@@ -19,7 +19,7 @@ This guide provides a step-by-step implementation plan for adding OpenTelemetry 
 
 1. **Non-Invasive Design**: Mixin approach allows opt-in adoption without breaking existing code
 2. **Backward Compatible**: Existing logging continues to work alongside OTel
-3. **Well-Structured**: Leverages existing `otel_instrumentation` classes
+3. **Well-Structured**: Leverages existing `otel` classes
 4. **Incremental**: Products can adopt individually
 5. **Production-Ready**: Includes error handling, feature flags, and rollback plans
 
@@ -37,7 +37,7 @@ This guide provides a step-by-step implementation plan for adding OpenTelemetry 
 
 #### Step 1.1: Create OTel Mixin Class
 
-**File:** `mdso-alloy/mdso-instrumentation/otel_instrumentation/otel_mixin.py`
+**File:** `mdso-alloy/mdso-instrumentation/otel/otel_mixin.py`
 
 ```python
 """
@@ -49,14 +49,14 @@ import logging
 from typing import Optional, Dict, Any
 from opentelemetry import trace
 
-from otel_instrumentation.instrumentation import (
+from otel.instrumentation import (
     setup_otel,
     get_otel_logger,
     inject_correlation_context,
     mdso_span,
     extract_correlation_context
 )
-from otel_instrumentation.otel_mdso_utils import (
+from otel.otel_mdso_utils import (
     MDSOSpanHelper,
     ErrorPatternMatcher
 )
@@ -229,7 +229,7 @@ class OTelMixin:
 
 #### Step 1.2: Create Feature Flag Support
 
-**File:** `mdso-alloy/mdso-instrumentation/otel_instrumentation/feature_flags.py`
+**File:** `mdso-alloy/mdso-instrumentation/otel/feature_flags.py`
 
 ```python
 """Feature flags for OTel instrumentation"""
@@ -276,9 +276,9 @@ Ensure `requirements.txt` includes all dependencies (already done in existing fi
 ```python
 # scripts/serviceMapper/common.py (or equivalent location)
 from scripts.common_plan import CommonPlan  # Assuming this exists
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.instrumentation import mdso_span
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.instrumentation import mdso_span
+from otel.feature_flags import is_otel_enabled
 
 class Common(CommonPlan, OTelMixin):
     """
@@ -375,7 +375,7 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, ConsoleSpanExporter
 
-from otel_instrumentation.otel_mixin import OTelMixin
+from otel.otel_mixin import OTelMixin
 
 
 class MockCommonPlan:
@@ -462,7 +462,7 @@ class TestOTelMixin:
         result = product.run()
         assert result["status"] == "success"
 
-    @patch('otel_instrumentation.feature_flags.is_otel_enabled')
+    @patch('otel.feature_flags.is_otel_enabled')
     def test_feature_flag_disabled(self, mock_flag):
         """Test behavior when OTel is disabled"""
         mock_flag.return_value = False
@@ -486,7 +486,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry import trace
 
-from otel_instrumentation.otel_mixin import OTelMixin
+from otel.otel_mixin import OTelMixin
 
 
 class MockProduct(OTelMixin):
@@ -749,5 +749,5 @@ logging.getLogger('opentelemetry').setLevel(logging.DEBUG)
 
 - [OTEL_IMPLEMENTATION_STRATEGY.md](https://raw.githubusercontent.com/goldenfamilyfarms/correlation-station/claude/analyze-logging-otel-strategy-01UwuAJMKz9NoJgubNbA1Qsf/OTEL_IMPLEMENTATION_STRATEGY.md)
 - [OpenTelemetry Python Documentation](https://opentelemetry.io/docs/instrumentation/python/)
-- [MDSO OTel Instrumentation Classes](../otel_instrumentation/)
+- [MDSO OTel Instrumentation Classes](../otel/)
 

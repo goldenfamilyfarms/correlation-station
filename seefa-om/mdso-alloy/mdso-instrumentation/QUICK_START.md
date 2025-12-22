@@ -19,18 +19,18 @@ git checkout validation
 cd .archive/mdso-dev/charter_sensor_templates/model-definitions/scripts
 
 # Copy OTel instrumentation
-cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-     ./otel_instrumentation/
+cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel/ \
+     ./otel/
 
 # Verify
-ls -la otel_instrumentation/
+ls -la otel/
 ```
 
 ### Step 2: Install Dependencies
 
 ```bash
 # In the scripts directory
-pip install -r otel_instrumentation/requirements.txt
+pip install -r otel/requirements.txt
 ```
 
 ### Step 3: Set Environment Variables
@@ -51,8 +51,8 @@ export MDSO_ENV=dev
 class Common(CommonPlan):
 
 # AFTER
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.feature_flags import is_otel_enabled
 
 class Common(CommonPlan, OTelMixin):
 ```
@@ -112,8 +112,8 @@ from scripts.serviceMapper.configDataModel import (
 from scripts.serviceMapper.device import Device
 
 # Add OTel imports
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.feature_flags import is_otel_enabled
 
 
 class Common(CommonPlan, OTelMixin):
@@ -142,7 +142,7 @@ class Common(CommonPlan, OTelMixin):
 ```python
 # ... (same imports as above) ...
 
-from otel_instrumentation.instrumentation import mdso_span
+from otel.instrumentation import mdso_span
 
 
 class Common(CommonPlan, OTelMixin):
@@ -278,13 +278,13 @@ else:
 
 ### Issue: Import Error
 
-**Error:** `ModuleNotFoundError: No module named 'otel_instrumentation'`
+**Error:** `ModuleNotFoundError: No module named 'otel'`
 
 **Solution:**
 ```bash
 # Ensure OTel classes are in the right location
 cd .archive/mdso-dev/charter_sensor_templates/model-definitions/scripts
-ls -la otel_instrumentation/
+ls -la otel/
 
 # Check Python path
 python -c "import sys; print(sys.path)"

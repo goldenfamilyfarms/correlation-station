@@ -6,7 +6,7 @@
 
 ```python
 from common_plan import CommonPlan
-from otel_instrumentation.otel_mixin import OTelMixin
+from otel.otel_mixin import OTelMixin
 
 class ServiceMapper(CommonPlan, OTelMixin):
     def run(self):
@@ -46,7 +46,7 @@ class ConfigModeler(CommonPlan, OTelMixin):
         self.__init_otel__()
         
         # Manually set correlation context if not in instance attributes
-        from otel_instrumentation.instrumentation import inject_correlation_context
+        from otel.instrumentation import inject_correlation_context
         
         inject_correlation_context(
             circuit_id="80.L1XX.005054..CHTR",
@@ -77,7 +77,7 @@ export OTEL_SAMPLING_RATE=1.0
 ### In Code
 
 ```python
-from otel_instrumentation.feature_flags import (
+from otel.feature_flags import (
     is_otel_enabled,
     is_otel_sampling_enabled,
     get_otel_sampling_rate
@@ -98,7 +98,7 @@ if is_otel_enabled():
 ### Basic Setup
 
 ```python
-from otel_instrumentation.instrumentation import (
+from otel.instrumentation import (
     setup_otel,
     get_otel_logger,
     inject_correlation_context,
@@ -126,7 +126,7 @@ with mdso_span("mdso.product.ServiceProvisioner", circuit_id="80.L1XX.005054..CH
 ### Log Levels and States
 
 ```python
-from otel_instrumentation.instrumentation import otel_enter_exit_log
+from otel.instrumentation import otel_enter_exit_log
 
 # Different states map to different log levels:
 otel_enter_exit_log("Starting", "STARTED")        # debug
@@ -141,7 +141,7 @@ otel_enter_exit_log("Failed", "FAILED")            # error
 The `extract_correlation_context()` function filters out None values:
 
 ```python
-from otel_instrumentation.instrumentation import extract_correlation_context
+from otel.instrumentation import extract_correlation_context
 
 # Only returns keys with non-None values
 context = extract_correlation_context()

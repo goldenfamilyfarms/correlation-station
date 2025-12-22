@@ -290,7 +290,7 @@ Docker:
   • /correlation-engine/docker-compose.yml - Engine service
 
 Documentation:
-  • /MDSO_OTEL_INSTRUMENTATION_FINDINGS.md (21 KB) - MDSO patterns
+  • /MDSO_otel_FINDINGS.md (21 KB) - MDSO patterns
   • /SENSE_OTEL_IMPLEMENTATION_SUMMARY.md (29 KB) - OTel implementation
   • /README.md - System overview
 

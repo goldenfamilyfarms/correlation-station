@@ -91,8 +91,8 @@ def run(self):
 cd .archive/mdso-dev/charter_sensor_templates/model-definitions/scripts
 
 # Copy OTel instrumentation
-cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-     ./otel_instrumentation/
+cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel/ \
+     ./otel/
 ```
 
 ### Step 2: Add OTel Mixin to Products
@@ -125,7 +125,7 @@ See `IMPLEMENTATION_EXAMPLES.md` for concrete examples.
 ├── configmodeler/
 │   ├── base.py
 │   └── ...
-└── otel_instrumentation/            # (to be copied here)
+└── otel/            # (to be copied here)
     ├── instrumentation.py
     ├── otel_mdso_utils.py
     ├── otel_mixin.py

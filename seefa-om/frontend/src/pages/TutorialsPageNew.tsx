@@ -1218,7 +1218,7 @@ provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 ## MDSO Pattern Extraction
 \`\`\`python
-# mdso-instrumentation/otel_instrumentation/mdso_patterns.py
+# mdso-instrumentation/otel/mdso_patterns.py
 CIRCUIT_ID_PATTERN = r'\\b\\d{2}\\.L[0-9A-Z]{3,4}\\.\\d{6}\\.\\.\\w{4}\\b'
 \`\`\``
   },

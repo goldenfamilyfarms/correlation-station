@@ -27,7 +27,7 @@ After comprehensive codebase analysis, **MDSO scriptplan products (ServiceMapper
 ### ✅ What IS in This Repository
 
 1. **OTel Instrumentation Classes** ✅
-   - `seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/`
+   - `seefa-om/mdso-alloy/mdso-instrumentation/otel/`
    - `instrumentation.py` - OTel setup functions
    - `otel_mdso_utils.py` - MDSO-specific helpers
    - `otel_mixin.py` - Mixin class (just created)
@@ -157,14 +157,14 @@ Once products are located:
 1. **Copy OTel Classes to Product Location**
    ```bash
    # Copy instrumentation classes
-   cp -r mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-        /path/to/products/otel_instrumentation/
+   cp -r mdso-alloy/mdso-instrumentation/otel/ \
+        /path/to/products/otel/
    ```
 
 2. **Install Dependencies**
    ```bash
    # On MDSO server, in product directory
-   pip install -r otel_instrumentation/requirements.txt
+   pip install -r otel/requirements.txt
    ```
 
 3. **Update Product Code**
@@ -290,6 +290,6 @@ Based on codebase analysis, here are the products referenced:
 
 - [Implementation Guide](./IMPLEMENTATION_GUIDE.md) - Ready to use once products are found
 - [Strategy Review](./STRATEGY_REVIEW.md) - Original strategy assessment
-- [OTel Mixin](./otel_instrumentation/otel_mixin.py) - Implementation ready
+- [OTel Mixin](./otel/otel_mixin.py) - Implementation ready
 - [Original Strategy](https://raw.githubusercontent.com/goldenfamilyfarms/correlation-station/claude/analyze-logging-otel-strategy-01UwuAJMKz9NoJgubNbA1Qsf/OTEL_IMPLEMENTATION_STRATEGY.md)
 

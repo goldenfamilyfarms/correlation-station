@@ -105,8 +105,8 @@ kubectl exec <pod> -- find / -name "common_plan.py" 2>/dev/null
 2. **Deploy OTel Classes**
    ```bash
    # Copy OTel instrumentation
-   cp -r seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-        /path/to/products/otel_instrumentation/
+   cp -r seefa-om/mdso-alloy/mdso-instrumentation/otel/ \
+        /path/to/products/otel/
    ```
 
 3. **Follow Implementation Guide**

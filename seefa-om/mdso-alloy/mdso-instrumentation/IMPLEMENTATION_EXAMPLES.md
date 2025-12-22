@@ -55,9 +55,9 @@ from scripts.serviceMapper.configDataModel import (
 from scripts.serviceMapper.device import Device
 
 # Add OTel imports
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.instrumentation import mdso_span
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.instrumentation import mdso_span
+from otel.feature_flags import is_otel_enabled
 
 
 class Common(CommonPlan, OTelMixin):
@@ -214,9 +214,9 @@ from scripts.circuitDetailsHandler import CircuitDetailsHandler
 from scripts.common_plan import CommonPlan
 
 # Add OTel imports
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.instrumentation import mdso_span
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.instrumentation import mdso_span
+from otel.feature_flags import is_otel_enabled
 
 
 class FactoryBase(CommonPlan, OTelMixin, ABC):
@@ -336,9 +336,9 @@ class FactoryBase(CommonPlan, OTelMixin, ABC):
 
 ```python
 from scripts.common_plan import CommonPlan
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.instrumentation import mdso_span
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.instrumentation import mdso_span
+from otel.feature_flags import is_otel_enabled
 
 
 class Base(CommonPlan, OTelMixin):
@@ -400,18 +400,18 @@ class Base(CommonPlan, OTelMixin):
 cd .archive/mdso-dev/charter_sensor_templates/model-definitions/scripts
 
 # Copy OTel instrumentation directory
-cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-     ./otel_instrumentation/
+cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel/ \
+     ./otel/
 
 # Verify
-ls -la otel_instrumentation/
+ls -la otel/
 ```
 
 ### Step 2: Install Dependencies
 
 ```bash
 # In the scripts directory
-pip install -r otel_instrumentation/requirements.txt
+pip install -r otel/requirements.txt
 ```
 
 ### Step 3: Set Environment Variables

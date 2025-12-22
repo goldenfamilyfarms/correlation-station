@@ -85,11 +85,11 @@ pytest tests/test_otel_mixin.py::TestOTelMixin::test_otel_error_handler -v
 cd .archive/mdso-dev/charter_sensor_templates/model-definitions/scripts
 
 # Copy OTel classes
-cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel_instrumentation/ \
-     ./otel_instrumentation/
+cp -r ../../../../seefa-om/mdso-alloy/mdso-instrumentation/otel/ \
+     ./otel/
 
 # Install dependencies
-pip install -r otel_instrumentation/requirements.txt
+pip install -r otel/requirements.txt
 
 # Set environment
 export OTEL_ENABLED=true
@@ -100,8 +100,8 @@ export MDSO_ENV=dev
 **Modify ServiceMapper:**
 ```python
 # In serviceMapper/common.py
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.feature_flags import is_otel_enabled
 
 class Common(CommonPlan, OTelMixin):
     def run(self):
@@ -199,8 +199,8 @@ import sys
 # Add product scripts to path
 sys.path.insert(0, '.archive/mdso-dev/charter_sensor_templates/model-definitions/scripts')
 
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.feature_flags import is_otel_enabled
 
 class TestProduct(OTelMixin):
     def __init__(self):
@@ -294,7 +294,7 @@ from opentelemetry.sdk.trace.export import InMemorySpanExporter
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 
-from otel_instrumentation.otel_mixin import OTelMixin
+from otel.otel_mixin import OTelMixin
 
 class MockCommonPlan:
     def __init__(self):

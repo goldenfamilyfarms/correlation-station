@@ -26,7 +26,7 @@ The strategy document provides a **solid, production-ready approach** for adding
 - Fallback to original behavior
 
 ### 3. **Well-Structured** ✅
-- Leverages existing `otel_instrumentation` classes
+- Leverages existing `otel` classes
 - Clear separation of concerns
 - Reusable components
 
@@ -123,7 +123,7 @@ The strategy document provides a **solid, production-ready approach** for adding
 
 ```bash
 cd seefa-om/mdso-alloy/mdso-instrumentation
-pip install -r otel_instrumentation/requirements.txt
+pip install -r otel/requirements.txt
 ```
 
 ### Step 2: Set Environment Variables
@@ -138,8 +138,8 @@ export MDSO_ENV=dev
 
 ```python
 # In your product file (e.g., scripts/serviceMapper/common.py)
-from otel_instrumentation.otel_mixin import OTelMixin
-from otel_instrumentation.feature_flags import is_otel_enabled
+from otel.otel_mixin import OTelMixin
+from otel.feature_flags import is_otel_enabled
 
 class ServiceMapper(CommonPlan, OTelMixin):
     def run(self):
@@ -294,7 +294,7 @@ The strategy is **sound and ready for implementation**. The mixin-based approach
 ## References
 
 - [Implementation Guide](./IMPLEMENTATION_GUIDE.md) - Complete step-by-step guide
-- [OTel Mixin Source](./otel_instrumentation/otel_mixin.py) - Implementation
+- [OTel Mixin Source](./otel/otel_mixin.py) - Implementation
 - [Unit Tests](./tests/test_otel_mixin.py) - Test suite
 - [Original Strategy](https://raw.githubusercontent.com/goldenfamilyfarms/correlation-station/claude/analyze-logging-otel-strategy-01UwuAJMKz9NoJgubNbA1Qsf/OTEL_IMPLEMENTATION_STRATEGY.md)
 

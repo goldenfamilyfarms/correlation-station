@@ -13,7 +13,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from otel_instrumentation.otel_mixin import OTelMixin
+from otel.otel_mixin import OTelMixin
 
 
 class MockCommonPlan:
@@ -109,7 +109,7 @@ class TestOTelMixin:
         result = product.run()
         assert result["status"] == "success"
 
-    @patch('otel_instrumentation.feature_flags.is_otel_enabled')
+    @patch('otel.feature_flags.is_otel_enabled')
     def test_feature_flag_disabled(self, mock_flag):
         """Test behavior when OTel is disabled"""
         mock_flag.return_value = False

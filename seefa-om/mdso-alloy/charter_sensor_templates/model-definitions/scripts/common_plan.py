@@ -10,8 +10,17 @@ Versions:
 
 import ipaddress
 import sys
+import os
 
-sys.path.append("model-definitions")
+# Add model-definitions to path using absolute path (works regardless of CWD)
+# Get the directory containing this script (scripts/)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Get model-definitions directory (parent of scripts/)
+MODEL_DEFINITIONS_DIR = os.path.dirname(SCRIPT_DIR)
+# Add to path only if not already there, and use insert(0) to prioritize
+if MODEL_DEFINITIONS_DIR not in sys.path:
+    sys.path.insert(0, MODEL_DEFINITIONS_DIR)
+
 import json
 import logging
 import os

@@ -146,7 +146,7 @@ span.set_attribute("circuit.id", circuit_data["circuit_id"])
 
 **Sources:**
 - `mdso-alloy/config.alloy`
-- `mdso-instrumentation/otel_instrumentation/mdso_patterns.py`
+- `mdso-instrumentation/otel/mdso_patterns.py`
 - `sense-apps/arda/arda_app/common/otel/otel_sense.py`
 - `sense-apps/arda/arda_app/common/otel/mdso_patterns.py`
 

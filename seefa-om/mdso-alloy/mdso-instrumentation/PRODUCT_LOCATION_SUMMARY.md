@@ -18,9 +18,9 @@ They need to be located on:
 ## What We Have ✅
 
 1. **OTel Instrumentation Classes** - Ready to use
-   - `otel_instrumentation/instrumentation.py`
-   - `otel_instrumentation/otel_mdso_utils.py`
-   - `otel_instrumentation/otel_mixin.py` (just created)
+   - `otel/instrumentation.py`
+   - `otel/otel_mdso_utils.py`
+   - `otel/otel_mixin.py` (just created)
 
 2. **Implementation Guide** - Complete
    - `IMPLEMENTATION_GUIDE.md` - Step-by-step instructions
@@ -28,7 +28,7 @@ They need to be located on:
    - `tests/test_otel_mixin.py` - Unit tests
 
 3. **Feature Flags** - Ready
-   - `otel_instrumentation/feature_flags.py`
+   - `otel/feature_flags.py`
 
 ---
 
