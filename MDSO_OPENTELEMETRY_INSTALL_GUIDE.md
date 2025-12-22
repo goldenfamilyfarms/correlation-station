@@ -148,6 +148,27 @@ find /opt -path "*/vfirewallplan/venv" 2>/dev/null
 
 **Solution**: All imports now use `scripts.otel.*` prefix
 
+### Issue: "ERROR: Could not find a version that satisfies the requirement wrapt<2.0.0,>=1.0.0"
+
+**Error Message**:
+```
+ERROR: Could not find a version that satisfies the requirement wrapt<2.0.0,>=1.0.0 (from opentelemetry-instrumentation-urllib3) (from versions: none)
+ERROR: No matching distribution found for wrapt<2.0.0,>=1.0.0
+```
+
+**Cause**: 
+- `opentelemetry-instrumentation-urllib3==0.33b0` requires `wrapt<2.0.0,>=1.0.0`
+- The `wrapt` package is not available in the PYPI server, or not in a compatible version
+
+**Fix Applied**: 
+- Added `wrapt==1.17.3` explicitly to `requirements_cst.txt`
+- This version satisfies the constraint `wrapt<2.0.0,>=1.0.0`
+
+**If Still Failing**:
+- Verify `wrapt==1.17.3` is in the PYPI server (`mdsocharter-pypi` or `charter-pypi`)
+- If not, add `wrapt==1.17.3` to the PYPI server's requirements file
+- Check for version conflicts with other packages that might require `wrapt>=2.0.0`
+
 ### Issue: Packages installed manually but not found
 
 **Cause**: MDSO recreates venvs or uses different venv
