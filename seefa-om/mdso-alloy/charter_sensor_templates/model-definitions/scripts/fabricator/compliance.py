@@ -120,6 +120,38 @@ class Activate(FactoryBase, OTelMixin):
                     }
                 )
 
+    def _delete_existing_resource_and_dependencies(self):
+        """
+        Delete existing child resources (ServiceMapper) to avoid conflicts.
+
+        This is called at the start of process() to clean up any existing
+        service mapper resources that might have been created in previous runs.
+        """
+        try:
+            # Get existing children of this resource
+            existing_children = self.bpo.resources.get_children(self.resource_id)
+
+            if existing_children:
+                self.logger.info(f"Found {len(existing_children)} existing child resource(s) to delete")
+
+                for child in existing_children:
+                    # Only delete ServiceMapper type resources
+                    if child.get("resourceTypeId") == self.BUILT_IN_SERVICE_MAPPER_TYPE:
+                        child_id = child["id"]
+                        child_label = child.get("label", "unknown")
+                        try:
+                            self.logger.info(f"Deleting existing child resource: {child_label} ({child_id})")
+                            self.bpo.resources.delete(child_id)
+                        except Exception as e:
+                            self.logger.warning(f"Failed to delete child resource {child_id}: {e}")
+            else:
+                self.logger.debug("No existing child resources found to delete")
+
+        except Exception as e:
+            # If we can't delete existing resources, log a warning but continue
+            # This allows the process to continue even if the cleanup fails
+            self.logger.warning(f"Error while deleting existing resources: {e}")
+
     def _nullcontext(self):
         """Return a nullcontext for when OTel is not initialized."""
         from contextlib import nullcontext
