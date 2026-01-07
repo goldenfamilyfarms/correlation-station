@@ -1,6 +1,7 @@
 --index-url http://blueplanet/vfirewall-templates-pypi/simple/
 --extra-index-url http://blueplanet/mdsocharter-pypi/simple/
 --extra-index-url http://blueplanet/charter-pypi/simple/
+--extra-index-url https://pypi.org/simple/
 #--extra-index-url http://127.0.0.1/plansdk-pypi/simple/
 jsonpath
 requests
@@ -8,13 +9,15 @@ plansdk
 ipaddress
 
 # OpenTelemetry instrumentation packages
-opentelemetry-api==1.12.0
-opentelemetry-sdk==1.12.0
-opentelemetry-exporter-otlp-proto-http==1.12.0
-opentelemetry-semantic-conventions==0.33b0
-structlog==21.5.0
-opentelemetry-instrumentation-requests==0.33b0
-opentelemetry-instrumentation-urllib3==0.33b0
-pyroscope-io==0.8.14
+# Updated to 1.20.0 to match code expectations (scripts/otel/requirements.txt)
+# Fallback to public PyPI (https://pypi.org/simple/) if not in internal repos
+opentelemetry-api==1.20.0
+opentelemetry-sdk==1.20.0
+opentelemetry-exporter-otlp-proto-http==1.20.0
+opentelemetry-semantic-conventions==0.41b0
+structlog==23.2.0
+opentelemetry-instrumentation-requests==0.41b0
+opentelemetry-instrumentation-urllib3==0.41b0
+pyroscope-io>=0.8.7
 # Dependency for opentelemetry-instrumentation-urllib3 (requires wrapt<2.0.0,>=1.0.0)
 wrapt==1.17.3
