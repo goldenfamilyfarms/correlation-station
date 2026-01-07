@@ -46,8 +46,6 @@ class Activate(FactoryBase, OTelMixin):
                     }
                 )
 
-            self._delete_existing_resource_and_dependencies()
-
             # MAIN PROCESS (SERVICE MAPPER)
             # Step 1: Get circuit details
             with self.timed_operation("compliance.get_circuit_details") if getattr(self, '_otel_initialized', False) else self._nullcontext():
