@@ -1,0 +1,14 @@
+# Configuration for scripts.fabricator.* remote scripts
+# This applies to: scripts.fabricator.compliance.Activate, scripts.fabricator.provisioning.Activate
+#
+# Per Blue Planet Orchestrator remote script virtualenv configuration:
+# https://developer.blueplanet.com/docs/bpocore-docs/references/type_layer/remote_scripts.html#remote_scripts_virtualenv
+
+[virtualenv]
+# Use Python 3.8 (py3 is an alias for py38)
+# Valid values: "py38", "py35" (deprecated), "py3" (alias for py38)
+python = "py3"
+
+# Requirements file containing OpenTelemetry dependencies
+# This file MUST be at the root of model-definitions/
+requirements = "requirements_cst.txt"

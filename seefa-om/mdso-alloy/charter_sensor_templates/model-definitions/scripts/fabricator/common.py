@@ -62,6 +62,50 @@ class FactoryBase(CommonPlan, ABC):
         self.circuit_details_id = handler.circuit_details_id
         self.leg_details_ids = handler.leg_details_ids
 
+    def _delete_existing_resource_and_dependencies(self):
+        """Delete existing child resources and their dependencies for this factory resource.
+
+        This method cleans up any existing child resources of the factory before creating new ones.
+        It's particularly useful for re-activation scenarios where old resources need to be removed.
+        """
+        try:
+            # Get existing children of this factory resource
+            existing_children = self.bpo.resources.get(self.resource_id).get("children", [])
+
+            if existing_children:
+                self.logger.info(f"Deleting {len(existing_children)} existing child resources and dependencies")
+
+                for child_id in existing_children:
+                    try:
+                        # Get dependencies of the child resource
+                        child_resource = self.bpo.resources.get(child_id)
+                        resource_dependents = self.get_dependencies(child_id)
+
+                        # Terminate dependencies first
+                        for dependent in resource_dependents:
+                            self.logger.info(f"Terminating dependent resource: {dependent['id']}")
+                            self.bpo.resources.patch(
+                                dependent["id"],
+                                {"desiredOrchState": "terminated", "orchState": "terminated"},
+                            )
+
+                        # Then terminate the child resource itself
+                        self.logger.info(f"Terminating child resource: {child_id}")
+                        self.bpo.resources.patch(
+                            child_id,
+                            {"desiredOrchState": "terminated", "orchState": "terminated"},
+                        )
+                    except Exception as e:
+                        self.logger.warning(f"Failed to delete child resource {child_id}: {e}")
+                        # Continue with other children even if one fails
+
+            else:
+                self.logger.info("No existing child resources to delete")
+
+        except Exception as e:
+            self.logger.warning(f"Error during cleanup of existing resources: {e}")
+            # Don't fail the entire operation if cleanup fails
+
     def _create_resource(self, label: str, properties: dict, wait_active=False) -> Dict[str, Any]:
         """Create a child resource and associate it with the factory."""
         product = self.bpo.market.get_products_by_resource_type(self.product)[0]

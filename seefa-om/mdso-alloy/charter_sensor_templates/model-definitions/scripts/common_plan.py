@@ -430,7 +430,8 @@ class CommonPlan(Plan, Utils, OTelMixin):
     OTEL_EXPORT_MODE = None  # None = auto-detect (defaults to "file")
     
     # Trace log directory for file-based export
-    OTEL_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"
+    # Updated to use logs subdirectory for better organization
+    OTEL_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector/logs"
     
     # Use sudo for file operations (None = auto-detect, True/False = override)
     OTEL_USE_SUDO = None  # None = auto-detect based on permissions

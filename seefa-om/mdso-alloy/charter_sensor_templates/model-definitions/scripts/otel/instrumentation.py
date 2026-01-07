@@ -60,7 +60,8 @@ except ImportError as e:
     logger.warning(f"instrumentation.py: Failed to import pyroscope - PYROSCOPE_AVAILABLE=False - Error: {e}")
 
 # Default directory for file-based trace export (for isolated containers)
-DEFAULT_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector"
+# Updated to use logs subdirectory for better organization
+DEFAULT_TRACE_LOG_DIR = "/opt/ciena/bp2/alloy-collector/logs"
 DEFAULT_TRACE_LOG_FILE = "traces.ndjson"
 
 
